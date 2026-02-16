@@ -1,5 +1,5 @@
 import { PersonaGenerator } from "@/components/theory/PersonaGenerator";
-import { ArrowLeft, Search, Heart, users } from "lucide-react";
+import { ArrowLeft, Search, Heart, Users } from "lucide-react";
 import Link from "next/link";
 
 export default function UserResearchPage() {

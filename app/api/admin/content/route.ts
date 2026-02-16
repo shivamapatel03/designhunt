@@ -6,7 +6,7 @@ export async function GET(req: Request) {
   const type = searchParams.get('type') || 'courses';
 
   try {
-    let data = [];
+    let data: any[] = [];
     if (type === 'courses') {
         data = db.prepare('SELECT * FROM courses ORDER BY created_at DESC').all();
     } else if (type === 'challenges') {
