@@ -285,4 +285,242 @@ router.post("/logout", (req, res) => {
   res.json({ success: true });
 });
 
+// Admin Login Step 1: Validate Password & Send OTP
+router.post("/admin-login-step1", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Check if user exists
+    const user = db
+      .prepare("SELECT * FROM users WHERE email = ?")
+      .get(email) as any;
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    if (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN") {
+      return res.status(403).json({ message: "Unauthorized access" });
+    }
+
+    // Validate Password (ONLY for regular Admins)
+    if (user.role === "ADMIN") {
+      if (!password) {
+        return res.status(400).json({ message: "Password required" });
+      }
+      const isValid = await bcrypt.compare(password, user.password);
+      if (!isValid) {
+        return res.status(400).json({ message: "Invalid credentials" });
+      }
+    }
+    // Super Admins skip password check (Email -> OTP only)
+
+    if (user.status === "PENDING") {
+      return res.status(403).json({ message: "Account pending approval" });
+    }
+
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+
+    db.prepare(
+      "UPDATE users SET otp_code = ?, otp_expires_at = ? WHERE id = ?",
+    ).run(otp, expiresAt, user.id);
+
+    // Send Email
+    const emailResult = await sendAdminLoginEmail(email, otp, user.role);
+
+    if (!emailResult.success) {
+      console.error("Failed to send OTP email:", emailResult.error);
+      // Fallback for dev/demo if email fails
+      console.log(`[ADMIN OTP FALLBACK] For ${email}: ${otp}`);
+    } else {
+      console.log(`[ADMIN OTP] Email sent to ${email}`);
+    }
+
+    res.json({ success: true, message: "OTP sent" });
+  } catch (error: any) {
+    console.error("Login Step 1 Error:", error);
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+      stack: error.stack,
+    });
+  }
+});
+
+// Admin Login Step 2: Verify OTP & Login
+router.post("/admin-login-step2", async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    const user = db
+      .prepare("SELECT * FROM users WHERE email = ?")
+      .get(email) as any;
+
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+
+    // Verify OTP
+    const cleanOtp = String(otp).trim();
+    const storedOtp = String(user.otp_code).trim();
+
+    if (storedOtp !== cleanOtp || new Date(user.otp_expires_at) < new Date()) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+
+    // Clear OTP
+    db.prepare(
+      "UPDATE users SET otp_code = NULL, otp_expires_at = NULL WHERE id = ?",
+    ).run(user.id);
+
+    // Set Cookie
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role },
+      process.env.JWT_SECRET || "fallback_secret",
+      {
+        expiresIn: "24h",
+      },
+    );
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 24 * 60 * 60 * 1000,
+      path: "/",
+    });
+
+    const { password: _, ...userWithoutPassword } = user;
+    res.json({ user: userWithoutPassword, message: "Login successful" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Super Admin Access Code Login
+router.post("/super-admin-access", async (req, res) => {
+  try {
+    const { code } = req.body;
+
+    // Fetch dynamic code from DB
+    const setting = db
+      .prepare(
+        "SELECT value FROM system_settings WHERE key = 'SUPER_ADMIN_CODE'",
+      )
+      .get() as any;
+    const CURRENT_CODE = setting
+      ? setting.value
+      : process.env.SUPER_ADMIN_CODE || "DESIGNHUNT12";
+
+    if (code !== CURRENT_CODE) {
+      return res.status(401).json({ message: "Invalid access code" });
+    }
+
+    // Upsert Super Admin User
+    let user = db
+      .prepare(
+        "SELECT * FROM users WHERE email = 'shivampatel2330@gmail.com' AND role = 'SUPER_ADMIN'",
+      )
+      .get() as any;
+
+    if (!user) {
+      user = db
+        .prepare("SELECT * FROM users WHERE role = 'SUPER_ADMIN'")
+        .get() as any;
+    }
+
+    if (!user) {
+      const id = randomUUID();
+      const email = "root@designhunt.com";
+      db.prepare(
+        `
+            INSERT INTO users (id, email, name, role, status, email_verified, onboarding_completed) 
+            VALUES (?, ?, 'Super Admin', 'SUPER_ADMIN', 'APPROVED', 1, 1)
+        `,
+      ).run(id, email);
+      user = { id, email, role: "SUPER_ADMIN", name: "Super Admin" };
+    }
+
+    // Create session
+    const token = jwt.sign(
+      { userId: user.id, email: user.email, role: "SUPER_ADMIN" },
+      JWT_SECRET,
+      { expiresIn: "24h" },
+    );
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 24 * 60 * 60 * 1000,
+      path: "/",
+    });
+
+    res.json({ success: true, user, redirect: "/super-admin" });
+  } catch (error: any) {
+    console.error("Super Admin Login Error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
+// Admin Access Code Login (Shared)
+router.post("/admin-access", async (req, res) => {
+  try {
+    const { code } = req.body;
+
+    // Fetch dynamic code from DB or use default
+    const setting = db
+      .prepare("SELECT value FROM system_settings WHERE key = 'ADMIN_CODE'")
+      .get() as any;
+    const CURRENT_CODE = setting
+      ? setting.value
+      : process.env.ADMIN_CODE || "DESIGNHUNT_ADMIN";
+
+    if (code !== CURRENT_CODE) {
+      return res.status(401).json({ message: "Invalid access code" });
+    }
+
+    // Upsert Verified Admin User
+    let user = db
+      .prepare(
+        "SELECT * FROM users WHERE role = 'ADMIN' AND email = 'admin@designhunt.com'",
+      )
+      .get() as any;
+
+    if (!user) {
+      const id = randomUUID();
+      const email = "admin@designhunt.com";
+      db.prepare(
+        `
+            INSERT INTO users (id, email, name, role, status, email_verified, onboarding_completed, password) 
+            VALUES (?, ?, 'Admin', 'ADMIN', 'APPROVED', 1, 1, 'access-code-user')
+        `,
+      ).run(id, email);
+      user = { id, email, role: "ADMIN", name: "Admin" };
+    }
+
+    // Create session
+    const token = jwt.sign(
+      { userId: user.id, email: user.email, role: "ADMIN" },
+      JWT_SECRET,
+      { expiresIn: "24h" },
+    );
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 24 * 60 * 60 * 1000,
+      path: "/",
+    });
+
+    res.json({ success: true, user, redirect: "/admin" });
+  } catch (error: any) {
+    console.error("Admin Login Error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
 export default router;

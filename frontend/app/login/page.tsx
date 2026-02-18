@@ -19,16 +19,15 @@ export default function LoginPage() {
 
   // Redundancy Fix
   useEffect(() => {
-    if (!authLoading && user) {
-      if (user.role === 'SUPER_ADMIN' || user.role === 'ADMIN') {
-        router.push('/super-admin');
-      } else if (user.role === 'TUTOR') {
-        router.push('/tutor-dashboard');
-      } else {
-        router.push('/profile');
-      }
+    if (user) {
+      const target = user.role === 'SUPER_ADMIN' ? '/super-admin' 
+        : user.role === 'ADMIN' ? '/admin' 
+        : user.role === 'TUTOR' ? '/tutor-dashboard' 
+        : '/profile';
+      
+      router.replace(target); // Use replace to prevent back-button loop
     }
-  }, [user, authLoading, router]);
+  }, [user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

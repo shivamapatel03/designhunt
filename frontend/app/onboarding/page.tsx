@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight, Upload, Sparkles, Check } from "lucide-react";
-import { completeOnboarding } from "@/app/actions/onboarding";
+import { updateAvatar } from "@/app/actions/onboarding";
 
 // Placeholder "GIF" avatars (using high-quality static images for now as reliable GIFs are hard to link without hosting)
 // But I'll use some fun Notion-style or 3D avatars URLs if possible, or just colors/initials with animation.
@@ -61,9 +61,9 @@ export default function OnboardingPage() {
     }
 
     if (avatarToSave) {
-        const res = await completeOnboarding(avatarToSave);
+        const res = await updateAvatar(avatarToSave);
         if (res.success) {
-            router.push('/profile'); // Or dashboard
+            router.push('/onboarding/skills');
         } else {
             console.error(res.error);
         }
@@ -83,7 +83,7 @@ export default function OnboardingPage() {
             className="text-center mb-12"
         >
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-full text-xs font-bold uppercase tracking-wider mb-6">
-                <Sparkles className="w-3 h-3" /> Step 2 of 2
+                <Sparkles className="w-3 h-3" /> Step 1 of 2
             </div>
             <h1 className="text-4xl md:text-5xl font-black mb-4">Choose Your Character</h1>
             <p className="text-xl text-gray-500">How do you want to be seen in the Design Hunt universe?</p>

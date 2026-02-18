@@ -8,6 +8,7 @@
   /* Accents */
   --accent-yellow: #ffd700;
   --accent-blue: #007bff;
+  --accent-purple: #8b5cf6;
   --accent-pink: #ff69b4;
 
   /* Semantic Colors */
@@ -30,6 +31,7 @@
 
   --color-accent-yellow: var(--accent-yellow);
   --color-accent-blue: var(--accent-blue);
+  --color-accent-purple: var(--accent-purple);
   --color-accent-pink: var(--accent-pink);
 
   --color-primary: var(--primary);

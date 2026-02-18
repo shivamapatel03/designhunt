@@ -31,7 +31,7 @@ export function MasterDesignSection() {
             transition={{ duration: 0.6 }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-black mb-6 tracking-tight">Everything You Need to <br/> Master Design</h2>
+            <h2 className="text-4xl md:text-5xl font-black mb-6 tracking-tight">Everything You Need to <br className="hidden md:block"/> Master Design</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium">Structured modules designed to take you from beginner to expert.</p>
           </motion.div>
           

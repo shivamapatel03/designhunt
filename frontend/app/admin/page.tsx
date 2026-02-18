@@ -7,9 +7,11 @@ import {
   Video, 
   Settings, 
   Layout, 
+  Copy, // Added this
   BarChart, 
   Plus, 
   CheckCircle, 
+  ShieldCheck, // Added this
   Clock,
   Trash2,
   Edit,
@@ -22,11 +24,16 @@ import {
   ExternalLink,
   Edit2,
   Save,
-  Globe
+  Globe,
+  Trophy, 
+  Hammer,
+  RefreshCw
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getCourses, updateCoursePrice, Course } from "@/app/actions/courses";
 import { getPendingCourses, approveCourse, rejectCourse, getSystemStats } from "@/app/actions/admin";
+import { DuelsManager } from "@/components/admin/DuelsManager"; 
+import { ToolsManager } from "@/components/admin/ToolsManager"; 
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState("courses");
@@ -40,33 +47,16 @@ export default function AdminPage() {
   const [tempPrice, setTempPrice] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    fetchInitialData();
-  }, [activeTab, contentType]);
+  const [accessCode, setAccessCode] = useState<string | null>(null);
+  const [showCode, setShowCode] = useState(true);
+  const [minimized, setMinimized] = useState(false);
+  const [timer, setTimer] = useState(60); // Start with 1 minute for current code
+  const [phase, setPhase] = useState<'current' | 'next'>('current');
 
-  const fetchInitialData = async () => {
-    setIsLoading(true);
-    try {
-        if (activeTab === 'dash') {
-            const systemStats = await getSystemStats();
-            setStats(systemStats);
-        } else if (activeTab === 'courses') {
-            const data = await getPendingCourses();
-            setPendingCourses(data);
-        } else if (activeTab === 'pricing') {
-            const data = await getCourses();
-            setAllCourses(data);
-        } else if (activeTab === 'content') {
-            const res = await fetch(`/api/admin/content?type=${contentType}`);
-            const data = await res.json();
-            setContent(data);
-        }
-    } catch (err) {
-        console.error(err);
-    } finally {
-        setIsLoading(false);
-    }
-  };
+  /* 
+     Shared Helper Functions 
+  */
+  const [rotating, setRotating] = useState(false);
 
   const handleApproveCourse = async (id: string) => {
     const res = await approveCourse(id);
@@ -93,8 +83,176 @@ export default function AdminPage() {
       setEditingPrice(null);
   };
 
+  const handleRotateCode = async () => {
+    setRotating(true);
+    try {
+      const res = await fetch("http://localhost:5000/api/admin/rotate-access-code", {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (data.success) {
+        setAccessCode(data.code);
+        setPhase('next');
+        setTimer(300); // 5 minutes for next code
+      }
+    } catch (err) {
+      console.error("Failed to rotate access code");
+    } finally {
+      setRotating(false);
+    }
+  };
+  const fetchInitialData = async () => {
+    setIsLoading(true);
+    try {
+        if (activeTab === 'dash') {
+            const systemStats = await getSystemStats();
+            setStats(systemStats);
+        } else if (activeTab === 'courses') {
+            const data = await getPendingCourses();
+            setPendingCourses(data);
+        } else if (activeTab === 'pricing') {
+            const data = await getCourses();
+            setAllCourses(data);
+        } else if (activeTab === 'content') {
+            const res = await fetch(`/api/admin/content?type=${contentType}`);
+            const data = await res.json();
+            setContent(data);
+        }
+    } catch (err) {
+        console.error(err);
+    } finally {
+        setIsLoading(false);
+    }
+  };
+
+  const fetchAccessCode = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/api/admin/code");
+      const data = await res.json();
+      if (data.code) {
+        setAccessCode(data.code);
+        // Auto-minimize after 10 seconds
+        setTimeout(() => setMinimized(true), 10000);
+      }
+    } catch (err) {
+      console.error("Failed to fetch access code");
+    }
+  };
+
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    if (accessCode) {
+      navigator.clipboard.writeText(accessCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  /* 
+     Effects
+  */
+  useEffect(() => {
+    fetchInitialData();
+    fetchAccessCode();
+  }, [activeTab, contentType]);
+
+  useEffect(() => {
+    if (timer > 0 && showCode) {
+      const interval = setInterval(() => setTimer(t => t - 1), 1000);
+      return () => clearInterval(interval);
+    } else if (timer === 0) {
+      if (phase === 'current') {
+        handleRotateCode();
+      } else {
+        setShowCode(false);
+      }
+    }
+  }, [timer, showCode, phase]);
+
   return (
-    <div className="container mx-auto px-4 pt-32 md:pt-40 pb-12">
+    <div className="container mx-auto px-4 pt-32 md:pt-40 pb-12 relative">
+      <AnimatePresence>
+        {showCode && accessCode && (
+           <motion.div
+             layout
+             initial={{ scale: 0.9, opacity: 0, y: 20, x: "-50%" }}
+             animate={minimized ? 
+                { scale: 0.8, opacity: 1, x: 0, y: 0, top: 20, right: 20, left: "auto", position: "fixed", zIndex: 100 } : 
+                { scale: 1, opacity: 1, x: "-50%", y: "-50%", top: "40%", left: "50%", position: "fixed", zIndex: 100 }
+             }
+             exit={{ opacity: 0, scale: 0.8 }}
+             className={cn(
+                "bg-[#050505] text-white border-2 border-white/20 shadow-2xl cursor-default overflow-hidden transition-all backdrop-blur-xl",
+                minimized ? "rounded-xl p-3 w-auto flex items-center gap-4 cursor-pointer hover:border-accent-yellow" : "rounded-2xl p-6 w-[90vw] max-w-sm text-center"
+             )}
+             onClick={() => minimized && setMinimized(false)}
+           >
+              {!minimized ? (
+                  <div className="relative">
+
+
+                      <div className="space-y-4">
+                          <div className="flex justify-center">
+                             <div className={cn(
+                                "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border flex items-center gap-2",
+                                phase === 'current' ? "bg-accent-yellow/10 text-accent-yellow border-accent-yellow/20" : "bg-red-500/10 text-red-500 border-red-500/20"
+                             )}>
+                                <ShieldCheck className="w-3 h-3" /> {phase === 'current' ? 'Rotating Soon' : 'Save For Next Login'}
+                             </div>
+                          </div>
+                          
+                          <div>
+                              <p className="text-gray-400 font-bold text-xs uppercase mb-2">
+                                {phase === 'current' ? 'Current Access Code' : 'Your Next Access Code'}
+                              </p>
+                              <div className="bg-white/5 p-2 rounded-xl border-2 border-dashed border-white/10 group hover:border-accent-yellow/50 transition-colors flex items-center justify-between pl-4">
+                                  <code className="text-2xl font-mono font-black tracking-widest text-accent-yellow select-all">
+                                    {accessCode}
+                                  </code>
+                                  <div className="flex items-center gap-2 ml-2">
+                                      <button 
+                                        onClick={handleCopy}
+                                        className="p-3 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-all shadow-inner"
+                                        title="Copy Code"
+                                      >
+                                        {copied ? <Check className="w-5 h-5 text-green-400" /> : <Copy className="w-5 h-5" />}
+                                      </button>
+                                  </div>
+                              </div>
+                          </div>
+
+                          <div className="text-[10px] font-bold text-gray-600 uppercase flex justify-center gap-4">
+                             <span className={cn(phase === 'current' && "text-accent-yellow animate-pulse")}>
+                                {phase === 'current' ? 'Rotating in' : 'Expires in'} {Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')}
+                             </span>
+                             <span className="text-gray-700 mx-1">|</span>
+                             <button 
+                                onClick={() => setMinimized(true)} 
+                                className="hover:text-white underline transition-colors"
+                             >
+                                Minimize
+                             </button>
+                          </div>
+                      </div>
+                  </div>
+              ) : (
+                  <>
+                      <div className="w-8 h-8 bg-accent-yellow rounded flex items-center justify-center text-black font-black text-[10px]">
+                          {Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')}
+                      </div>
+                      <div className="text-left">
+                          <p className="text-[8px] font-bold uppercase text-gray-500 leading-none mb-1">
+                             {phase === 'current' ? 'Current Code' : 'Next Code'}
+                          </p>
+                          <code className="font-mono font-bold text-sm text-white leading-none">{accessCode}</code>
+                      </div>
+
+                  </>
+              )}
+           </motion.div>
+        )}
+      </AnimatePresence>
       <div className="flex flex-col lg:flex-row gap-8">
         
         {/* Sidebar */}
@@ -105,7 +263,7 @@ export default function AdminPage() {
             active={activeTab === "dash"} 
             onClick={() => setActiveTab("dash")} 
           />
-          <AdminSidebarItem 
+          {/* <AdminSidebarItem 
             icon={Video} 
             label="Course Queue" 
             active={activeTab === "courses"} 
@@ -122,6 +280,18 @@ export default function AdminPage() {
             label="Library" 
             active={activeTab === "content"} 
             onClick={() => setActiveTab("content")} 
+          /> */}
+          <AdminSidebarItem 
+            icon={Trophy} 
+            label="Daily Duels" 
+            active={activeTab === "duels"} 
+            onClick={() => setActiveTab("duels")} 
+          />
+          <AdminSidebarItem 
+            icon={Hammer} 
+            label="Tools" 
+            active={activeTab === "tools"} 
+            onClick={() => setActiveTab("tools")} 
           />
           <div className="pt-8 border-t border-gray-100 mt-auto">
             <button 
@@ -140,7 +310,9 @@ export default function AdminPage() {
             <h1 className="text-4xl font-black uppercase tracking-tighter">
                 {activeTab === 'dash' ? 'Admin Hub' : 
                  activeTab === 'courses' ? 'Review Queue' : 
-                 activeTab === 'pricing' ? 'Pricing Control' : 'Library'}
+                 activeTab === 'pricing' ? 'Pricing Control' : 
+                 activeTab === 'duels' ? 'Duel Arena' : 
+                 activeTab === 'tools' ? 'Tools Manager' : 'Library'}
             </h1>
           </div>
 
@@ -151,6 +323,14 @@ export default function AdminPage() {
                   <StatCard label="Pending Review" value={stats.pendingVerifications} icon={Clock} color="bg-accent-yellow" />
                   <StatCard label="Status" value="OK" icon={CheckCircle} color="bg-green-400" />
               </div>
+          )}
+
+          {activeTab === 'duels' && (
+              <DuelsManager />
+          )}
+
+          {activeTab === 'tools' && (
+              <ToolsManager />
           )}
 
           {activeTab === 'courses' && (

@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Home, Library, BookOpen, PenTool, Trophy, User, Zap, Rocket, Menu, X, LayoutDashboard } from "lucide-react";
+import { Home, Library, BookOpen, PenTool, Trophy, User, Zap, Rocket, Menu, X, LayoutDashboard, LogIn } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/providers/auth-provider";
 
@@ -24,7 +24,7 @@ export function Navbar() {
   const getDashboardHref = () => {
     if (!user) return "/login";
     if (user.role === 'SUPER_ADMIN') return "/super-admin";
-    if (user.role === 'ADMIN') return "/super-admin"; // Fallback to super-admin if admin UI not separate
+    if (user.role === 'ADMIN') return "/admin";
     // if (user.role === 'TUTOR') return "/tutor-dashboard";
     return "/profile";
   };
@@ -77,7 +77,7 @@ export function Navbar() {
                              (pathname === "/dashboard" || pathname === "/profile" || pathname === "/tutor-dashboard" || pathname === "/super-admin") ? "bg-accent-yellow text-black" : "hover:bg-gray-50"
                         )}
                     >
-                        {user ? <LayoutDashboard className="w-6 h-6" /> : <User className="w-6 h-6" />}
+                        {user ? <User className="w-6 h-6" /> : <LogIn className="w-6 h-6" />}
                         {user ? "Profile" : "Login"}
                     </Link>
                 </div>
@@ -128,7 +128,7 @@ export function Navbar() {
                 (pathname === "/profile" || pathname === "/tutor-dashboard" || pathname === "/super-admin") ? "bg-accent-yellow text-black border-black" : "hover:bg-accent-yellow"
             )}
         >
-             {user ? <LayoutDashboard className="w-5 h-5 md:w-6 md:h-6 text-black" /> : <User className="w-5 h-5 md:w-6 md:h-6 text-black" />}
+             {user ? <User className="w-5 h-5 md:w-6 md:h-6 text-black" /> : <LogIn className="w-5 h-5 md:w-6 md:h-6 text-black" />}
               <span className="hidden md:block absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black text-white text-xs font-bold px-2 py-1 rounded border border-black whitespace-nowrap pointer-events-none">
                 {user ? "Profile" : "Login"}
              </span>

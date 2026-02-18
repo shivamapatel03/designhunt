@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
-import { IllustratedHero } from "@/components/ui/illustrated-hero";
+import { AssetGenerator } from "@/components/tools/AssetGenerator";
 import { SocialProof } from "@/components/layout/SocialProof";
 
 interface HeroProps {
@@ -79,8 +79,14 @@ export function Hero({ userStats }: HeroProps) {
             <SocialProof count={userStats.count} recentUsers={userStats.recentUsers} />
           </div>
           
-          <div className="relative flex justify-center md:block">
-             <IllustratedHero />
+          <div className="relative flex justify-center lg:justify-end mt-12 md:mt-0">
+             <div className="relative">
+                 {/* Floating Label */}
+                 <div className="absolute -top-6 left-1/2 -translate-x-1/2 z-20 bg-black text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest animate-bounce">
+                    Try Me!
+                 </div>
+                 <AssetGenerator />
+             </div>
           </div>
         </div>
       </section>

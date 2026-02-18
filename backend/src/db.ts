@@ -26,6 +26,7 @@ db.exec(`
     otp_expires_at DATETIME,
     email_verified BOOLEAN DEFAULT 0,
     last_login DATETIME,
+    status TEXT DEFAULT 'APPROVED', -- APPROVED, PENDING, REJECTED
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -188,6 +189,36 @@ db.exec(`
     related_lesson_id TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
+  CREATE TABLE IF NOT EXISTS daily_duels (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT,
+    option_a_label TEXT NOT NULL,
+    option_a_image TEXT NOT NULL, -- URL
+    option_b_label TEXT NOT NULL,
+    option_b_image TEXT NOT NULL, -- URL
+    category TEXT,
+    date DATE UNIQUE NOT NULL, -- YYYY-MM-DD
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS duel_votes (
+    id TEXT PRIMARY KEY,
+    duel_id TEXT NOT NULL,
+    user_id TEXT, -- Optional, or use a session/fingerprint ID if anon
+    choice TEXT NOT NULL, -- 'A' or 'B'
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (duel_id) REFERENCES daily_duels(id)
+  );
+
+  CREATE TABLE IF NOT EXISTS system_settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  -- Insert default Access Code if not exists
+  INSERT OR IGNORE INTO system_settings (key, value) VALUES ('SUPER_ADMIN_CODE', 'DESIGNHUNT12');
 `);
 
 export default db;

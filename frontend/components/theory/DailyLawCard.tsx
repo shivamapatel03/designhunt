@@ -43,7 +43,7 @@ export function DailyLawCard({ className }: DailyLawCardProps) {
             Today's Design Principle
           </div>
           
-          <h2 className="text-4xl font-black tracking-tight">{law.title}</h2>
+          <h2 className="text-3xl md:text-4xl font-black tracking-tight">{law.title}</h2>
           <p className="text-lg text-gray-600 leading-relaxed max-w-md">
             {law.description}
           </p>

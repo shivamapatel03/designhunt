@@ -4,7 +4,9 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import authRoutes from "./routes/auth";
 import challengeRoutes from "./routes/challenges";
+import duelsRoutes from "./routes/duels";
 
+import adminRoutes from "./routes/admin";
 import toolsRoutes from "./routes/tools";
 
 dotenv.config();
@@ -18,12 +20,14 @@ app.use(
     credentials: true,
   }),
 );
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
 app.use(cookieParser());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/api/challenges", challengeRoutes);
 app.use("/api/tools", toolsRoutes);
+app.use("/api/duels", duelsRoutes);
 
 // Basic health check
 app.get("/", (req, res) => {

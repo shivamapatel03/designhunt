@@ -70,3 +70,30 @@ export async function sendAdminLoginEmail(
     return { success: false, error };
   }
 }
+
+export async function sendCodeRotationEmail(email: string, newCode: string) {
+  try {
+    const info = await transporter.sendMail({
+      from: `"Design Hunt" <${process.env.SMTP_USER}>`,
+      to: email,
+      subject: `[ADMIN] Access Code Rotated`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 16px; padding: 40px;">
+          <h1 style="color: #000; font-weight: 900; font-size: 24px;">Admin Access Code Rotated</h1>
+          <p style="font-size: 16px; color: #555;">The shared access code for the administrator dashboard has been rotated. Use the new code below for future logins.</p>
+          <div style="background: #000; color: #fff; padding: 20px; text-align: center; border-radius: 12px; margin: 30px 0;">
+            <span style="font-size: 32px; font-weight: 900; letter-spacing: 4px; font-family: monospace;">${newCode}</span>
+          </div>
+          <p style="font-size: 14px; color: #888;">Ensure all relevant team members are notified of this change.</p>
+          <p style="font-size: 12px; color: #aaa; margin-top: 20px;">This rotation was triggered by a Super Admin or the system auto-rotation protocol.</p>
+        </div>
+      `,
+    });
+
+    console.log("Rotation Email sent: %s", info.messageId);
+    return { success: true, data: info };
+  } catch (error) {
+    console.error("Email Error:", error);
+    return { success: false, error };
+  }
+}

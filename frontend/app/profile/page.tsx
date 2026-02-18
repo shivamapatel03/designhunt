@@ -1,8 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { XPTracker } from "@/components/profile/XPTracker";
+import { Celebrate } from "@/components/ui/Celebrate";
+import { DashboardToggle } from "@/components/layout/DashboardToggle";
+import { cn } from "@/lib/utils";
+import { DailyLawCard } from "@/components/theory/DailyLawCard";
 import { 
   Trophy, Zap, Star, Share2, Download, 
   Linkedin, Award, Clock, CheckCircle2, 
@@ -10,11 +15,10 @@ import {
   BookOpen, History as HistoryIcon, User as UserIcon, Save,
   Rocket, PlusCircle
 } from "lucide-react";
-import { DashboardToggle } from "@/components/layout/DashboardToggle";
-import { cn } from "@/lib/utils";
-import { DailyLawCard } from "@/components/theory/DailyLawCard";
 
 export default function ProfilePage() {
+  const searchParams = useSearchParams();
+  const showCelebrate = searchParams.get('celebrate') === 'true';
   const [data, setData] = useState<any>(null);
   const [activeTab, setActiveTab] = useState("overview");
   const [isUpdating, setIsUpdating] = useState(false);
@@ -82,6 +86,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-[#f8f7f4] pt-32 pb-24">
+      {showCelebrate && <Celebrate />}
       <div className="container mx-auto max-w-5xl px-6">
 
         {/* Header Section */}

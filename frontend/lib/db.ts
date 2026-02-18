@@ -2,7 +2,8 @@ import Database from "better-sqlite3";
 import path from "path";
 
 // Initialize the database
-const dbPath = path.join(process.cwd(), "../backend/designhunt_v2.db");
+const dbPath = path.resolve(process.cwd(), "../backend/designhunt_v2.db");
+console.log("Checking DB at:", dbPath);
 const db = new Database(dbPath);
 
 // Schema management is now handled by the backend service.

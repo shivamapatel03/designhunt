@@ -23,7 +23,7 @@ export function SocialProof({ count, recentUsers }: SocialProofProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5, delay: 0.4 }}
-      className="flex items-center gap-4 text-sm font-semibold text-gray-500 pt-6 border-t border-gray-100"
+      className="flex flex-col sm:flex-row items-start sm:items-center gap-4 text-sm font-semibold text-gray-500 pt-6 border-t border-gray-100"
     >
       <div className="flex -space-x-3">
          {displayUsers.map((user, i) => (

@@ -25,7 +25,10 @@ import {
   Plus,
   Play,
   Save,
-  Edit2
+  Edit2,
+  RefreshCw,
+  ShieldAlert,
+  Copy
 } from "lucide-react";
 
 import { 
@@ -39,9 +42,10 @@ import {
   rejectCourse
 } from "@/app/actions/admin";
 import { getCourses, updateCoursePrice, Course } from "@/app/actions/courses";
+import { cn } from "@/lib/utils";
 
 export default function SuperAdminPage() {
-  const [activeTab, setActiveTab] = useState<'verifications' | 'users' | 'moderation' | 'pricing' | 'library' | 'stats'>('verifications');
+  const [activeTab, setActiveTab] = useState<'verifications' | 'users' | 'moderation' | 'pricing' | 'library' | 'stats' | 'master'>('verifications');
   const [approvedTutor, setApprovedTutor] = useState<{ email: string, tempPassword: string } | null>(null);
   const [requests, setRequests] = useState<any[]>([]);
   const [allUsers, setAllUsers] = useState<any[]>([]);
@@ -84,6 +88,8 @@ export default function SuperAdminPage() {
             const res = await fetch(`/api/admin/content?type=${contentType}`);
             const data = await res.json();
             setContent(data);
+        } else if (activeTab === 'master') {
+            await fetchAdminCode();
         }
         
         const systemStats = await getSystemStats();
@@ -126,6 +132,23 @@ export default function SuperAdminPage() {
       }
   };
 
+  // Create Admin State
+  const [newAdmin, setNewAdmin] = useState({ email: "", name: "", avatar: "" });
+  const [createdAdminPass, setCreatedAdminPass] = useState("");
+  const [adminCode, setAdminCode] = useState<string | null>(null);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [rotateLoading, setRotateLoading] = useState(false);
+
+  const fetchAdminCode = async () => {
+    try {
+        const res = await fetch("http://localhost:5000/api/admin/code");
+        const data = await res.json();
+        setAdminCode(data.code);
+    } catch (err) {
+        console.error("Failed to fetch admin code");
+    }
+  };
+
   const handleApproveCourse = async (id: string) => {
     const res = await approveCourse(id);
     if (res.success) {
@@ -151,6 +174,133 @@ export default function SuperAdminPage() {
       setEditingPrice(null);
   };
 
+  const handleResetAdminCode = async () => {
+    if (!confirm("Are you sure you want to RESET the Admin Access Code to default?")) return;
+    setResetLoading(true);
+    try {
+        const res = await fetch("http://localhost:5000/api/admin/reset-access-code", { method: "POST" });
+        const data = await res.json();
+        if (data.success) {
+            setAdminCode(data.code);
+            alert("Admin Access Code reset to default and notification sent.");
+        }
+    } catch (err) {
+        alert("Failed to reset code");
+    } finally {
+        setResetLoading(false);
+    }
+  };
+
+  const handleRotateAdminCode = async () => {
+    if (!confirm("Are you sure you want to ROTATE the Admin Access Code?")) return;
+    setRotateLoading(true);
+    try {
+        const res = await fetch("http://localhost:5000/api/admin/rotate-access-code", { method: "POST" });
+        const data = await res.json();
+        if (data.success) {
+            setAdminCode(data.code);
+            alert("Admin Access Code rotated and notification sent.");
+        }
+    } catch (err) {
+        alert("Failed to rotate code");
+    } finally {
+        setRotateLoading(false);
+    }
+  };
+
+  const handleDeleteUser = async (id: string) => {
+      if(!confirm("Are you sure you want to delete this user? This action cannot be undone.")) return;
+      
+      try {
+        const res = await fetch("http://localhost:5000/api/admin/delete-user", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id }),
+        });
+        if (res.ok) {
+            setAllUsers(prev => prev.filter(u => u.id !== id));
+            alert("User deleted successfully");
+        } else {
+            alert("Failed to delete user");
+        }
+      } catch (err) {
+        alert("Error deleting user");
+      }
+  };
+
+  const handleCreateAdmin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+        const res = await fetch("http://localhost:5000/api/admin/create-admin", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(newAdmin),
+        });
+        const data = await res.json();
+        if (res.ok) {
+            setCreatedAdminPass(data.password);
+            setNewAdmin({ email: "", name: "", avatar: "" });
+            alert(`Admin Created! Password: ${data.password}`);
+            fetchInitialData(); // Refresh list
+        } else {
+            alert(data.error || "Failed to create admin");
+        }
+    } catch (err) {
+        alert("Error creating admin");
+    }
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setNewAdmin(prev => ({ ...prev, avatar: reader.result as string }));
+        };
+        reader.readAsDataURL(file);
+    }
+  };
+
+  /* 
+  const handleClearAllUsers = async () => { ... } // Removed per request
+  */
+
+  // Access Code Rotation State
+  const [newAccessCode, setNewAccessCode] = useState<string | null>(null);
+  const [codeTimer, setCodeTimer] = useState(600); // 10 minutes in seconds
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (newAccessCode && codeTimer > 0) {
+        interval = setInterval(() => {
+            setCodeTimer((prev) => prev - 1);
+        }, 1000);
+    } else if (codeTimer === 0) {
+        setNewAccessCode(null);
+    }
+    return () => clearInterval(interval);
+  }, [newAccessCode, codeTimer]);
+
+  const handleRotateCode = async () => {
+    if(!confirm("Warning: This will INVALIDATE the previous Access Code immediately. Ensure you save the new one. Continue?")) return;
+
+    try {
+        const res = await fetch("http://localhost:5000/api/admin/rotate-access-code", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" }
+        });
+        const data = await res.json();
+        if (res.ok) {
+            setNewAccessCode(data.code);
+            setCodeTimer(600); // Reset timer to 10 mins
+        } else {
+            alert("Failed to rotate code");
+        }
+    } catch (err) {
+        alert("Error rotating code");
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 pt-32 md:pt-40 pb-12">
       <div className="max-w-6xl mx-auto">
@@ -166,13 +316,20 @@ export default function SuperAdminPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-4">
+            {/* Access Code Rotation */}
+             <button
+                onClick={handleRotateCode}
+                className="flex items-center gap-2 px-6 py-2 rounded-xl font-black text-xs uppercase transition-all bg-yellow-400 text-black hover:bg-yellow-500 border-2 border-black ml-2"
+            >
+                <Shield className="w-4 h-4" />
+                Rotate Access Code
+            </button>
+
             <div className="flex flex-wrap gap-2">
             {[
                 { id: 'verifications', label: 'Vetting', icon: Shield },
                 { id: 'users', label: 'Users', icon: Users },
-                { id: 'moderation', label: 'Moderation', icon: Video },
-                { id: 'pricing', label: 'Pricing', icon: DollarSign },
-                { id: 'library', label: 'Library', icon: Settings },
+                { id: 'master', label: 'Master Access', icon: ShieldCheck },
                 { id: 'stats', label: 'System', icon: BarChart }
             ].map((tab) => (
                 <button
@@ -197,6 +354,33 @@ export default function SuperAdminPage() {
             </button>
           </div>
         </div>
+
+        {/* New Access Code Display */}
+        <AnimatePresence>
+            {newAccessCode && (
+                <motion.div 
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="mb-12 bg-red-600 text-white p-6 rounded-[24px] border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden"
+                >
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-black/20 rounded-full">
+                                <ShieldCheck className="w-8 h-8" />
+                            </div>
+                            <div>
+                                <h3 className="text-2xl font-black uppercase tracking-tighter">New Master Access Code</h3>
+                                <p className="text-xs font-bold uppercase opacity-80">This code will disappear in {Math.floor(codeTimer / 60)}:{(codeTimer % 60).toString().padStart(2, '0')} minutes. Save it securely!</p>
+                            </div>
+                        </div>
+                        <div className="text-4xl font-mono font-black tracking-widest bg-black/20 px-6 py-2 rounded-xl border-2 border-white/20 select-all">
+                            {newAccessCode}
+                        </div>
+                    </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
 
         {/* Governance: Vetting */}
         {activeTab === 'verifications' && (
@@ -300,9 +484,17 @@ export default function SuperAdminPage() {
             <div className="bg-white border-2 border-black rounded-[32px] overflow-hidden shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
                 <div className="p-8 border-b-2 border-gray-100 flex justify-between items-center bg-gray-50/50">
                     <h2 className="text-xl font-black uppercase tracking-tighter">User Library</h2>
-                    <div className="relative">
-                        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input className="pl-10 pr-4 py-2 border-2 border-black rounded-xl text-sm font-bold w-64" placeholder="Filter users..." />
+                    <div className="flex items-center gap-4">
+                        <button 
+                            onClick={() => setActiveTab('create-admin' as any)}
+                            className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-xl font-black text-xs uppercase"
+                        >
+                            <Plus className="w-4 h-4" /> Add Admin
+                        </button>
+                        <div className="relative">
+                            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                            <input className="pl-10 pr-4 py-2 border-2 border-black rounded-xl text-sm font-bold w-64" placeholder="Filter users..." />
+                        </div>
                     </div>
                 </div>
 
@@ -310,8 +502,12 @@ export default function SuperAdminPage() {
                     {allUsers.map((user) => (
                         <div key={user.id} className="p-8 flex items-center justify-between hover:bg-gray-50 transition-colors">
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-gray-100 rounded-full border-2 border-black flex items-center justify-center font-black">
-                                    {user.name.charAt(0)}
+                                <div className="w-12 h-12 bg-gray-100 rounded-full border-2 border-black flex items-center justify-center font-black overflow-hidden">
+                                    {user.avatar ? (
+                                        <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        user.name.charAt(0)
+                                    )}
                                 </div>
                                 <div>
                                     <h3 className="font-black text-lg">{user.name}</h3>
@@ -330,10 +526,91 @@ export default function SuperAdminPage() {
                                     <option value="ADMIN">Admin</option>
                                     <option value="SUPER_ADMIN">Super Admin</option>
                                 </select>
-                                <button className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-5 h-5" /></button>
+                                <button onClick={() => handleDeleteUser(user.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-5 h-5" /></button>
                             </div>
                         </div>
                     ))}
+                </div>
+            </div>
+        )}
+
+        {/* Create Admin View */}
+        {activeTab === ('create-admin' as any) && (
+            <div className="bg-white border-2 border-black rounded-[32px] overflow-hidden shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
+                <div className="p-8 border-b-2 border-gray-100 flex items-center gap-4 bg-gray-50/50">
+                    <button onClick={() => setActiveTab('users')} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
+                        <XCircle className="w-6 h-6" />
+                    </button>
+                    <h2 className="text-xl font-black uppercase tracking-tighter">Create New Administrator</h2>
+                </div>
+                
+                <div className="p-12">
+                    <div className="max-w-xl mx-auto">
+                        <form onSubmit={handleCreateAdmin} className="space-y-8">
+                             <div className="flex justify-center mb-8">
+                                <div className="relative group cursor-pointer w-32 h-32">
+                                    <div className="w-32 h-32 bg-gray-100 rounded-full border-4 border-black overflow-hidden flex items-center justify-center">
+                                        {newAdmin.avatar ? (
+                                            <img src={newAdmin.avatar} alt="Preview" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <UserCheck className="w-12 h-12 text-gray-300" />
+                                        )}
+                                    </div>
+                                    <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <div className="text-white text-xs font-black uppercase">Upload</div>
+                                    </div>
+                                    <input 
+                                        type="file" 
+                                        accept="image/*"
+                                        onChange={handleAvatarChange}
+                                        className="absolute inset-0 opacity-0 cursor-pointer"
+                                    />
+                                </div>
+                             </div>
+
+                             <div className="space-y-4">
+                                <div>
+                                    <label className="text-sm font-black uppercase text-gray-500 mb-2 block">Email Address</label>
+                                    <input 
+                                        type="email" 
+                                        required 
+                                        value={newAdmin.email}
+                                        onChange={(e) => setNewAdmin({...newAdmin, email: e.target.value})}
+                                        className="w-full p-4 border-2 border-black rounded-xl font-bold text-lg outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
+                                        placeholder="admin@designhunt.com"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-black uppercase text-gray-500 mb-2 block">Full Name</label>
+                                    <input 
+                                        type="text" 
+                                        value={newAdmin.name}
+                                        onChange={(e) => setNewAdmin({...newAdmin, name: e.target.value})}
+                                        className="w-full p-4 border-2 border-black rounded-xl font-bold text-lg outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
+                                        placeholder="Jane Doe"
+                                    />
+                                </div>
+                             </div>
+
+                             <button className="w-full py-5 bg-black text-white font-black uppercase text-xl rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)]">
+                                Generate Access Credentials
+                             </button>
+                        </form>
+
+                        {createdAdminPass && (
+                            <motion.div 
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="mt-8 p-8 bg-green-100 border-4 border-green-500 rounded-[32px] text-center"
+                            >
+                                <p className="text-sm font-black text-green-700 uppercase tracking-widest mb-4">Admin Created Successfully</p>
+                                <div className="font-mono text-4xl font-black mb-4 select-all bg-white inline-block px-6 py-2 rounded-xl border-2 border-green-200">
+                                    {createdAdminPass}
+                                </div>
+                                <p className="text-xs text-green-800 font-bold uppercase">Please copy and share this password immediately.</p>
+                            </motion.div>
+                        )}
+                    </div>
                 </div>
             </div>
         )}
@@ -468,6 +745,84 @@ export default function SuperAdminPage() {
                             </div>
                         </div>
                     ))}
+                </div>
+            </div>
+        )}
+
+        {/* Governance: Master Access */}
+        {activeTab === 'master' && (
+            <div className="max-w-2xl mx-auto space-y-8">
+                <div className="bg-black text-white p-12 rounded-[48px] border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,0.1)] relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-8 opacity-10">
+                        <ShieldAlert className="w-32 h-32" />
+                    </div>
+                    
+                    <div className="relative z-10">
+                        <h2 className="text-3xl font-black uppercase italic mb-2 tracking-tighter">Admin Access Authority</h2>
+                        <p className="text-gray-400 font-bold uppercase text-xs mb-8 tracking-widest">Global Dashboard Control Center</p>
+                        
+                        <div className="space-y-12">
+                            <div>
+                                <label className="text-[10px] font-black uppercase text-gray-500 mb-4 block tracking-[0.2em]">Current Shared Access Code</label>
+                                <div className="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border-2 border-white/10 group hover:border-accent-yellow/50 transition-all">
+                                    <code className="text-5xl font-mono font-black tracking-[0.3em] text-accent-yellow select-all">
+                                        {adminCode || "••••••••"}
+                                    </code>
+                                    <button 
+                                        onClick={() => {
+                                            if(adminCode) {
+                                                navigator.clipboard.writeText(adminCode);
+                                                alert("Copied to clipboard!");
+                                            }
+                                        }}
+                                        className="p-4 hover:bg-white/10 rounded-xl transition-colors ml-auto"
+                                    >
+                                        <Copy className="w-6 h-6 text-gray-400" />
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <button 
+                                    onClick={handleRotateAdminCode}
+                                    disabled={rotateLoading}
+                                    className="flex items-center justify-center gap-3 py-5 bg-accent-yellow text-black font-black uppercase text-sm rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-[6px_6px_0px_0px_rgba(255,255,255,0.1)] disabled:opacity-50"
+                                >
+                                    <RefreshCw className={cn("w-5 h-5", rotateLoading && "animate-spin")} />
+                                    Rotate Code (Alert Email)
+                                </button>
+                                
+                                <button 
+                                    onClick={handleResetAdminCode}
+                                    disabled={resetLoading}
+                                    className="flex items-center justify-center gap-3 py-5 bg-red-600 text-white font-black uppercase text-sm rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] disabled:opacity-50"
+                                >
+                                    <ShieldAlert className={cn("w-5 h-5", resetLoading && "animate-spin")} />
+                                    Emergency Reset
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="bg-white border-2 border-black p-8 rounded-[32px] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                    <h3 className="text-sm font-black uppercase mb-4 flex items-center gap-2">
+                         <Mail className="w-4 h-4" /> Safety Protocols
+                    </h3>
+                    <ul className="space-y-4 text-xs font-bold text-gray-500 uppercase leading-relaxed">
+                        <li className="flex gap-3">
+                            <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                            <span>Rotating the code will immediately invalidate the previous code.</span>
+                        </li>
+                        <li className="flex gap-3">
+                            <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                            <span>An automated email alert is sent to <strong>shivampatel2330@gmail.com</strong> on every change.</span>
+                        </li>
+                        <li className="flex gap-3">
+                            <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                            <span>Use "Emergency Reset" if the dynamic system fails or codes are lost.</span>
+                        </li>
+                    </ul>
                 </div>
             </div>
         )}
