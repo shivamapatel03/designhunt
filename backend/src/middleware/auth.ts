@@ -30,14 +30,22 @@ export const authenticateToken = (
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as {
-      userId: string;
-      email: string;
-      role: string;
-    };
+    const decoded = jwt.verify(token, JWT_SECRET) as any;
     req.user = decoded;
     next();
   } catch (error) {
     res.status(403).json({ error: "Invalid token." });
+  }
+};
+
+export const requireSuperAdmin = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  if (req.user && req.user.role === "SUPER_ADMIN") {
+    next();
+  } else {
+    res.status(403).json({ error: "Access denied. Super Admin only." });
   }
 };

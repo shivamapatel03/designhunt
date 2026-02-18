@@ -7,11 +7,9 @@ import {
   Video, 
   Settings, 
   Layout, 
-  Copy, // Added this
   BarChart, 
   Plus, 
   CheckCircle, 
-  ShieldCheck, // Added this
   Clock,
   Trash2,
   Edit,
@@ -47,17 +45,9 @@ export default function AdminPage() {
   const [tempPrice, setTempPrice] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
-  const [accessCode, setAccessCode] = useState<string | null>(null);
-  const [showCode, setShowCode] = useState(true);
-  const [minimized, setMinimized] = useState(false);
-  const [timer, setTimer] = useState(60); // Start with 1 minute for current code
-  const [phase, setPhase] = useState<'current' | 'next'>('current');
-
   /* 
      Shared Helper Functions 
   */
-  const [rotating, setRotating] = useState(false);
-
   const handleApproveCourse = async (id: string) => {
     const res = await approveCourse(id);
     if (res.success) {
@@ -83,24 +73,6 @@ export default function AdminPage() {
       setEditingPrice(null);
   };
 
-  const handleRotateCode = async () => {
-    setRotating(true);
-    try {
-      const res = await fetch("http://localhost:5000/api/admin/rotate-access-code", {
-        method: "POST",
-      });
-      const data = await res.json();
-      if (data.success) {
-        setAccessCode(data.code);
-        setPhase('next');
-        setTimer(300); // 5 minutes for next code
-      }
-    } catch (err) {
-      console.error("Failed to rotate access code");
-    } finally {
-      setRotating(false);
-    }
-  };
   const fetchInitialData = async () => {
     setIsLoading(true);
     try {
@@ -125,134 +97,16 @@ export default function AdminPage() {
     }
   };
 
-  const fetchAccessCode = async () => {
-    try {
-      const res = await fetch("http://localhost:5000/api/admin/code");
-      const data = await res.json();
-      if (data.code) {
-        setAccessCode(data.code);
-        // Auto-minimize after 10 seconds
-        setTimeout(() => setMinimized(true), 10000);
-      }
-    } catch (err) {
-      console.error("Failed to fetch access code");
-    }
-  };
-
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = () => {
-    if (accessCode) {
-      navigator.clipboard.writeText(accessCode);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
-
   /* 
      Effects
   */
   useEffect(() => {
     fetchInitialData();
-    fetchAccessCode();
   }, [activeTab, contentType]);
 
-  useEffect(() => {
-    if (timer > 0 && showCode) {
-      const interval = setInterval(() => setTimer(t => t - 1), 1000);
-      return () => clearInterval(interval);
-    } else if (timer === 0) {
-      if (phase === 'current') {
-        handleRotateCode();
-      } else {
-        setShowCode(false);
-      }
-    }
-  }, [timer, showCode, phase]);
-
   return (
-    <div className="container mx-auto px-4 pt-32 md:pt-40 pb-12 relative">
-      <AnimatePresence>
-        {showCode && accessCode && (
-           <motion.div
-             layout
-             initial={{ scale: 0.9, opacity: 0, y: 20, x: "-50%" }}
-             animate={minimized ? 
-                { scale: 0.8, opacity: 1, x: 0, y: 0, top: 20, right: 20, left: "auto", position: "fixed", zIndex: 100 } : 
-                { scale: 1, opacity: 1, x: "-50%", y: "-50%", top: "40%", left: "50%", position: "fixed", zIndex: 100 }
-             }
-             exit={{ opacity: 0, scale: 0.8 }}
-             className={cn(
-                "bg-[#050505] text-white border-2 border-white/20 shadow-2xl cursor-default overflow-hidden transition-all backdrop-blur-xl",
-                minimized ? "rounded-xl p-3 w-auto flex items-center gap-4 cursor-pointer hover:border-accent-yellow" : "rounded-2xl p-6 w-[90vw] max-w-sm text-center"
-             )}
-             onClick={() => minimized && setMinimized(false)}
-           >
-              {!minimized ? (
-                  <div className="relative">
+    <div className="container mx-auto px-4 pt-6 pb-12 relative">
 
-
-                      <div className="space-y-4">
-                          <div className="flex justify-center">
-                             <div className={cn(
-                                "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border flex items-center gap-2",
-                                phase === 'current' ? "bg-accent-yellow/10 text-accent-yellow border-accent-yellow/20" : "bg-red-500/10 text-red-500 border-red-500/20"
-                             )}>
-                                <ShieldCheck className="w-3 h-3" /> {phase === 'current' ? 'Rotating Soon' : 'Save For Next Login'}
-                             </div>
-                          </div>
-                          
-                          <div>
-                              <p className="text-gray-400 font-bold text-xs uppercase mb-2">
-                                {phase === 'current' ? 'Current Access Code' : 'Your Next Access Code'}
-                              </p>
-                              <div className="bg-white/5 p-2 rounded-xl border-2 border-dashed border-white/10 group hover:border-accent-yellow/50 transition-colors flex items-center justify-between pl-4">
-                                  <code className="text-2xl font-mono font-black tracking-widest text-accent-yellow select-all">
-                                    {accessCode}
-                                  </code>
-                                  <div className="flex items-center gap-2 ml-2">
-                                      <button 
-                                        onClick={handleCopy}
-                                        className="p-3 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-all shadow-inner"
-                                        title="Copy Code"
-                                      >
-                                        {copied ? <Check className="w-5 h-5 text-green-400" /> : <Copy className="w-5 h-5" />}
-                                      </button>
-                                  </div>
-                              </div>
-                          </div>
-
-                          <div className="text-[10px] font-bold text-gray-600 uppercase flex justify-center gap-4">
-                             <span className={cn(phase === 'current' && "text-accent-yellow animate-pulse")}>
-                                {phase === 'current' ? 'Rotating in' : 'Expires in'} {Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')}
-                             </span>
-                             <span className="text-gray-700 mx-1">|</span>
-                             <button 
-                                onClick={() => setMinimized(true)} 
-                                className="hover:text-white underline transition-colors"
-                             >
-                                Minimize
-                             </button>
-                          </div>
-                      </div>
-                  </div>
-              ) : (
-                  <>
-                      <div className="w-8 h-8 bg-accent-yellow rounded flex items-center justify-center text-black font-black text-[10px]">
-                          {Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')}
-                      </div>
-                      <div className="text-left">
-                          <p className="text-[8px] font-bold uppercase text-gray-500 leading-none mb-1">
-                             {phase === 'current' ? 'Current Code' : 'Next Code'}
-                          </p>
-                          <code className="font-mono font-bold text-sm text-white leading-none">{accessCode}</code>
-                      </div>
-
-                  </>
-              )}
-           </motion.div>
-        )}
-      </AnimatePresence>
       <div className="flex flex-col lg:flex-row gap-8">
         
         {/* Sidebar */}
@@ -490,12 +344,12 @@ function AdminSidebarItem({ icon: Icon, label, active, onClick }: any) {
 
 function StatCard({ label, value, icon: Icon, color }: any) {
     return (
-        <div className="p-8 bg-white border-2 border-black rounded-[32px] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-l-[12px] border-l-black">
-            <div className={`w-12 h-12 ${color} rounded-2xl border-2 border-black flex items-center justify-center mb-6`}>
-                <Icon className="w-6 h-6" />
+        <div className="group p-6 bg-white border-3 border-black rounded-[24px] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-200 flex flex-col items-center text-center justify-center h-full min-h-[180px]">
+            <div className={`w-14 h-14 ${color} rounded-2xl border-2 border-black flex items-center justify-center mb-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]`}>
+                <Icon className="w-7 h-7 text-black" />
             </div>
-            <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">{label}</h4>
-            <div className="text-3xl font-black tracking-tighter">{value}</div>
+            <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 font-mono">{label}</h4>
+            <div className="text-4xl font-black tracking-tighter text-black">{value}</div>
         </div>
     );
 }

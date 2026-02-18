@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -13,13 +13,24 @@ const navItems = [
   { name: "Library", href: "/library", icon: Library },
   { name: "Theory", href: "/theory", icon: BookOpen },
   { name: "Tools", href: "/tools", icon: PenTool },
-  // { name: "Challenges", href: "/challenges", icon: Trophy },
 ];
 
 export function Navbar() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, loading } = useAuth();
+  const [enableMarketplace, setEnableMarketplace] = useState(false);
+
+  useEffect(() => {
+    fetch("http://localhost:5000/api/settings")
+      .then(res => res.json())
+      .then(data => setEnableMarketplace(data.ENABLE_MARKETPLACE));
+  }, []);
+
+  const currentNavItems = [...navItems];
+  if (enableMarketplace) {
+      currentNavItems.splice(1, 0, { name: "Courses", href: "/courses", icon: BookOpen });
+  }
 
   const getDashboardHref = () => {
     if (!user) return "/login";
@@ -55,7 +66,7 @@ export function Navbar() {
                     </button>
                 </div>
                 <div className="flex flex-col p-4 gap-2 overflow-y-auto">
-                    {navItems.map((item) => (
+                    {currentNavItems.map((item) => (
                         <Link
                             key={item.href}
                             href={item.href}
@@ -89,7 +100,7 @@ export function Navbar() {
       <div className="hidden md:block fixed bottom-8 md:top-8 md:bottom-auto left-1/2 -translate-x-1/2 z-50 w-max max-w-[95vw]">
       <nav className="flex items-center gap-1 md:gap-2 px-2 md:px-4 py-2 md:py-3 bg-white/80 backdrop-blur-md border-2 border-black rounded-full shadow-[4px_4px_0px_0px_#000]">
         
-        {navItems.map((item) => {
+        {currentNavItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
           

@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
+import { ClientLayout } from "@/components/layout/ClientLayout";
 import { CustomCursor } from "@/components/ui/custom-cursor";
 import { AuthProvider } from "@/components/providers/auth-provider";
+import SystemGuard from "@/components/SystemGuard";
+import SystemBanner from "@/components/SystemBanner";
 import "./globals.css";
 
 
@@ -33,12 +34,13 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col pb-24 md:pb-32 bg-background text-foreground`}
       >
         <AuthProvider>
-          <CustomCursor />
-          <Navbar />
-          <main className="flex-1">
-            {children}
-          </main>
-          <Footer />
+          <SystemGuard>
+            <CustomCursor />
+            <SystemBanner />
+            <ClientLayout>
+              {children}
+            </ClientLayout>
+          </SystemGuard>
         </AuthProvider>
       </body>
     </html>

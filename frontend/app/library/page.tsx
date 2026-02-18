@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Library, Type, FileBox, Palette, PenTool, ArrowRight } from "lucide-react";
+import { Library, Type, FileBox, Palette, PenTool, ArrowRight, Zap } from "lucide-react";
 
 export default function LibraryPage() {
   return (
@@ -92,6 +92,21 @@ export default function LibraryPage() {
                     <p className="text-gray-600 mb-8 font-medium">Hand-picked vector resources for your next project.</p>
                     <div className="flex items-center gap-2 font-bold text-sm">
                         Browse Collection <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                    </div>
+                </div>
+            </Link>
+
+            {/* Animations */}
+            <Link href="/library/animations" className="group bg-white p-8 rounded-3xl border-2 border-black shadow-[8px_8px_0px_0px_#000] hover:-translate-y-1 transition-transform relative overflow-hidden">
+                 <div className="absolute top-0 right-0 p-32 bg-accent-purple/5 rounded-full blur-3xl -mr-16 -mt-16 transition-colors group-hover:bg-accent-purple/10" />
+                 <div className="relative z-10">
+                    <div className="w-14 h-14 bg-accent-purple text-white border-2 border-black rounded-2xl flex items-center justify-center mb-6">
+                        <Zap className="w-7 h-7" />
+                    </div>
+                    <h2 className="text-3xl font-black mb-3">Animations</h2>
+                    <p className="text-gray-600 mb-8 font-medium">Copy-paste ready effects like Glitch Text and Gradient Borders.</p>
+                    <div className="flex items-center gap-2 font-bold text-sm">
+                        View Effects <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                     </div>
                 </div>
             </Link>

@@ -53,7 +53,7 @@ export function MasterDesignSection() {
             <FeatureCard 
               icon={<PenTool className="w-10 h-10" />}
               title="Theory Library"
-              description="Interactive design encyclopedia. Color, Typography, Grid, and more."
+              description="Interactive design guide. Color, Typography, Grid, and more."
               color="bg-accent-blue"
               href="/theory"
               textColor="text-white"

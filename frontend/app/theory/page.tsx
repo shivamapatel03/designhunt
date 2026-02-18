@@ -3,6 +3,7 @@ import { ArrowRight, Palette, Type, Layout, MousePointer, Scale, Eye, Box, Layou
 import { ReactNode } from "react";
 import { DailyLawCard } from "@/components/theory/DailyLawCard";
 import { InteractionLab } from "@/components/theory/InteractionLab";
+import { DailyPracticalSession } from "@/components/theory/DailyPracticalSession";
 
 export default function TheoryPage() {
   return (
@@ -14,7 +15,12 @@ export default function TheoryPage() {
         </p>
       </div>
 
-      <DailyLawCard />
+      <DailyLawCard className="mb-20" />
+
+
+
+      {/* Daily Practical Session - NEW */}
+      <DailyPracticalSession />
 
       {/* Playground Showcase Section - NEW */}
       <section className="mb-20">

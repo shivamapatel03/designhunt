@@ -46,18 +46,10 @@ export function CustomCursor() {
     window.addEventListener("mousedown", handleMouseDown);
     window.addEventListener("mouseup", handleMouseUp);
     
-    // Hide default cursor globally
-    document.body.style.cursor = 'none';
-    const allElements = document.querySelectorAll('*');
-    allElements.forEach(el => {
-        (el as HTMLElement).style.cursor = 'none';
-    });
-
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mousedown", handleMouseDown);
       window.removeEventListener("mouseup", handleMouseUp);
-      document.body.style.cursor = 'auto';
     };
   }, [handleMouseMove, handleMouseDown, handleMouseUp]);
 

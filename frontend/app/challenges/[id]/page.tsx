@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { ChevronLeft, Trophy, Clock, Flame, ThumbsUp } from "lucide-react";
 import Link from "next/link";
 import { ChallengeSubmissionForm } from "@/components/challenges/ChallengeSubmissionForm";
+import { SubmissionCard } from "@/components/challenges/SubmissionCard";
 import { cookies } from "next/headers";
 
 // Helper to fetch data
@@ -122,29 +123,7 @@ export default async function ChallengeDetailsPage({ params }: { params: Promise
                      <div className="grid md:grid-cols-2 gap-4">
                         {submissions.length > 0 ? (
                             submissions.map((sub: any) => (
-                                <div key={sub.id} className="bg-white border-2 border-black rounded-xl overflow-hidden hover:-translate-y-1 transition-transform">
-                                    {/* Content Preview */}
-                                    <div className="h-48 bg-gray-100 flex items-center justify-center overflow-hidden border-b-2 border-black">
-                                        {sub.content?.startsWith("data:image") || sub.content?.match(/\.(jpeg|jpg|gif|png)$/) ? (
-                                            <img src={sub.content} className="w-full h-full object-cover" alt="Submission" />
-                                        ) : (
-                                            <a href={sub.content} target="_blank" className="text-blue-600 underline font-bold">View External Link</a>
-                                        )}
-                                    </div>
-                                    <div className="p-4 flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden">
-                                                {sub.user_avatar && <img src={sub.user_avatar} />}
-                                            </div>
-                                            <span className="font-bold text-sm truncate max-w-[100px]">{sub.user_name}</span>
-                                        </div>
-                                        
-                                        <div className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-lg">
-                                            <ThumbsUp className={`w-4 h-4 ${sub.has_voted ? 'text-accent-blue fill-current' : 'text-gray-400'}`} />
-                                            <span className="font-bold text-sm">{sub.vote_count}</span>
-                                        </div>
-                                    </div>
-                                </div>
+                                <SubmissionCard key={sub.id} submission={sub} />
                             ))
                         ) : (
                             <div className="col-span-full py-12 text-center text-gray-400 italic bg-white rounded-2xl border-2 border-dashed border-gray-200">

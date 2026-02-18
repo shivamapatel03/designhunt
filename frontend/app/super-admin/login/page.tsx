@@ -1,43 +1,70 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { Shield, ArrowRight, Loader2, Lock } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Shield, ArrowRight, Loader2, Mail, Key } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/auth-provider";
 
 export default function SuperAdminLoginPage() {
-  const [code, setCode] = useState("");
+  const [step, setStep] = useState<"email" | "otp">("email");
+  const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
   const { login } = useAuth(); 
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/super-admin-access", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ code }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        if (data.user) login(data.user);
-        router.push("/super-admin");
-      } else {
-        setError(data.message || "Access Denied");
-      }
+        // Use Step 1 but validation inside ensures it's Super Admin or Admin
+        const res = await fetch("http://localhost:5000/api/auth/admin-login-step1", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email }), // No password needed for Step 1 if Super Admin
+        });
+        const data = await res.json();
+        
+        if (res.ok) {
+            setStep("otp");
+        } else {
+            setError(data.message || "Access Denied");
+        }
     } catch (err) {
-      setError("Secure Connection Failed");
+        setError("Connection failed");
     } finally {
-      setLoading(false);
+        setLoading(false);
+    }
+  };
+
+  const handleOtpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+        const res = await fetch("http://localhost:5000/api/auth/admin-login-step2", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ email, otp }),
+        });
+        const data = await res.json();
+        
+        if (res.ok) {
+            login(data.user);
+            router.push("/super-admin");
+        } else {
+            setError(data.message || "Invalid OTP");
+        }
+    } catch (err) {
+        setError("Connection failed");
+    } finally {
+        setLoading(false);
     }
   };
 
@@ -57,33 +84,74 @@ export default function SuperAdminLoginPage() {
         </div>
 
         <motion.div 
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            className="bg-[#0A0A0A] border border-white/10 rounded-[2rem] p-2"
+            layout
+            className="bg-[#0A0A0A] border border-white/10 rounded-[2rem] p-2 overflow-hidden"
         >
-            <form onSubmit={handleLogin} className="relative">
-                <div className="relative flex items-center">
-                    <div className="absolute left-6 text-gray-500">
-                        <Lock className="w-5 h-5" />
-                    </div>
-                    <input 
-                        type="password" 
-                        value={code}
-                        onChange={(e) => setCode(e.target.value)}
-                        required
-                        className="w-full pl-16 pr-32 py-6 bg-transparent text-white font-mono text-xl tracking-[0.5em] focus:outline-none placeholder:text-gray-800 placeholder:tracking-normal placeholder:font-sans"
-                        placeholder="ENTER ACCESS CODE"
-                        maxLength={20}
-                    />
-                    <button 
-                        type="submit"
-                        disabled={loading || code.length < 3}
-                        className="absolute right-2 top-2 bottom-2 px-6 bg-white text-black rounded-[1.5rem] font-black uppercase text-sm hover:scale-95 active:scale-90 transition-all disabled:opacity-50 disabled:pointer-events-none flex items-center gap-2"
+            <AnimatePresence mode="wait">
+                {step === "email" ? (
+                    <motion.form 
+                        key="email"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20 }}
+                        onSubmit={handleEmailSubmit} 
+                        className="relative"
                     >
-                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
-                    </button>
-                </div>
-            </form>
+                         <div className="relative flex items-center">
+                            <div className="absolute left-6 text-gray-500">
+                                <Mail className="w-5 h-5" />
+                            </div>
+                            <input 
+                                type="email" 
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                                className="w-full pl-16 pr-32 py-6 bg-transparent text-white font-bold text-lg focus:outline-none placeholder:text-gray-800"
+                                placeholder="SUPER ADMIN EMAIL"
+                            />
+                            <button 
+                                type="submit"
+                                disabled={loading || !email}
+                                className="absolute right-2 top-2 bottom-2 px-6 bg-white text-black rounded-[1.5rem] font-black uppercase text-sm hover:scale-95 active:scale-90 transition-all disabled:opacity-50 flex items-center gap-2"
+                            >
+                                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
+                            </button>
+                        </div>
+                    </motion.form>
+                ) : (
+                    <motion.form 
+                        key="otp"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20 }}
+                        onSubmit={handleOtpSubmit} 
+                        className="relative"
+                    >
+                        <div className="relative flex items-center">
+                            <div className="absolute left-6 text-gray-500">
+                                <Key className="w-5 h-5" />
+                            </div>
+                            <input 
+                                type="text" 
+                                value={otp}
+                                onChange={(e) => setOtp(e.target.value)}
+                                required
+                                className="w-full pl-16 pr-32 py-6 bg-transparent text-white font-mono text-xl tracking-[0.5em] focus:outline-none placeholder:text-gray-800 placeholder:tracking-normal placeholder:font-sans"
+                                placeholder="ENTER OTP"
+                                maxLength={6}
+                                autoFocus
+                            />
+                            <button 
+                                type="submit"
+                                disabled={loading || otp.length < 6}
+                                className="absolute right-2 top-2 bottom-2 px-6 bg-white text-black rounded-[1.5rem] font-black uppercase text-sm hover:scale-95 active:scale-90 transition-all disabled:opacity-50 flex items-center gap-2"
+                            >
+                                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
+                            </button>
+                        </div>
+                    </motion.form>
+                )}
+            </AnimatePresence>
         </motion.div>
 
         {error && (

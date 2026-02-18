@@ -217,6 +217,28 @@ db.exec(`
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
+  CREATE TABLE IF NOT EXISTS audit_logs (
+    id TEXT PRIMARY KEY,
+    admin_id TEXT,
+    action TEXT NOT NULL,
+    target_id TEXT,
+    details TEXT, -- JSON string
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (admin_id) REFERENCES users(id)
+  );
+
+  CREATE TABLE IF NOT EXISTS transactions (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    amount REAL NOT NULL,
+    currency TEXT DEFAULT 'USD',
+    status TEXT DEFAULT 'completed', -- completed, pending, failed
+    type TEXT DEFAULT 'subscription', -- subscription, one_time, refund
+    description TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+  );
+
   -- Insert default Access Code if not exists
   INSERT OR IGNORE INTO system_settings (key, value) VALUES ('SUPER_ADMIN_CODE', 'DESIGNHUNT12');
 `);

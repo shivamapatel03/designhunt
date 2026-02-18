@@ -1,13 +1,10 @@
-const Database = require("better-sqlite3");
-const path = require("path");
-const crypto = require("crypto");
-const bcrypt = require("bcryptjs");
+import Database from "better-sqlite3";
+import path from "path";
+import crypto from "crypto";
+import bcrypt from "bcryptjs";
 
-// Force absolute path to avoid ambiguity
-const dbPath = path.join(
-  "c:\\Users\\User\\Downloads\\new look\\backend",
-  "designhunt_v2.db",
-);
+// Use process.cwd() for cleaner path resolution
+const dbPath = path.join(process.cwd(), "designhunt_v2.db");
 console.log("Connecting to:", dbPath);
 const db = new Database(dbPath);
 
@@ -21,7 +18,8 @@ async function createAdmin() {
     // Check if exists
     const existing = db
       .prepare("SELECT * FROM users WHERE email = ?")
-      .get(email);
+      .get(email) as any;
+
     if (existing) {
       console.log("Admin already exists. Updating password...");
       db.prepare(

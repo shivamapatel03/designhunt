@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { XPTracker } from "@/components/profile/XPTracker";
 import { Celebrate } from "@/components/ui/Celebrate";
 import { DashboardToggle } from "@/components/layout/DashboardToggle";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/components/providers/auth-provider";
+import { useRouter } from "next/navigation";
 import { DailyLawCard } from "@/components/theory/DailyLawCard";
 import { 
   Trophy, Zap, Star, Share2, Download, 
@@ -16,7 +18,7 @@ import {
   Rocket, PlusCircle
 } from "lucide-react";
 
-export default function ProfilePage() {
+function ProfileContent() {
   const searchParams = useSearchParams();
   const showCelebrate = searchParams.get('celebrate') === 'true';
   const [data, setData] = useState<any>(null);
@@ -32,25 +34,34 @@ export default function ProfilePage() {
     fetchProfile();
   }, []);
 
-  const fetchProfile = () => {
-    fetch("/api/profile")
-      .then(res => res.json())
-      .then(profile => {
-        setData(profile);
-        if (profile.user) {
-          setEditForm({
-            name: profile.user.name || "",
-            username: profile.user.handle?.replace("@", "") || "",
-            bio: profile.user.bio || ""
-          });
-        }
-      });
+  const fetchProfile = async () => {
+    try {
+      const res = await fetch("/api/profile");
+      if (!res.ok) {
+        throw new Error("Failed to fetch profile");
+      }
+      const profile = await res.json();
+      setData(profile);
+      if (profile.user) {
+        setEditForm({
+          name: profile.user.name || "",
+          username: profile.user.handle?.replace("@", "") || "",
+          bio: profile.user.bio || ""
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      // If error, redirect to login
+      if (typeof window !== 'undefined') window.location.href = '/login';
+    }
   };
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     window.location.href = "/login";
   };
+
+
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,7 +90,7 @@ export default function ProfilePage() {
     return null;
   }
 
-  const tabs = [
+  const tabs: { id: string, label: string, icon: any }[] = [
     { id: "overview", label: "Overview", icon: Layout },
     { id: "settings", label: "Settings", icon: SettingsIcon },
   ];
@@ -88,26 +99,21 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-[#f8f7f4] pt-32 pb-24">
       {showCelebrate && <Celebrate />}
       <div className="container mx-auto max-w-5xl px-6">
-
         {/* Header Section */}
         <div className="flex flex-col md:flex-row gap-8 items-center md:items-start mb-12 text-center md:text-left">
            <div className="relative">
               <img src={data.user.avatar} className={cn("w-32 h-32 rounded-full border-4 border-black shadow-[4px_4px_0px_0px_#000] object-cover bg-white")} alt="Profile Avatar" />
-              {/* <div className="absolute -bottom-2 -right-2 bg-accent-yellow border-2 border-black px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider shadow-sm">
-                  Lvl {data.user.level}
-              </div> */}
            </div>
 
            <div className="flex-1 space-y-4 w-full">
                    <div className="flex flex-col md:flex-row justify-between items-start gap-4">
                       <div>
-                          <h1 className="text-4xl font-black">{data.user.name}</h1>
+                          <h1 className="text-4xl font-black flex items-center gap-3">
+                            {data.user.name}
+                          </h1>
                           <p className="text-gray-500 font-medium">{data.user.handle} • {data.user.bio}</p>
                       </div>
                       <div className="flex gap-2">
-                          {/* {(data.user.role === 'TUTOR' || data.user.role === 'ADMIN' || data.user.role === 'SUPER_ADMIN') && (
-                            <DashboardToggle />
-                          )} */}
                           <button
                             onClick={handleLogout}
                             className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-black rounded-xl font-bold text-sm hover:bg-black hover:text-white transition-all shadow-[4px_4px_0px_0px_#000] active:translate-y-[2px] active:shadow-none"
@@ -116,8 +122,6 @@ export default function ProfilePage() {
                           </button>
                       </div>
                    </div>
-
-               {/* <XPTracker xp={data.user.xp} nextLevelXp={data.user.nextLevelXp} level={data.user.level} /> */}
             </div>
         </div>
 
@@ -142,11 +146,14 @@ export default function ProfilePage() {
 
         {/* Tab Content */}
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+
             {activeTab === "overview" && (
                 <div className="space-y-8">
                      <DailyLawCard className="mb-0" />
                 </div>
             )}
+
+
 
             {activeTab === "settings" && (
                 <div className="bg-white border-2 border-black rounded-[32px] p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
@@ -194,15 +201,15 @@ export default function ProfilePage() {
                         </button>
                     </form>
 
-                    {/* {data.user.role === 'USER' && (
+                    {data.user.role === 'USER' && (
                         <div className="mt-12 pt-12 border-t-2 border-dashed border-gray-100">
                              <h4 className="text-xl font-black mb-4 flex items-center gap-2">
                                 <Rocket className="w-6 h-6 text-accent-blue" /> Share your knowledge
                              </h4>
                              <p className="text-gray-500 font-medium mb-6">Apply to become a verified tutor on Design-Hunt and start creating your own paths.</p>
-                             <TutorRequestForm userEmail={data.user.email} initialStatus={data.user.tutor_request_status} />
+                             <BecomeTutorButton />
                         </div>
-                    )} */}
+                    )}
 
                     {/* {data.user.role === 'TUTOR' && (
                         <div className="mt-12 pt-12 border-t-2 border-dashed border-gray-100">
@@ -219,6 +226,14 @@ export default function ProfilePage() {
       </div>
     </div>
   );
+}
+
+export default function ProfilePage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><div className="animate-spin w-8 h-8 border-4 border-black border-t-transparent rounded-full"/></div>}>
+            <ProfileContent />
+        </Suspense>
+    )
 }
 
 function CourseCreationForm() {
@@ -415,6 +430,41 @@ function TutorRequestForm({ userEmail, initialStatus }: { userEmail: string, ini
             {status === 'error' && <p className="text-red-500 text-xs font-bold text-center mt-2">Failed to submit. You might already have a pending request.</p>}
         </form>
     )
+}
+
+
+function BecomeTutorButton() {
+    const [enableMarketplace, setEnableMarketplace] = useState(false);
+    const router = useRouter();
+    const { user } = useAuth() as any; // Cast to access tutor_request_status if needed
+
+    useEffect(() => {
+        fetch("http://localhost:5000/api/settings")
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.ENABLE_MARKETPLACE) {
+                    setEnableMarketplace(data.ENABLE_MARKETPLACE);
+                }
+            })
+            .catch(err => console.error("Failed to fetch settings:", err));
+    }, []);
+
+    const handleClick = () => {
+        if (!enableMarketplace) {
+            alert("This feature is presently under development.");
+        } else {
+            router.push("/become-tutor");
+        }
+    };
+
+    return (
+        <button 
+            onClick={handleClick}
+            className="flex items-center gap-2 px-8 py-4 bg-black text-white border-2 border-black rounded-2xl font-black text-lg hover:scale-[1.02] transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] active:translate-y-[2px] active:shadow-none"
+        >
+            <Rocket className="w-5 h-5" /> Become a Tutor
+        </button>
+    );
 }
 
 function StatCard({ label, value, icon: Icon, color }: any) {

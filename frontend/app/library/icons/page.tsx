@@ -2,7 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ChevronRight, ExternalLink, Check, Copy, Box, Layers, Code, Command } from "lucide-react";
+import { ChevronRight, ExternalLink, Check, Copy, Box, Layers, Code, Command, Flag, ShieldCheck, CircleDashed, Settings, Grid, Hash } from "lucide-react";
+// ... (imports remain)
+
+
 import { CodeBlock } from "@/components/ui/CodeBlock";
 import { cn } from "@/lib/utils";
 
@@ -90,6 +93,141 @@ const LIBRARIES: IconLibrary[] = [
       vue: {install: "N/A", usage: "N/A"},
       angular: {install: "N/A", usage: "N/A"},
       html: {install: "N/A", usage: "N/A"}
+    }
+  },
+  {
+    id: "fontawesome",
+    name: "Font Awesome",
+    description: "The internet's icon library and toolkit, used by millions of designers, developers, and content creators.",
+    website: "https://fontawesome.com",
+    icon: <div className="font-black text-lg">FA</div>,
+    features: ["Standard for web", "6,000+ icons", "Solid, Regular, Brands", "SVG & Webfont"],
+    frameworks: {
+      react: {
+        install: "npm install @fortawesome/react-fontawesome",
+        usage: `import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'\nimport { faCoffee } from '@fortawesome/free-solid-svg-icons'\n\nconst element = <FontAwesomeIcon icon={faCoffee} />`
+      },
+      vue: {
+        install: "npm install @fortawesome/vue-fontawesome",
+        usage: `<font-awesome-icon icon="coffee" />`
+      },
+      angular: {
+        install: "npm install @fortawesome/angular-fontawesome",
+        usage: `<fa-icon [icon]="faCoffee"></fa-icon>`
+      },
+      html: {
+        install: '<script src="https://kit.fontawesome.com/YOUR_KIT_CODE.js"></script>',
+        usage: `<i class="fas fa-coffee"></i>`
+      }
+    }
+  },
+  {
+    id: "heroicons",
+    name: "Heroicons",
+    description: "Beautiful hand-crafted SVG icons, by the makers of Tailwind CSS.",
+    website: "https://heroicons.com",
+    icon: <div className="font-bold text-lg">Hi</div>,
+    features: ["Made for Tailwind", "Outline & Solid", "MIT License", "Simple SVG"],
+    frameworks: {
+      react: {
+        install: "npm install @heroicons/react",
+        usage: `import { BeakerIcon } from '@heroicons/react/24/solid'\n\nfunction MyComponent() {\n  return (\n    <div>\n      <BeakerIcon className="h-6 w-6 text-blue-500" />\n    </div>\n  )\n}`
+      },
+      vue: {
+        install: "npm install @heroicons/vue",
+        usage: `<script setup>\nimport { BeakerIcon } from '@heroicons/vue/24/solid'\n</script>\n<template>\n  <BeakerIcon class="h-6 w-6 text-blue-500" />\n</template>`
+      },
+      angular: {install: "N/A", usage: "N/A"}, // No official
+      html: {
+        install: "// Copy SVG from website",
+        usage: `<svg>...</svg>`
+      }
+    }
+  },
+  {
+    id: "phosphor",
+    name: "Phosphor Icons",
+    description: "A flexible icon family for interfaces, diagrams, presentations — whatever, really.",
+    website: "https://phosphoricons.com",
+    icon: <div className="font-bold text-lg">Ph</div>,
+    features: ["6 Weights", "Consistent Design", "Duo-tone support", "Clean aesthetic"],
+    frameworks: {
+      react: {
+        install: "npm install @phosphor-icons/react",
+        usage: `import { Heart } from "@phosphor-icons/react";\n\n<Heart size={32} weight="fill" />`
+      },
+      vue: {
+        install: "npm install @phosphor-icons/vue",
+        usage: `<script setup>\nimport { PhHeart } from "@phosphor-icons/vue";\n</script>\n<template>\n  <PhHeart :size="32" weight="fill" />\n</template>`
+      },
+      angular: {install: "N/A", usage: "N/A"},
+      html: {
+        install: '<script src="https://unpkg.com/@phosphor-icons/web"></script>',
+        usage: `<i class="ph-fill ph-heart"></i>`
+      }
+    }
+  },
+  {
+    id: "material",
+    name: "Material Symbols",
+    description: "The latest icons from Google. Consolidated 2,500+ glyphs in a single font file with a wide range of design variants.",
+    website: "https://fonts.google.com/icons",
+    icon: <div className="font-bold text-lg">Md</div>,
+    features: ["Variable Font", "Google Standard", "Fill/Weight/Grade", "Optical Sizing"],
+    frameworks: {
+      react: {
+        install: "npm install @mui/icons-material",
+        usage: `import DeleteIcon from '@mui/icons-material/Delete';\n\n<DeleteIcon />`
+      },
+      vue: {install: "N/A", usage: "Use HTML/Webfomnt"},
+      angular: {
+        install: "npm install @angular/material",
+        usage: `<mat-icon>delete</mat-icon>`
+      },
+      html: {
+        install: '<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">',
+        usage: `<span class="material-icons">face</span>`
+      }
+    }
+  },
+  {
+    id: "tabler",
+    name: "Tabler Icons",
+    description: "Over 5200 pixel-perfect icons for web design. Free and open source.",
+    website: "https://tabler.io/icons",
+    icon: <div className="font-bold text-lg">Tb</div>,
+    features: ["5200+ Icons", "Pixel Perfect", "Stroke adjustable", "MIT License"],
+    frameworks: {
+      react: {
+        install: "npm install @tabler/icons-react",
+        usage: `import { IconHeart } from '@tabler/icons-react';\n\n<IconHeart size={24} color="red" />`
+      },
+      vue: {
+        install: "npm install @tabler/icons-vue",
+        usage: `<script setup>\nimport { IconHeart } from '@tabler/icons-vue';\n</script>`
+      },
+      angular: {install: "N/A", usage: "N/A"},
+      html: {
+        install: '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">',
+        usage: `<i class="ti ti-brand-github"></i>`
+      }
+    }
+  },
+  {
+    id: "simpleicons",
+    name: "Simple Icons",
+    description: "3000+ Free SVG icons for popular brands.",
+    website: "https://simpleicons.org",
+    icon: <div className="font-bold text-lg">Si</div>,
+    features: ["Brand Logos", "SVG", "Monochrome", "CDN available"],
+    frameworks: {
+      react: {install: "N/A", usage: "Download SVG"},
+      vue: {install: "N/A", usage: "Download SVG"},
+      angular: {install: "N/A", usage: "Download SVG"},
+      html: {
+        install: "CDN / SVG",
+        usage: `<img src="https://cdn.simpleicons.org/nvidia" />`
+      }
     }
   }
 ];
@@ -243,6 +381,41 @@ export default function IconsPage() {
                                             {activeLibId === 'react-icons' && (
                                                 <div className="flex gap-4">
                                                      <Command className="w-8 h-8" />
+                                                </div>
+                                            )}
+                                            {activeLibId === 'fontawesome' && (
+                                                <div className="flex gap-4 text-blue-600">
+                                                     <Flag className="w-8 h-8" />
+                                                     <Flag className="w-8 h-8 opacity-50" />
+                                                </div>
+                                            )}
+                                            {activeLibId === 'heroicons' && (
+                                                <div className="flex gap-4 text-purple-600">
+                                                     <ShieldCheck className="w-8 h-8" />
+                                                     <ShieldCheck className="w-8 h-8" strokeWidth={1} />
+                                                </div>
+                                            )}
+                                            {activeLibId === 'phosphor' && (
+                                                <div className="flex gap-4 text-teal-600">
+                                                     <CircleDashed className="w-8 h-8" />
+                                                     <CircleDashed className="w-8 h-8" strokeWidth={3} />
+                                                </div>
+                                            )}
+                                            {activeLibId === 'material' && (
+                                                <div className="flex gap-4 text-gray-700">
+                                                     <Settings className="w-8 h-8" />
+                                                     <Settings className="w-8 h-8" fill="currentColor" />
+                                                </div>
+                                            )}
+                                            {activeLibId === 'tabler' && (
+                                                <div className="flex gap-4 text-pink-600">
+                                                     <Grid className="w-8 h-8" />
+                                                </div>
+                                            )}
+                                            {activeLibId === 'simpleicons' && (
+                                                <div className="flex gap-4 text-black">
+                                                     <Hash className="w-8 h-8" />
+                                                     <Hash className="w-8 h-8 opacity-50" />
                                                 </div>
                                             )}
                                         </div>
