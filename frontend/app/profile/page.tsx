@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { XPTracker } from "@/components/profile/XPTracker";
 import { Celebrate } from "@/components/ui/Celebrate";
 import { DashboardToggle } from "@/components/layout/DashboardToggle";
@@ -15,8 +15,10 @@ import {
   Linkedin, Award, Clock, CheckCircle2, 
   Flame, Layout, Type, LogOut, Settings as SettingsIcon,
   BookOpen, History as HistoryIcon, User as UserIcon, Save,
-  Rocket, PlusCircle
+  Rocket, PlusCircle, Heart, Loader2
 } from "lucide-react";
+import { IdeaCard } from "@/components/community/IdeaCard";
+import { ShareIdeaModal } from "@/components/community/ShareIdeaModal";
 
 function ProfileContent() {
   const searchParams = useSearchParams();
@@ -24,6 +26,9 @@ function ProfileContent() {
   const [data, setData] = useState<any>(null);
   const [activeTab, setActiveTab] = useState("overview");
   const [isUpdating, setIsUpdating] = useState(false);
+  const [userIdeas, setUserIdeas] = useState<any[]>([]);
+  const [isLoadingIdeas, setIsLoadingIdeas] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [editForm, setEditForm] = useState({
     name: "",
     username: "",
@@ -33,6 +38,12 @@ function ProfileContent() {
   useEffect(() => {
     fetchProfile();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === "shared") {
+        fetchUserIdeas();
+    }
+  }, [activeTab, data?.user?.id]);
 
   const fetchProfile = async () => {
     try {
@@ -51,17 +62,35 @@ function ProfileContent() {
       }
     } catch (err) {
       console.error(err);
-      // If error, redirect to login
       if (typeof window !== 'undefined') window.location.href = '/login';
     }
+  };
+
+  const fetchUserIdeas = async () => {
+    if (!data?.user?.id) return;
+    setIsLoadingIdeas(true);
+    try {
+        const res = await fetch("/api/ideas");
+        if (res.ok) {
+            const allIdeas = await res.json();
+            setUserIdeas(allIdeas.filter((i: any) => i.user_id === data.user.id));
+        }
+    } catch (error) {
+        console.error("Error fetching user ideas:", error);
+    } finally {
+        setIsLoadingIdeas(false);
+    }
+  };
+
+  const handleShareSuccess = () => {
+    setIsShareModalOpen(false);
+    fetchUserIdeas();
   };
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     window.location.href = "/login";
   };
-
-
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,6 +121,8 @@ function ProfileContent() {
 
   const tabs: { id: string, label: string, icon: any }[] = [
     { id: "overview", label: "Overview", icon: Layout },
+    { id: "shared", label: "Shared Ideas", icon: Share2 },
+    { id: "liked", label: "Liked Ideas", icon: Heart },
     { id: "settings", label: "Settings", icon: SettingsIcon },
   ];
 
@@ -146,14 +177,51 @@ function ProfileContent() {
 
         {/* Tab Content */}
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-
             {activeTab === "overview" && (
                 <div className="space-y-8">
                      <DailyLawCard className="mb-0" />
                 </div>
             )}
 
+            {activeTab === "shared" && (
+                <div className="space-y-6">
+                    <div className="flex justify-between items-center mb-6">
+                        <h3 className="text-2xl font-black uppercase tracking-tighter italic">Your Shared Ideas</h3>
+                        <button 
+                            onClick={() => setIsShareModalOpen(true)}
+                            className="flex items-center gap-2 px-6 py-3 bg-black text-white rounded-xl font-bold text-sm hover:scale-105 transition-transform shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]"
+                        >
+                            <PlusCircle className="w-4 h-4" /> Share New Idea
+                        </button>
+                    </div>
+                    
+                    {isLoadingIdeas ? (
+                        <div className="py-20 text-center">
+                            <Loader2 className="w-8 h-8 animate-spin mx-auto text-gray-300" />
+                        </div>
+                    ) : userIdeas.length > 0 ? (
+                        <div className="grid gap-6">
+                            {userIdeas.map((idea) => (
+                                <IdeaCard small key={idea.id} idea={idea} />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-20 bg-white border-2 border-black border-dashed rounded-[32px]">
+                            <Share2 className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                            <h3 className="text-xl font-black uppercase">No ideas shared yet</h3>
+                            <p className="text-gray-500 font-bold text-xs mt-2 uppercase tracking-widest">Your design brainstorms will appear here.</p>
+                        </div>
+                    )}
+                </div>
+            )}
 
+            {activeTab === "liked" && (
+                <div className="text-center py-20 bg-white border-2 border-black border-dashed rounded-[32px]">
+                    <Heart className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                    <h3 className="text-xl font-black uppercase">Your Liked Ideas</h3>
+                    <p className="text-gray-500 font-bold text-xs mt-2 uppercase tracking-widest">Ideas you like will appear here.</p>
+                </div>
+            )}
 
             {activeTab === "settings" && (
                 <div className="bg-white border-2 border-black rounded-[32px] p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
@@ -210,19 +278,20 @@ function ProfileContent() {
                              <BecomeTutorButton />
                         </div>
                     )}
-
-                    {/* {data.user.role === 'TUTOR' && (
-                        <div className="mt-12 pt-12 border-t-2 border-dashed border-gray-100">
-                             <h4 className="text-xl font-black mb-4 flex items-center gap-2">
-                                <PlusCircle className="w-6 h-6 text-accent-blue" /> Share your knowledge
-                             </h4>
-                             <p className="text-gray-500 font-medium mb-6">Create a new course. It will be live once approved by a Super Admin.</p>
-                             <CourseCreationForm />
-                        </div>
-                    )} */}
                 </div>
             )}
         </div>
+
+        {/* Post Modal */}
+        <AnimatePresence>
+            {isShareModalOpen && (
+                <ShareIdeaModal 
+                    user={data.user} 
+                    onClose={() => setIsShareModalOpen(false)} 
+                    onSuccess={handleShareSuccess} 
+                />
+            )}
+        </AnimatePresence>
       </div>
     </div>
   );
@@ -236,207 +305,9 @@ export default function ProfilePage() {
     )
 }
 
-function CourseCreationForm() {
-    const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-    const [formData, setFormData] = useState({
-        title: '',
-        description: '',
-        category: 'UI Design',
-        difficulty: 'Beginner',
-        duration: '',
-        thumbnail: '',
-        video_url: ''
-    });
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setStatus('loading');
-        try {
-            const res = await fetch('/api/courses/create', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
-            if (res.ok) {
-                setStatus('success');
-                setFormData({ title: '', description: '', category: 'UI Design', difficulty: 'Beginner', duration: '', thumbnail: '', video_url: '' });
-            } else setStatus('error');
-        } catch (err) {
-            setStatus('error');
-        }
-    };
-
-    if (status === 'success') return (
-        <div className="bg-green-50 border-2 border-green-200 p-6 rounded-2xl text-center">
-            <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-4" />
-            <h5 className="font-black text-green-700">Course Submitted!</h5>
-            <p className="text-green-600 text-sm font-medium">Your course is now in the review queue.</p>
-            <button onClick={() => setStatus('idle')} className="mt-4 text-xs font-black uppercase underline">Submit another</button>
-        </div>
-    );
-
-    return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
-                <input 
-                    placeholder="Course Title"
-                    required
-                    value={formData.title}
-                    onChange={e => setFormData({...formData, title: e.target.value})}
-                    className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-xl font-bold focus:border-black outline-none"
-                />
-                <div className="grid grid-cols-2 gap-2">
-                    <select 
-                        value={formData.category}
-                        onChange={e => setFormData({...formData, category: e.target.value})}
-                        className="p-4 bg-gray-50 border-2 border-gray-100 rounded-xl font-bold focus:border-black outline-none"
-                    >
-                        {["UI Design", "UX Research", "Motion", "Frontend"].map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                    <select 
-                        value={formData.difficulty}
-                        onChange={e => setFormData({...formData, difficulty: e.target.value})}
-                        className="p-4 bg-gray-50 border-2 border-gray-100 rounded-xl font-bold focus:border-black outline-none"
-                    >
-                        {["Beginner", "Intermediate", "Advanced"].map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                </div>
-            </div>
-            <textarea 
-                placeholder="Course Description"
-                required
-                value={formData.description}
-                onChange={e => setFormData({...formData, description: e.target.value})}
-                className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-xl font-medium focus:border-black outline-none h-24"
-            />
-            <div className="grid md:grid-cols-3 gap-4">
-                <input 
-                    placeholder="Duration (e.g., 2h 30m)"
-                    required
-                    value={formData.duration}
-                    onChange={e => setFormData({...formData, duration: e.target.value})}
-                    className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-xl font-bold focus:border-black outline-none"
-                />
-                <input 
-                    placeholder="Thumbnail URL"
-                    required
-                    value={formData.thumbnail}
-                    onChange={e => setFormData({...formData, thumbnail: e.target.value})}
-                    className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-xl font-bold focus:border-black outline-none"
-                />
-                <input 
-                    placeholder="Video/YouTube URL"
-                    required
-                    value={formData.video_url}
-                    onChange={e => setFormData({...formData, video_url: e.target.value})}
-                    className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-xl font-bold focus:border-black outline-none"
-                />
-            </div>
-            <button 
-                type="submit"
-                disabled={status === 'loading'}
-                className="w-full py-4 bg-accent-blue text-white font-black rounded-xl hover:brightness-110 disabled:opacity-50 transition-all border-2 border-black shadow-[4px_4px_0px_0px_black]"
-            >
-                {status === 'loading' ? 'Publishing...' : 'Submit Course for Review'}
-            </button>
-            {status === 'error' && <p className="text-red-500 text-xs font-bold text-center">Failed to submit course. Check all fields.</p>}
-        </form>
-    )
-}
-
-function TutorRequestForm({ userEmail, initialStatus }: { userEmail: string, initialStatus: string | null }) {
-    const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error' | 'PENDING'>(
-        initialStatus === 'PENDING' ? 'PENDING' : 'idle'
-    );
-    const [formData, setFormData] = useState({
-        name: '',
-        role: '',
-        portfolio: '',
-        expertise: ''
-    });
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setStatus('loading');
-        try {
-            const res = await fetch('/api/tutor/request', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...formData, email: userEmail })
-            });
-            if (res.ok) setStatus('success');
-            else setStatus('error');
-        } catch (err) {
-            setStatus('error');
-        }
-    };
-
-    if (status === 'success' || status === 'PENDING') return (
-        <div className="bg-accent-yellow/10 border-4 border-black border-dashed p-8 rounded-[32px] text-center">
-            <div className="w-20 h-20 bg-accent-yellow rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-black">
-                <Rocket className="w-10 h-10 text-black" />
-            </div>
-            <h5 className="text-2xl font-black uppercase tracking-tighter mb-2">Application Submitted Successfully!</h5>
-            <p className="text-gray-600 font-bold uppercase text-xs tracking-widest max-w-sm mx-auto">
-                Design Hunt is reviewing your expertise. We've sent a confirmation to <span className="underline">{userEmail}</span>.
-            </p>
-            <div className="mt-8 flex items-center justify-center gap-4">
-                <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
-                    <span className="text-[10px] font-black uppercase">Status: Under Review</span>
-                </div>
-            </div>
-        </div>
-    );
-
-    return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
-                <input 
-                    placeholder="Full Name"
-                    required
-                    value={formData.name}
-                    onChange={e => setFormData({...formData, name: e.target.value})}
-                    className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-xl font-bold focus:border-black outline-none"
-                />
-                <input 
-                    placeholder="Current Job/Role"
-                    required
-                    value={formData.role}
-                    onChange={e => setFormData({...formData, role: e.target.value})}
-                    className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-xl font-bold focus:border-black outline-none"
-                />
-            </div>
-            <input 
-                placeholder="Portfolio Link (e.g., Behance, Dribbble)"
-                value={formData.portfolio}
-                onChange={e => setFormData({...formData, portfolio: e.target.value})}
-                className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-xl font-bold focus:border-black outline-none"
-            />
-            <textarea 
-                placeholder="Tell us about your area of expertise..."
-                required
-                value={formData.expertise}
-                onChange={e => setFormData({...formData, expertise: e.target.value})}
-                className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-xl font-medium focus:border-black outline-none h-24"
-            />
-            <button 
-                type="submit"
-                disabled={status === 'loading'}
-                className="w-full py-4 bg-black text-white font-black rounded-xl hover:bg-gray-800 disabled:opacity-50 transition-all shadow-[4px_4px_0px_0px_black] active:translate-y-[2px] active:shadow-none"
-            >
-                {status === 'loading' ? 'Submitting...' : 'Submit Application'}
-            </button>
-            {status === 'error' && <p className="text-red-500 text-xs font-bold text-center mt-2">Failed to submit. You might already have a pending request.</p>}
-        </form>
-    )
-}
-
-
 function BecomeTutorButton() {
     const [enableMarketplace, setEnableMarketplace] = useState(false);
     const router = useRouter();
-    const { user } = useAuth() as any; // Cast to access tutor_request_status if needed
 
     useEffect(() => {
         fetch("http://localhost:5000/api/settings")
@@ -465,25 +336,4 @@ function BecomeTutorButton() {
             <Rocket className="w-5 h-5" /> Become a Tutor
         </button>
     );
-}
-
-function StatCard({ label, value, icon: Icon, color }: any) {
-    return (
-        <div className={`p-4 rounded-2xl border-2 border-transparent hover:border-black/5 transition-all bg-white shadow-sm`}>
-            <div className={`w-10 h-10 rounded-xl ${color} flex items-center justify-center mb-3`}>
-                <Icon className="w-5 h-5" />
-            </div>
-            <div className="text-2xl font-black">{value}</div>
-            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{label}</div>
-        </div>
-    )
-}
-
-function Badge({ name, icon: Icon, color }: any) {
-    return (
-        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg font-bold text-xs ${color} shadow-sm border-2 border-black/10`}>
-            <Icon className="w-3.5 h-3.5" />
-            {name}
-        </div>
-    )
 }

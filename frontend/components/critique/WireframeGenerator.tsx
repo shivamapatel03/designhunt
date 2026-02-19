@@ -1,185 +1,237 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { Sparkles, Copy, Layout, Terminal } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Sparkles, Copy, Layout, Terminal, Check, Info } from "lucide-react";
+import { toast } from "sonner";
+
+interface UIElement {
+  type: string;
+  class?: string;
+  content?: string;
+  placeholder?: string;
+  children?: UIElement[];
+}
 
 export function WireframeGenerator() {
   const [prompt, setPrompt] = useState("");
-  const [layout, setLayout] = useState<any>(null);
+  const [style, setStyle] = useState("modern");
+  const [layout, setLayout] = useState<UIElement | null>(null);
   const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const styles = [
+    { id: "modern", name: "Modern", description: "Clean, rounded, soft shadows" },
+    { id: "brutalist", name: "Brutalist", description: "Bold borders, high contrast" },
+    { id: "minimal", name: "Minimalist", description: "Extreme simplicity, gray tones" }
+  ];
 
   const generateWireframe = async () => {
     if (!prompt) return;
     setLoading(true);
     setLayout(null);
 
-    // Simulate think time
-    await new Promise(r => setTimeout(r, 1500));
+    try {
+      const res = await fetch("/api/wireframe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt, style })
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setLayout(data);
+    } catch (error: any) {
+      toast.error(error.message || "Something went wrong during generation");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const res = await fetch("/api/wireframe", {
-      method: "POST",
-      body: JSON.stringify({ prompt })
-    });
-    const data = await res.json();
-    setLayout(data);
-    setLoading(false);
+  const copyAsJSX = () => {
+    if (!layout) return;
+    
+    const generateJSX = (el: UIElement, indent = 0): string => {
+      const spaces = "  ".repeat(indent);
+      const tag = el.type === "input" ? "input" : "div";
+      const props = [];
+      if (el.class) props.push(`className="${el.class}"`);
+      if (el.placeholder) props.push(`placeholder="${el.placeholder}"`);
+      
+      const propsStr = props.length > 0 ? " " + props.join(" ") : "";
+      
+      if (el.type === "input") return `${spaces}<${tag}${propsStr} />`;
+      
+      const childrenStr = el.children?.map(c => generateJSX(c, indent + 1)).join("\n") || "";
+      const content = el.content ? `${spaces}  ${el.content}\n` : "";
+      
+      return `${spaces}<${tag}${propsStr}>\n${content}${childrenStr ? childrenStr + "\n" : ""}${spaces}</${tag}>`;
+    };
+
+    const jsx = `const GeneratedUI = () => {\n  return (\n${generateJSX(layout, 2)}\n  );\n};`;
+    navigator.clipboard.writeText(jsx);
+    setCopied(true);
+    toast.success("JSX Component copied to clipboard!");
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      {/* Input Section */}
-      <div className="bg-white border-2 border-black rounded-[32px] p-2 flex items-center shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-        <div className="p-4 bg-accent-yellow rounded-2xl border border-black">
-            <Sparkles className="w-6 h-6 text-black" />
-        </div>
-        <input 
-            type="text"
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Describe a layout (e.g. 'Login screen for a travel app')..."
-            className="flex-1 px-4 py-2 outline-none text-lg font-medium bg-transparent placeholder:text-gray-400"
-            onKeyDown={(e) => e.key === "Enter" && generateWireframe()}
-        />
-        <button 
-            onClick={generateWireframe}
-            disabled={loading || !prompt}
-            className="px-8 py-4 bg-black text-white font-black text-sm uppercase tracking-widest rounded-2xl hover:scale-105 transition-transform disabled:opacity-50 disabled:hover:scale-100"
-        >
-            {loading ? "Generating..." : "Spark It"}
-        </button>
+    <div className="max-w-5xl mx-auto space-y-12">
+      {/* Input & Styles Section */}
+      <div className="space-y-6">
+          <div className="flex flex-wrap justify-center gap-4">
+              {styles.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => setStyle(s.id)}
+                    className={`flex flex-col items-start p-4 rounded-2xl border-2 transition-all text-left w-48 ${
+                        style === s.id 
+                        ? 'border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]' 
+                        : 'border-transparent bg-gray-50 text-gray-500 hover:bg-gray-100'
+                    }`}
+                  >
+                      <span className="font-black uppercase text-xs tracking-widest mb-1">{s.name}</span>
+                      <span className="text-[10px] font-bold opacity-60 leading-tight">{s.description}</span>
+                  </button>
+              ))}
+          </div>
+
+          <div className="bg-white border-2 border-black rounded-[32px] p-2 flex items-center shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] max-w-3xl mx-auto">
+            <div className={`p-4 rounded-2xl border border-black transition-colors ${loading ? 'bg-accent-blue animate-pulse' : 'bg-accent-yellow'}`}>
+                <Sparkles className={`w-6 h-6 text-black ${loading ? 'animate-spin' : ''}`} />
+            </div>
+            <input 
+                type="text"
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="Describe a layout (e.g. 'Modern fitness dashboard mobile')..."
+                className="flex-1 px-4 py-2 outline-none text-lg font-medium bg-transparent placeholder:text-gray-400"
+                onKeyDown={(e) => e.key === "Enter" && generateWireframe()}
+            />
+            <button 
+                onClick={generateWireframe}
+                disabled={loading || !prompt}
+                className="px-8 py-4 bg-black text-white font-black text-sm uppercase tracking-widest rounded-2xl hover:scale-105 transition-transform disabled:opacity-50 disabled:hover:scale-100 flex items-center gap-2"
+            >
+                {loading ? "SPARKING..." : "SPARK"}
+            </button>
+          </div>
       </div>
 
       {/* Canvas Area */}
-      <div className="min-h-[500px] border-4 border-dashed border-gray-200 rounded-[40px] flex items-center justify-center relative overflow-hidden bg-[#f8f9fa]">
+      <div className="min-h-[650px] border-4 border-dashed border-gray-200 rounded-[40px] flex items-center justify-center relative overflow-hidden bg-white/50 backdrop-blur-sm">
           {!layout && !loading && (
-              <div className="text-center opacity-30">
-                  <Layout className="w-16 h-16 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold">Waiting for Spark...</h3>
+              <div className="text-center">
+                  <div className="relative mb-6">
+                    <div className="absolute inset-0 bg-accent-blue/10 blur-3xl rounded-full" />
+                    <Layout className="w-20 h-20 mx-auto text-gray-200 relative z-10" />
+                  </div>
+                  <h3 className="text-2xl font-black uppercase tracking-tighter opacity-20 italic">Visualizing your Spark...</h3>
+                  <div className="mt-4 flex gap-4 text-[10px] font-bold text-gray-300 uppercase tracking-widest">
+                      <span>Grid Engine Ready</span>
+                      <span>•</span>
+                      <span>Gemini 2.5 Active</span>
+                  </div>
               </div>
           )}
 
           {loading && (
-              <div className="text-center">
-                  <div className="animate-spin w-12 h-12 border-4 border-black border-t-transparent rounded-full mx-auto mb-4" />
-                  <div className="font-mono text-sm">Processing Layout Logic...</div>
+              <div className="text-center space-y-6">
+                  <div className="relative">
+                    <div className="w-16 h-16 border-4 border-black border-t-accent-blue rounded-full animate-spin mx-auto" />
+                    <Sparkles className="w-6 h-6 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black animate-pulse" />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="font-black uppercase text-xs tracking-[0.2em] animate-pulse">Processing Design Logic</div>
+                    <div className="text-[10px] font-bold text-gray-400 italic">Synthesizing layouts via Neural Sparks...</div>
+                  </div>
               </div>
           )}
 
           {layout && (
               <motion.div 
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="w-full h-full p-8 overflow-y-auto"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="w-full h-full p-8"
               >
-                  <div className="absolute top-4 right-4 z-10">
-                      <button className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-black rounded-xl font-bold text-xs hover:bg-gray-50 transition-colors shadow-sm">
-                          <Copy className="w-4 h-4" /> Copy JSX
+                  <div className="absolute top-6 right-6 z-20 flex gap-2">
+                       <div className="group relative">
+                          <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-black text-white text-[10px] font-bold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                              This AI-generated layout uses standard Tailwind CSS classes.
+                          </div>
+                          <button className="p-3 bg-white border-2 border-black rounded-xl hover:bg-gray-50 transition-colors shadow-sm">
+                              <Info className="w-4 h-4" />
+                          </button>
+                       </div>
+                      <button 
+                        onClick={copyAsJSX}
+                        className="flex items-center gap-2 px-6 py-3 bg-black text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg hover:scale-105 transition-transform"
+                      >
+                          {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+                          {copied ? "COPIED" : "COPY JSX"}
                       </button>
                   </div>
                   
-                  {/* Renderer - This acts as a 'compiler' for our mock JSON */}
-                  <div className="w-full max-w-2xl mx-auto bg-white shadow-xl rounded-xl min-h-[600px] overflow-hidden border border-gray-200 relative">
-                     {layout.type === 'login' && <LoginWireframe />}
-                     {layout.type === 'dashboard' && <DashboardWireframe />}
-                     {layout.type === 'landing' && <LandingWireframe />}
-                     {layout.type === 'profile' && <ProfileWireframe />}
-                     {layout.type === 'generic' && <div className="p-20 text-center text-gray-400 font-bold">Try "Login", "Dashboard", or "Landing"</div>}
+                  <div className="w-full max-w-3xl mx-auto bg-white shadow-2xl rounded-2xl min-h-[600px] overflow-auto border-2 border-gray-100 p-8 custom-scrollbar">
+                     <RecursiveRenderer element={layout} />
                   </div>
               </motion.div>
           )}
       </div>
 
-      <div className="flex justify-center gap-8 text-xs font-bold text-gray-400 uppercase tracking-widest">
-         <div className="flex items-center gap-2"><Layout className="w-4 h-4" /> Auto-Flexbox</div>
-         <div className="flex items-center gap-2"><Terminal className="w-4 h-4" /> Tailwind Ready</div>
+      <div className="flex justify-center gap-12 text-[10px] font-black text-gray-300 uppercase tracking-[0.3em]">
+         <div className="flex items-center gap-3">
+             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+             Tailwind Ready
+         </div>
+         <div className="flex items-center gap-3">
+             <div className="w-2 h-2 bg-accent-blue rounded-full" />
+             AI Auto-Flex
+         </div>
+         <div className="flex items-center gap-3">
+             <div className="w-2 h-2 bg-accent-yellow rounded-full" />
+             Component Export
+         </div>
       </div>
     </div>
   );
 }
 
-/* --- Internal Mock Renderers for the Wireframes --- */
+function RecursiveRenderer({ element }: { element: UIElement }) {
+    const { type, class: className, content, placeholder, children } = element;
+    
+    const commonProps = { className };
 
-function LoginWireframe() {
-    return (
-        <div className="flex flex-col items-center justify-center h-full p-8 space-y-6">
-            <div className="w-full max-w-sm p-8 border-2 border-dashed border-gray-300 rounded-2xl bg-gray-50 space-y-4">
-                <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto" />
-                <div className="h-8 w-3/4 bg-gray-200 rounded mx-auto" />
-                <div className="space-y-3 pt-4">
-                    <div className="h-12 w-full bg-white border-2 border-gray-200 rounded-xl" />
-                    <div className="h-12 w-full bg-white border-2 border-gray-200 rounded-xl" />
+    switch (type) {
+        case "text":
+            return <div {...commonProps}>{content}</div>;
+        case "button":
+            return <button {...commonProps}>{content}</button>;
+        case "input":
+            return <input {...commonProps} placeholder={placeholder} readOnly />;
+        case "avatar":
+            return <div {...commonProps} />;
+        case "icon":
+            return <div {...commonProps} />;
+        case "grid":
+        case "row":
+        case "box":
+        case "container":
+            return (
+                <div {...commonProps}>
+                    {content}
+                    {children?.map((child, i) => (
+                        <RecursiveRenderer key={i} element={child} />
+                    ))}
                 </div>
-                <div className="h-12 w-full bg-black rounded-xl" />
-            </div>
-        </div>
-    )
-}
-
-function DashboardWireframe() {
-     return (
-        <div className="flex h-full">
-            <div className="w-20 border-r-2 border-gray-100 p-4 space-y-4">
-                <div className="w-8 h-8 bg-black rounded-lg" />
-                <div className="w-8 h-8 bg-gray-200 rounded-lg" />
-                <div className="w-8 h-8 bg-gray-200 rounded-lg" />
-            </div>
-            <div className="flex-1 p-8 space-y-8">
-                <div className="flex justify-between">
-                    <div className="h-8 w-48 bg-gray-200 rounded-lg" />
-                    <div className="h-8 w-8 bg-gray-200 rounded-full" />
+            );
+        default:
+            return (
+                <div {...commonProps}>
+                    {content}
+                    {children?.map((child, i) => (
+                        <RecursiveRenderer key={i} element={child} />
+                    ))}
                 </div>
-                <div className="grid grid-cols-3 gap-4">
-                    <div className="h-32 bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl" />
-                    <div className="h-32 bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl" />
-                    <div className="h-32 bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl" />
-                </div>
-                 <div className="h-64 bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl" />
-            </div>
-        </div>
-     )
-}
-
-function LandingWireframe() {
-    return (
-        <div className="space-y-12">
-            <div className="flex justify-between p-6 border-b border-gray-100">
-                <div className="w-24 h-6 bg-gray-200 rounded" />
-                <div className="flex gap-4">
-                     <div className="w-16 h-6 bg-gray-100 rounded" />
-                     <div className="w-16 h-6 bg-gray-100 rounded" />
-                </div>
-            </div>
-            <div className="text-center px-12 space-y-6">
-                 <div className="h-16 w-3/4 bg-gray-200 rounded-xl mx-auto" />
-                 <div className="h-4 w-1/2 bg-gray-100 rounded mx-auto" />
-                 <div className="flex justify-center gap-4 pt-4">
-                     <div className="w-32 h-10 bg-black rounded-full" />
-                     <div className="w-32 h-10 border-2 border-black rounded-full" />
-                 </div>
-            </div>
-        </div>
-    )
-}
-
-function ProfileWireframe() {
-    return (
-        <div>
-            <div className="h-32 bg-gray-100 border-b border-gray-200 relative mb-16">
-                 <div className="absolute -bottom-12 left-8 w-24 h-24 bg-gray-300 border-4 border-white rounded-full" />
-            </div>
-            <div className="px-8 space-y-6">
-                <div className="space-y-2">
-                    <div className="h-8 w-48 bg-gray-200 rounded" />
-                    <div className="h-4 w-64 bg-gray-100 rounded" />
-                </div>
-                <div className="h-px w-full bg-gray-100" />
-                <div className="grid grid-cols-3 gap-4">
-                    <div className="aspect-square bg-gray-50 rounded-xl border border-gray-200" />
-                    <div className="aspect-square bg-gray-50 rounded-xl border border-gray-200" />
-                    <div className="aspect-square bg-gray-50 rounded-xl border border-gray-200" />
-                </div>
-            </div>
-        </div>
-    )
+            );
+    }
 }

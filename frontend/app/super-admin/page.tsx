@@ -29,8 +29,11 @@ import {
   RefreshCw,
   ShieldAlert,
   Copy,
-  Trophy
+  Trophy,
+  Lightbulb,
+  Bell
 } from "lucide-react";
+import { IdeasManager } from "@/components/super-admin/IdeasManager";
 
 import { 
   approveTutorRequest, 
@@ -47,7 +50,7 @@ import { cn } from "@/lib/utils";
 import { ChallengesManager } from "@/components/super-admin/ChallengesManager";
 
 export default function SuperAdminPage() {
-  const [activeTab, setActiveTab] = useState<'users' | 'stats' | 'audit' | 'settings' | 'financials' | 'challenges'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'stats' | 'audit' | 'settings' | 'financials' | 'challenges' | 'ideas'>('users');
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [settings, setSettings] = useState<Record<string, string>>({});
@@ -56,7 +59,8 @@ export default function SuperAdminPage() {
   const [stats, setStats] = useState({
       activeUsers: 0,
       totalTrainers: 0,
-      pendingVerifications: 0
+      pendingVerifications: 0,
+      ideaCount: 0
   });
 
   const handleBackup = async () => {
@@ -94,6 +98,11 @@ export default function SuperAdminPage() {
   const fetchInitialData = async () => {
     setIsLoading(true);
     try {
+        const ideaRes = await fetch("/api/admin/ideas");
+        const ideasData = await ideaRes.json();
+        const count = Array.isArray(ideasData) ? ideasData.length : 0;
+        setStats(prev => ({ ...prev, ideaCount: count }));
+
         if (activeTab === 'users') {
             const res = await fetch("/api/admin/users");
             const data = await res.json();
@@ -114,7 +123,7 @@ export default function SuperAdminPage() {
         } */
         
         const systemStats = await getSystemStats();
-        setStats(systemStats);
+        setStats({ ...systemStats, ideaCount: count });
     } catch (err) {
         console.error(err);
     } finally {
@@ -209,6 +218,7 @@ export default function SuperAdminPage() {
                 // { id: 'financials', label: 'Financials', icon: DollarSign },
                 { id: 'audit', label: 'Audit Logs', icon: Copy },
                 { id: 'settings', label: 'Settings', icon: Settings },
+                { id: 'ideas', label: 'Notifications', icon: Bell },
                 { id: 'challenges', label: 'Challenges', icon: Trophy },
                 { id: 'stats', label: 'System', icon: BarChart }
             ].map((tab) => (
@@ -605,49 +615,64 @@ export default function SuperAdminPage() {
             <ChallengesManager />
         )}
 
+        {activeTab === 'ideas' && (
+            <IdeasManager isAdmin={false} />
+        )}
+
         {/* System Health */}
         {activeTab === 'stats' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* System Tools Card */}
-                <div className="col-span-1 lg:col-span-2 bg-white p-8 rounded-[32px] border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex flex-wrap gap-4 items-center justify-between">
-                    <div>
-                        <h2 className="text-xl font-black uppercase">System Tools</h2>
-                        <p className="text-sm text-gray-500 font-medium">Critical maintenance operations</p>
-                    </div>
-                    <div className="flex gap-4">
-                        <button 
-                            onClick={handleBackup}
-                            className="flex items-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-black rounded-xl border-2 border-black font-bold uppercase transition-all"
-                        >
-                            <Save className="w-4 h-4" />
-                            Backup Database
-                        </button>
-                        <button 
-                            onClick={handleClearCache}
-                            className="flex items-center gap-2 px-6 py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl border-2 border-red-200 font-bold uppercase transition-all"
-                        >
-                            <RefreshCw className="w-4 h-4" />
-                            Clear Cache
-                        </button>
+            <div className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <StatCard label="Active Users" value={stats.activeUsers.toString()} color="border-accent-blue" />
+                    <StatCard label="Instructors" value={stats.totalTrainers.toString()} color="border-accent-pink" />
+                    <StatCard label="Verifications" value={stats.pendingVerifications.toString()} color="border-accent-yellow" />
+                    <div className="cursor-pointer" onClick={() => setActiveTab('ideas')}>
+                        <StatCard label="Idea Submissions" value={stats.ideaCount.toString()} color="border-accent-yellow" />
                     </div>
                 </div>
 
-                <div className="bg-black text-white p-12 rounded-[48px] border-4 border-black shadow-[12px_12px_0px_0px_rgba(255,255,255,0.1)]">
-                    <h2 className="text-2xl font-black uppercase italic mb-8">System Health</h2>
-                    <div className="space-y-6">
-                        <StatRow label="Database Connection" status="ACTIVE" color="text-green-400" />
-                        <StatRow label="Email Service" status="READY" color="text-green-400" />
-                        <StatRow label="OTP Infrastructure" status="OPERATIONAL" color="text-green-400" />
-                        <StatRow label="Cdn Latency" status="14ms" color="text-accent-blue" />
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* System Tools Card */}
+                    <div className="col-span-1 lg:col-span-2 bg-white p-8 rounded-[32px] border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex flex-wrap gap-4 items-center justify-between">
+                        <div>
+                            <h2 className="text-xl font-black uppercase">System Tools</h2>
+                            <p className="text-sm text-gray-500 font-medium">Critical maintenance operations</p>
+                        </div>
+                        <div className="flex gap-4">
+                            <button 
+                                onClick={handleBackup}
+                                className="flex items-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-black rounded-xl border-2 border-black font-bold uppercase transition-all"
+                            >
+                                <Save className="w-4 h-4" />
+                                Backup Database
+                            </button>
+                            <button 
+                                onClick={handleClearCache}
+                                className="flex items-center gap-2 px-6 py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl border-2 border-red-200 font-bold uppercase transition-all"
+                            >
+                                <RefreshCw className="w-4 h-4" />
+                                Clear Cache
+                            </button>
+                        </div>
                     </div>
-                </div>
-                
-                <div className="bg-accent-yellow p-12 rounded-[48px] border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
-                    <h2 className="text-2xl font-black uppercase mb-8">Role Distribution</h2>
-                    <div className="space-y-4">
-                        <ProgressBar label="Students" percent={82} />
-                        <ProgressBar label="Tutors" percent={12} />
-                        <ProgressBar label="Staff" percent={6} />
+
+                    <div className="bg-black text-white p-12 rounded-[48px] border-4 border-black shadow-[12px_12px_0px_0px_rgba(255,255,255,0.1)]">
+                        <h2 className="text-2xl font-black uppercase italic mb-8">System Health</h2>
+                        <div className="space-y-6">
+                            <StatRow label="Database Connection" status="ACTIVE" color="text-green-400" />
+                            <StatRow label="Email Service" status="READY" color="text-green-400" />
+                            <StatRow label="OTP Infrastructure" status="OPERATIONAL" color="text-green-400" />
+                            <StatRow label="Cdn Latency" status="14ms" color="text-accent-blue" />
+                        </div>
+                    </div>
+                    
+                    <div className="bg-accent-yellow p-12 rounded-[48px] border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
+                        <h2 className="text-2xl font-black uppercase mb-8">Role Distribution</h2>
+                        <div className="space-y-4">
+                            <ProgressBar label="Students" percent={82} />
+                            <ProgressBar label="Tutors" percent={12} />
+                            <ProgressBar label="Staff" percent={6} />
+                        </div>
                     </div>
                 </div>
             </div>

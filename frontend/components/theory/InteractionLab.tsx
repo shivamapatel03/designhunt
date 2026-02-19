@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles, MousePointer, Check } from "lucide-react";
+import { MousePointer, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function InteractionLab() {
@@ -43,7 +43,7 @@ export function InteractionLab() {
          </div>
 
          {/* Playground */}
-         <div className="bg-gray-50 rounded-xl flex items-center justify-center p-8 border border-gray-200">
+         <div className="bg-gray-50 rounded-xl flex items-center justify-center p-8 border border-gray-200 min-h-[300px]">
              <motion.button
                 onClick={handleClick}
                 whileHover={config.hoverScale ? { scale: 1.05 } : {}}

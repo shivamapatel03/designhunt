@@ -4,6 +4,7 @@ import { ReactNode } from "react";
 import { DailyLawCard } from "@/components/theory/DailyLawCard";
 import { InteractionLab } from "@/components/theory/InteractionLab";
 import { DailyPracticalSession } from "@/components/theory/DailyPracticalSession";
+import { IdeaCredits } from "@/components/theory/IdeaCredits";
 
 export default function TheoryPage() {
   return (
@@ -51,6 +52,8 @@ export default function TheoryPage() {
           </div>
         </div>
       </section>
+
+      <IdeaCredits />
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
          <LinkCard 

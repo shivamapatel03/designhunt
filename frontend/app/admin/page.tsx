@@ -25,14 +25,16 @@ import {
   Globe,
   Trophy, 
   Hammer,
-  RefreshCw
+  RefreshCw,
+  Lightbulb,
+  Bell
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getCourses, updateCoursePrice, Course } from "@/app/actions/courses";
 import { getPendingCourses, approveCourse, rejectCourse, getSystemStats } from "@/app/actions/admin";
 import { DuelsManager } from "@/components/admin/DuelsManager"; 
 import { ToolsManager } from "@/components/admin/ToolsManager"; 
-
+import { IdeasManager } from "@/components/super-admin/IdeasManager";
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState("courses");
   const [uploading, setUploading] = useState(false);
@@ -78,7 +80,9 @@ export default function AdminPage() {
     try {
         if (activeTab === 'dash') {
             const systemStats = await getSystemStats();
-            setStats(systemStats);
+            const ideaRes = await fetch("/api/admin/ideas");
+            const ideas = await ideaRes.json();
+            setStats({ ...systemStats, ideaCount: Array.isArray(ideas) ? ideas.length : 0 });
         } else if (activeTab === 'courses') {
             const data = await getPendingCourses();
             setPendingCourses(data);
@@ -147,6 +151,12 @@ export default function AdminPage() {
             active={activeTab === "tools"} 
             onClick={() => setActiveTab("tools")} 
           />
+          <AdminSidebarItem 
+            icon={Bell} 
+            label="Inquiries" 
+            active={activeTab === "ideas"} 
+            onClick={() => setActiveTab("ideas")} 
+          />
           <div className="pt-8 border-t border-gray-100 mt-auto">
             <button 
                 onClick={() => window.location.href = '/api/auth/logout'}
@@ -171,10 +181,11 @@ export default function AdminPage() {
           </div>
 
           {activeTab === 'dash' && stats && (
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <div className="grid grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
                   <StatCard label="Total Users" value={stats.totalUsers} icon={Monitor} color="bg-accent-blue" />
                   <StatCard label="Trainers" value={stats.totalTrainers} icon={Video} color="bg-accent-pink" />
                   <StatCard label="Pending Review" value={stats.pendingVerifications} icon={Clock} color="bg-accent-yellow" />
+                  <StatCard label="New Ideas" value={stats.ideaCount || 0} icon={Lightbulb} color="bg-accent-yellow" onClick={() => setActiveTab('ideas')} />
                   <StatCard label="Status" value="OK" icon={CheckCircle} color="bg-green-400" />
               </div>
           )}
@@ -185,6 +196,10 @@ export default function AdminPage() {
 
           {activeTab === 'tools' && (
               <ToolsManager />
+          )}
+
+          {activeTab === 'ideas' && (
+              <IdeasManager isAdmin={true} />
           )}
 
           {activeTab === 'courses' && (

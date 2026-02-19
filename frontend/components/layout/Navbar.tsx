@@ -4,13 +4,14 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Home, Library, BookOpen, PenTool, Trophy, User, Zap, Rocket, Menu, X, LayoutDashboard, LogIn } from "lucide-react";
+import { Home, Library, BookOpen, PenTool, Trophy, User, Zap, Rocket, Menu, X, LayoutDashboard, LogIn, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/providers/auth-provider";
 
 const navItems = [
   { name: "Home", href: "/", icon: Home },
   { name: "Library", href: "/library", icon: Library },
+  { name: "Community", href: "/community", icon: Users },
   { name: "Theory", href: "/theory", icon: BookOpen },
   { name: "Tools", href: "/tools", icon: PenTool },
 ];

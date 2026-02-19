@@ -97,3 +97,41 @@ export async function sendCodeRotationEmail(email: string, newCode: string) {
     return { success: false, error };
   }
 }
+export async function sendIdeaFeedbackEmail(
+  email: string,
+  userName: string,
+  ideaText: string,
+  feedback: string,
+) {
+  try {
+    const info = await transporter.sendMail({
+      from: `"Design Hunt" <${process.env.SMTP_USER}>`,
+      to: email,
+      subject: "Feedback on your Design Hunt Idea! ✨",
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 4px solid #000; padding: 40px; border-radius: 20px;">
+          <h1 style="color: #000; font-weight: 900; font-style: italic;">HI ${userName.toUpperCase()},</h1>
+          <p style="font-size: 16px; color: #555; font-weight: bold;">WE'VE REVIEWED YOUR RECENT EXPERIMENT IDEA!</p>
+          
+          <div style="background: #f4f4f5; border-left: 8px solid #facc15; padding: 20px; margin: 25px 0;">
+            <p style="margin: 0; font-size: 14px; font-weight: bold; color: #888; text-transform: uppercase;">Your Idea:</p>
+            <p style="margin: 10px 0 0 0; font-size: 16px; font-style: italic; font-weight: bold; color: #000;">"${ideaText}"</p>
+          </div>
+
+          <p style="font-size: 16px; color: #555; line-height: 1.6;">${feedback}</p>
+
+          <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #eee;">
+            <p style="font-size: 12px; font-weight: 900; color: #000; text-transform: uppercase;">Keep designing,</p>
+            <p style="font-size: 14px; font-weight: 900; color: #000; text-transform: uppercase;">Team Design Hunt</p>
+          </div>
+        </div>
+      `,
+    });
+
+    console.log("Feedback Email sent: %s", info.messageId);
+    return { success: true, data: info };
+  } catch (error) {
+    console.error("Email Error:", error);
+    return { success: false, error };
+  }
+}

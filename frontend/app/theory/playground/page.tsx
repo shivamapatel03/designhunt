@@ -4,9 +4,11 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Beaker, RotateCcw, Info, Type, Star } from "lucide-react";
 import Link from "next/link";
 import { useState, useCallback, useEffect } from "react";
+import { SubmitIdeaModal } from "@/components/theory/SubmitIdeaModal";
 
 export default function InteractionLabPage() {
   const [gestaltMode, setGestaltMode] = useState<"proximity" | "similarity" | "closure" | "fate">("proximity");
+  const [showIdeaModal, setShowIdeaModal] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#f8f7f4] pb-24">
@@ -103,18 +105,9 @@ export default function InteractionLabPage() {
                 </div>
             </div>
             
-            <div className="grid md:grid-cols-2 gap-8">
                 <div className="bg-white border-2 border-black rounded-3xl p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
                     <KerningGame />
                 </div>
-                <div className="bg-white border-2 border-black rounded-3xl p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-                    <h3 className="text-xl font-black mb-4">Coming Soon: Ames Room</h3>
-                    <p className="text-gray-500 text-sm font-medium mb-6 italic">A perspective-bending CSS illusion that breaks depth perception.</p>
-                    <div className="h-24 bg-gray-50 rounded-xl border-2 border-dashed border-gray-100 flex items-center justify-center">
-                        <span className="text-xs font-bold text-gray-300">Module Under Construction</span>
-                    </div>
-                </div>
-            </div>
           </div>
 
           {/* Sidebar / Tools */}
@@ -136,10 +129,11 @@ export default function InteractionLabPage() {
              <div className="bg-accent-yellow rounded-3xl p-8 border-2 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
                  <h4 className="text-lg font-black mb-2">Request an Experiment</h4>
                  <p className="text-sm font-bold text-black/60 mb-6">Want to see a specific UX law in the lab? Let us know.</p>
-                 <button className="w-full py-3 bg-black text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-gray-900 transition-colors">Submit Idea</button>
+                 <button onClick={() => setShowIdeaModal(true)} className="w-full py-3 bg-black text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-gray-900 transition-colors">Submit Idea</button>
              </div>
           </aside>
         </div>
+        <SubmitIdeaModal isOpen={showIdeaModal} onClose={() => setShowIdeaModal(false)} />
       </div>
     </div>
   );

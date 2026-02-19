@@ -55,7 +55,17 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               <li><Link href="/about" className="hover:underline">About</Link></li>
               <li><Link href="/critique" className="hover:underline font-bold text-accent-yellow">Explore AI Execution Lab</Link></li>
-              <li><Link href="/critique" className="hover:underline">AI Feedback</Link></li>
+              <li><Link href="/theory" className="hover:underline">AI Feedback</Link></li>
+              <li>
+                <a 
+                  href="https://buymeacoffee.com/designhunt" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-[#FFDD00] text-black font-black rounded-xl border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all text-sm italic tracking-tight"
+                >
+                  <span className="text-lg">☕</span> Buy me a coffee
+                </a>
+              </li>
             </ul>
           </div>
         </div>

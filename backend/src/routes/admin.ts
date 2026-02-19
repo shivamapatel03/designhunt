@@ -2,7 +2,7 @@ import express from "express";
 import db from "../db";
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
-import { sendCodeRotationEmail } from "../lib/email";
+import { sendCodeRotationEmail, sendIdeaFeedbackEmail } from "../lib/email";
 import { logAction, getAuditLogs } from "../lib/audit";
 import { getAllSettings, updateSetting } from "../lib/settings";
 import { getFinancialStats } from "../lib/finance";
@@ -225,6 +225,39 @@ router.post(
     } catch (err: any) {
       console.error("Backup failed:", err);
       res.status(500).json({ error: "Backup failed: " + err.message });
+    }
+  },
+);
+
+// Send Idea Feedback Email
+router.post(
+  "/send-idea-feedback",
+  authenticateToken,
+  requireSuperAdmin,
+  async (req: any, res) => {
+    try {
+      const { email, userName, ideaText, feedback } = req.body;
+
+      if (!email || !userName || !ideaText || !feedback) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const result = await sendIdeaFeedbackEmail(
+        email,
+        userName,
+        ideaText,
+        feedback,
+      );
+
+      if (result.success) {
+        logAction(req.user.id, "SEND_IDEA_FEEDBACK", email, { ideaText });
+        res.json({ success: true });
+      } else {
+        res.status(500).json({ error: "Failed to send email" });
+      }
+    } catch (error: any) {
+      console.error("Feedback Email Error:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
   },
 );

@@ -32,7 +32,7 @@ export function ToolCard({ name, category, description, url, icon, color = "bg-b
       <div className="flex items-start justify-between mb-4 relative z-10">
         <div className={`w-12 h-12 rounded-xl border-2 border-black flex items-center justify-center text-white shadow-sm group-hover:rotate-6 transition-transform ${color}`}>
             {icon ? (
-                typeof icon === 'string' ? <img src={icon} alt={name} className="w-6 h-6 object-contain invert bg-white rounded-full p-0.5" /> : icon
+                typeof icon === 'string' ? <img src={icon} alt={name} className="w-full h-full object-contain p-1" /> : icon
             ) : (
                  <span className="font-bold text-lg">{name.substring(0,2)}</span>
             )}
