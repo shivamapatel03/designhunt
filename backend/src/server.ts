@@ -11,6 +11,8 @@ import adminRoutes from "./routes/admin";
 import toolsRoutes from "./routes/tools";
 import settingsRoutes from "./routes/settings";
 import tutorRoutes from "./routes/tutor";
+import ideasRoutes from "./routes/ideas";
+import profileRoutes from "./routes/profile";
 import db from "./db";
 
 dotenv.config();
@@ -36,6 +38,8 @@ app.use("/api/duels", duelsRoutes);
 app.use("/api/duels", duelsRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/tutor", tutorRoutes);
+app.use("/api/ideas", ideasRoutes);
+app.use("/api/profile", profileRoutes);
 
 // Basic health check
 app.get("/", (req, res) => {

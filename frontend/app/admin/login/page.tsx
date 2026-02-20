@@ -22,7 +22,7 @@ export default function AdminLoginPage() {
     setError("");
 
     try {
-        const res = await fetch("http://localhost:5000/api/auth/admin-login-step1", {
+        const res = await fetch("/api/auth/admin-login-step1", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, password }),
@@ -47,7 +47,7 @@ export default function AdminLoginPage() {
     setError("");
 
     try {
-        const res = await fetch("http://localhost:5000/api/auth/admin-login-step2", {
+        const res = await fetch("/api/auth/admin-login-step2", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",

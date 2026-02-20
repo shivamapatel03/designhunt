@@ -4,12 +4,27 @@ import path from "path";
 // Initialize the database
 // Assuming running from 'backend' root
 const dbPath = path.join(process.cwd(), "designhunt_v2.db");
-const db = new Database(dbPath);
+let db: any;
 
-console.log("Connected to database at:", dbPath);
+try {
+  db = new Database(dbPath);
 
-// Create tables if they don't exist
-db.exec(`
+  console.log("Connected to database at:", dbPath);
+
+  // Attempt to add reaction_type column to idea_likes for migration
+  try {
+    db.prepare(
+      "ALTER TABLE idea_likes ADD COLUMN reaction_type TEXT DEFAULT 'heart'",
+    ).run();
+    console.log("Migration: Added reaction_type column to idea_likes");
+  } catch (e) {
+    // Column likely already exists, or table doesn't exist yet.
+    // This is fine, as the table creation will handle it if it's new.
+    // console.log("Migration: reaction_type column already exists or other error:", e.message);
+  }
+
+  // Create tables if they don't exist
+  db.exec(`
   CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
     email TEXT UNIQUE NOT NULL,
@@ -24,6 +39,8 @@ db.exec(`
     onboarding_completed BOOLEAN DEFAULT 0,
     otp_code TEXT,
     otp_expires_at DATETIME,
+    reset_token TEXT,
+    reset_token_expires_at DATETIME,
     email_verified BOOLEAN DEFAULT 0,
     last_login DATETIME,
     status TEXT DEFAULT 'APPROVED', -- APPROVED, PENDING, REJECTED
@@ -239,8 +256,46 @@ db.exec(`
     FOREIGN KEY (user_id) REFERENCES users(id)
   );
 
-  -- Insert default Access Code if not exists
-  INSERT OR IGNORE INTO system_settings (key, value) VALUES ('SUPER_ADMIN_CODE', 'DESIGNHUNT12');
-`);
+  CREATE TABLE IF NOT EXISTS ideas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    idea TEXT NOT NULL,
+    image TEXT,
+    user_id TEXT,
+    user_handle TEXT,
+    user_avatar TEXT,
+    name TEXT,
+    email TEXT,
+    likes_count INTEGER DEFAULT 0,
+    comments_count INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS idea_likes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    idea_id INTEGER NOT NULL,
+    user_id TEXT NOT NULL,
+    reaction_type TEXT DEFAULT 'heart',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (idea_id) REFERENCES ideas(id) ON DELETE CASCADE,
+    UNIQUE(idea_id, user_id)
+  );
+
+  CREATE TABLE IF NOT EXISTS idea_comments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    idea_id INTEGER NOT NULL,
+    user_id TEXT NOT NULL,
+    user_handle TEXT,
+    user_avatar TEXT,
+    content TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (idea_id) REFERENCES ideas(id) ON DELETE CASCADE
+  );`);
+
+  db.prepare(
+    "INSERT OR IGNORE INTO system_settings (key, value) VALUES ('SUPER_ADMIN_CODE', 'DESIGNHUNT12')",
+  ).run();
+} catch (error) {
+  console.error("Database initialization failed:", error);
+}
 
 export default db;

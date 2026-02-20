@@ -22,7 +22,7 @@ export default function SuperAdminLoginPage() {
 
     try {
         // Use Step 1 but validation inside ensures it's Super Admin or Admin
-        const res = await fetch("http://localhost:5000/api/auth/admin-login-step1", {
+        const res = await fetch("/api/auth/admin-login-step1", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email }), // No password needed for Step 1 if Super Admin
@@ -47,7 +47,7 @@ export default function SuperAdminLoginPage() {
     setError("");
 
     try {
-        const res = await fetch("http://localhost:5000/api/auth/admin-login-step2", {
+        const res = await fetch("/api/auth/admin-login-step2", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",

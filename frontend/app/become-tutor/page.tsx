@@ -22,7 +22,7 @@ export default function BecomeTutorPage() {
 
   useEffect(() => {
     // Check if marketplace is enabled
-    fetch("http://localhost:5000/api/settings")
+    fetch("/api/settings")
       .then(res => res.json())
       .then(settings => {
         if (settings.ENABLE_MARKETPLACE !== true) {
@@ -32,7 +32,7 @@ export default function BecomeTutorPage() {
       });
       
     // Check existing application status
-    fetch("http://localhost:5000/api/tutor/status", {
+    fetch("/api/tutor/status", {
         headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` } // simplistic
     })
     .then(res => res.json())
@@ -49,7 +49,7 @@ export default function BecomeTutorPage() {
     setStatus("submitting");
     
     try {
-      const res = await fetch("http://localhost:5000/api/tutor/apply", {
+      const res = await fetch("/api/tutor/request", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

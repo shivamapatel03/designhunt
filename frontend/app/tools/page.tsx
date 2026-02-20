@@ -22,7 +22,7 @@ export default function ToolsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/tools", { cache: 'no-store' })
+    fetch("/api/tools", { cache: 'no-store' })
       .then(res => res.json())
       .then(data => {
         setTools(data);

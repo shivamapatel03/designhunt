@@ -36,7 +36,7 @@ export default function LoginPage() {
     setMessage("");
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
+      const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(showOtp ? { ...formData, otp, step: 'verify' } : { ...formData, step: 'login' }),
@@ -153,6 +153,11 @@ export default function LoginPage() {
                         className="w-full px-4 py-3 bg-white border-[3px] border-black rounded-2xl font-black text-base outline-none focus:bg-accent-blue focus:text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] focus:shadow-[2px_2px_0px_0px_#000] focus:translate-x-1 focus:translate-y-1 transition-all"
                         placeholder="••••••••"
                       />
+                      <div className="flex justify-end mt-1">
+                        <Link href="/forgot-password" size="sm" className="text-[10px] font-black uppercase italic text-gray-400 hover:text-accent-blue transition-colors">
+                          Forgot Password?
+                        </Link>
+                      </div>
                     </div>
                   </div>
 

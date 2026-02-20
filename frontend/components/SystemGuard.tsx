@@ -16,7 +16,7 @@ export default function SystemGuard({ children }: { children: React.ReactNode })
 
   const checkSystemStatus = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/settings");
+      const res = await fetch("/api/settings");
       if (res.ok) {
         const data = await res.json();
         setMaintenanceMode(data.MAINTENANCE_MODE === true);
@@ -64,14 +64,18 @@ function MaintenanceTimer() {
     const [endTime, setEndTime] = useState<string | null>(null);
 
     useEffect(() => {
-        fetch("http://localhost:5000/api/settings")
-            .then(res => res.json())
-            .then(data => {
+        const fetchMaintenanceEndTime = async () => {
+            try {
+                const res = await fetch("/api/settings");
+                const data = await res.json();
                 if (data.MAINTENANCE_END_TIME) {
                     setEndTime(data.MAINTENANCE_END_TIME);
                 }
-            })
-            .catch(console.error);
+            } catch (error) {
+                console.error(error);
+            }
+        };
+        fetchMaintenanceEndTime();
     }, []);
 
     if (!endTime) return <span className="text-xl font-mono font-bold">Soon</span>;

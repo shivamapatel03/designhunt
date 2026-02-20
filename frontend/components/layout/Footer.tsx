@@ -104,7 +104,7 @@ function BecomeTutorLink() {
     const router = useRouter();
 
     useEffect(() => {
-        fetch("http://localhost:5000/api/settings")
+        fetch("/api/settings")
             .then(res => res.json())
             .then(data => {
                 if (data && data.ENABLE_MARKETPLACE) {

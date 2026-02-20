@@ -23,7 +23,7 @@ export function Navbar() {
   const [enableMarketplace, setEnableMarketplace] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/settings")
+    fetch("/api/settings")
       .then(res => res.json())
       .then(data => setEnableMarketplace(data.ENABLE_MARKETPLACE));
   }, []);
@@ -37,7 +37,7 @@ export function Navbar() {
     if (!user) return "/login";
     if (user.role === 'SUPER_ADMIN') return "/super-admin";
     if (user.role === 'ADMIN') return "/admin";
-    // if (user.role === 'TUTOR') return "/tutor-dashboard";
+    if (user.role === 'TUTOR') return "/tutor-dashboard";
     return "/profile";
   };
 

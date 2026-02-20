@@ -135,3 +135,40 @@ export async function sendIdeaFeedbackEmail(
     return { success: false, error };
   }
 }
+
+export async function sendPasswordResetEmail(email: string, token: string) {
+  try {
+    const resetUrl = `http://localhost:3000/reset-password?token=${token}`;
+    const info = await transporter.sendMail({
+      from: `"Design Hunt" <${process.env.SMTP_USER}>`,
+      to: email,
+      subject: "Reset your Design Hunt password",
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 4px solid #000; padding: 40px; border-radius: 20px;">
+          <h1 style="color: #000; font-weight: 900; font-style: italic;">PASSWORD RESET</h1>
+          <p style="font-size: 16px; color: #555; font-weight: bold;">WE RECEIVED A REQUEST TO RESET YOUR PASSWORD.</p>
+          
+          <div style="background: #f4f4f5; border: 2px solid #000; padding: 20px; text-align: center; border-radius: 12px; margin: 25px 0;">
+            <p style="font-size: 14px; font-weight: bold; color: #888; text-transform: uppercase; margin-bottom: 20px;">Use the code below to reset:</p>
+            <span style="font-size: 32px; font-weight: 900; letter-spacing: 4px; color: #000; font-family: monospace;">${token}</span>
+          </div>
+
+          <p style="font-size: 16px; color: #555; line-height: 1.6;">
+            If you didn't request this, you can safely ignore this email. This code will expire in 1 hour.
+          </p>
+
+          <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #eee;">
+            <p style="font-size: 12px; font-weight: 900; color: #000; text-transform: uppercase;">Build better,</p>
+            <p style="font-size: 14px; font-weight: 900; color: #000; text-transform: uppercase;">Team Design Hunt</p>
+          </div>
+        </div>
+      `,
+    });
+
+    console.log("Reset Email sent: %s", info.messageId);
+    return { success: true, data: info };
+  } catch (error) {
+    console.error("Email Error:", error);
+    return { success: false, error };
+  }
+}

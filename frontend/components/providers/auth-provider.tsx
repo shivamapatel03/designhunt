@@ -9,6 +9,8 @@ interface User {
   email: string;
   role: string;
   avatar?: string;
+  handle?: string;
+  xp?: number;
 }
 
 interface AuthContextType {
@@ -28,7 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     async function checkAuth() {
       try {
-        const res = await fetch("http://localhost:5000/api/auth/me", { credentials: "include" });
+        const res = await fetch("/api/auth/me");
         if (res.ok) {
           const data = await res.json();
           setUser(data.user);
@@ -51,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      await fetch("http://localhost:5000/api/auth/logout", { method: "POST", credentials: "include" });
+      await fetch("/api/auth/logout", { method: "POST" });
       setUser(null);
       router.push("/login");
       router.refresh();

@@ -2,11 +2,15 @@ import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import db from "../db";
-import { sendVerificationEmail, sendAdminLoginEmail } from "../lib/email";
+import {
+  sendVerificationEmail,
+  sendAdminLoginEmail,
+  sendPasswordResetEmail,
+} from "../lib/email";
 import { randomUUID } from "crypto";
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || "default-secret-key-change-me";
+const JWT_SECRET = process.env.JWT_SECRET || "designhunt_secret_key_123";
 
 // SIGNUP
 router.post("/signup", async (req, res) => {
@@ -101,6 +105,7 @@ router.post("/verify", async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
       maxAge: 24 * 60 * 60 * 1000,
       path: "/",
     });
@@ -229,6 +234,7 @@ router.post("/login", async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
       maxAge: 24 * 60 * 60 * 1000,
       path: "/",
     });
@@ -264,16 +270,26 @@ router.get("/me", async (req, res) => {
 
   try {
     const payload = jwt.verify(token, JWT_SECRET) as any;
+    const userId = payload.userId || payload.id;
     const user = db
-      .prepare("SELECT id, name, email, role, avatar FROM users WHERE id = ?")
-      .get(payload.userId);
+      .prepare(
+        "SELECT id, name, email, role, avatar, username FROM users WHERE id = ?",
+      )
+      .get(userId) as any;
 
     if (!user) {
       res.status(401).json({ user: null });
       return;
     }
 
-    res.json({ user });
+    const userData = {
+      ...user,
+      handle: user.username
+        ? `@${user.username}`
+        : `@${user.name.toLowerCase().replace(/\s+/g, "")}`,
+    };
+
+    res.json({ user: userData });
   } catch (e) {
     res.status(401).json({ user: null });
   }
@@ -377,8 +393,8 @@ router.post("/admin-login-step2", async (req, res) => {
 
     // Set Cookie
     const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET || "fallback_secret",
+      { userId: user.id, email: user.email, role: user.role },
+      JWT_SECRET,
       {
         expiresIn: "24h",
       },
@@ -397,6 +413,84 @@ router.post("/admin-login-step2", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
+  }
+});
+
+// FORGOT PASSWORD
+router.post("/forgot-password", async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    const user = db
+      .prepare("SELECT * FROM users WHERE email = ?")
+      .get(email) as any;
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Generate a secure 6-digit code for simplicity (similar to OTP pattern)
+    const token = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 hour
+
+    db.prepare(
+      "UPDATE users SET reset_token = ?, reset_token_expires_at = ? WHERE id = ?",
+    ).run(token, expiresAt, user.id);
+
+    const emailRes = await sendPasswordResetEmail(email, token);
+
+    if (!emailRes.success) {
+      console.error("Failed to send reset email:", emailRes.error);
+      // Still return success to prevent email enumeration, but log the error
+      return res.json({
+        success: true,
+        message: "If this email is registered, you will receive a reset code.",
+      });
+    }
+
+    res.json({ success: true, message: "Reset code sent to your email." });
+  } catch (error) {
+    console.error("Forgot Password Error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// RESET PASSWORD
+router.post("/reset-password", async (req, res) => {
+  try {
+    const { token, email, password } = req.body;
+
+    if (!token || !email || !password) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const user = db
+      .prepare("SELECT * FROM users WHERE email = ?")
+      .get(email) as any;
+
+    if (
+      !user ||
+      user.reset_token !== token ||
+      new Date(user.reset_token_expires_at) < new Date()
+    ) {
+      return res.status(400).json({ error: "Invalid or expired reset code" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    db.prepare(
+      "UPDATE users SET password = ?, reset_token = NULL, reset_token_expires_at = NULL WHERE id = ?",
+    ).run(hashedPassword, user.id);
+
+    res.json({
+      success: true,
+      message: "Password reset successful. You can now login.",
+    });
+  } catch (error) {
+    console.error("Reset Password Error:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 

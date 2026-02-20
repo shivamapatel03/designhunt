@@ -45,7 +45,7 @@ export function DailyDuel() {
 
   const fetchDuel = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/duels/daily");
+      const res = await fetch("/api/duels/daily");
       if (!res.ok) throw new Error("Failed to fetch duel");
       const data = await res.json();
       setDuel(data);
@@ -101,7 +101,7 @@ export function DailyDuel() {
       votes[duel.id] = choice;
       localStorage.setItem("daily_duel_vote", JSON.stringify(votes));
 
-      await fetch(`http://localhost:5000/api/duels/${duel.id}/vote`, {
+      await fetch(`/api/duels/${duel.id}/vote`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ choice }),

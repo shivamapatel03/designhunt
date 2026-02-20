@@ -11,6 +11,7 @@ import { useAuth } from "@/components/providers/auth-provider";
 import { IdeaCard } from "@/components/community/IdeaCard";
 import { ShareIdeaModal } from "@/components/community/ShareIdeaModal";
 import Link from "next/link";
+import { User, Shield, Zap, Flame, BarChart3, Users } from "lucide-react";
 
 // Sidebar Constants
 const TRENDING_IDEAS = [
@@ -53,7 +54,7 @@ export default function CommunityPage() {
     };
 
     const handleShareClick = () => {
-        if (authLoading) return; // Wait for auth to resolve
+        if (authLoading) return;
         if (!user) {
             setShowLoginPrompt(true);
             return;
@@ -62,50 +63,67 @@ export default function CommunityPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#f8f7f4] pt-32 pb-20">
-            <div className="container mx-auto max-w-7xl px-6">
-                <div className="grid lg:grid-cols-[1fr_350px] gap-12">
+        <div className="min-h-screen bg-[#f3f4f6] pt-24 pb-20">
+            <div className="container mx-auto max-w-[1400px] px-4">
+                <div className="grid lg:grid-cols-[280px_1fr_320px] gap-6 items-start">
                     
-                    {/* Main Feed Section */}
-                    <div className="space-y-8">
-                        {/* Header & Controls */}
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                            <div>
-                                <h1 className="text-5xl font-black tracking-tighter uppercase italic">Community Hub</h1>
-                                <p className="text-gray-500 font-bold uppercase text-xs tracking-widest mt-2">Connect, share, and inspire with designers worldwide.</p>
-                            </div>
+                    {/* Left Column: Quick Links Only */}
+                    <aside className="hidden lg:block space-y-4 sticky top-24">
+                        <div className="bg-white border-2 border-black rounded-[24px] p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                            <h4 className="font-black text-xs uppercase tracking-widest text-gray-400 mb-4">Quick Links</h4>
+                            <nav className="space-y-4">
+                                <Link href="/profile" className="flex items-center gap-3 text-sm font-bold hover:text-accent-blue transition-colors group">
+                                    <Users className="w-4 h-4" /> My Network
+                                </Link>
+                                <Link href="/challenges" className="flex items-center gap-3 text-sm font-bold hover:text-accent-red transition-colors group">
+                                    <Flame className="w-4 h-4" /> Active Challenges
+                                </Link>
+                                <Link href="/theory" className="flex items-center gap-3 text-sm font-bold hover:text-accent-yellow transition-colors group">
+                                    <Zap className="w-4 h-4" /> Learning Hub
+                                </Link>
+                            </nav>
+                        </div>
+                    </aside>
+
+                    {/* Center Column: Main Feed (Reddit/LinkedIn hybrid) */}
+                    <main className="space-y-6">
+                        {/* Quick Post Box (LinkedIn style) */}
+                        <div className="bg-white border-2 border-black rounded-[24px] p-4 flex gap-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                            <Link 
+                                href="/profile"
+                                className="w-12 h-12 rounded-full border-2 border-black bg-gray-100 flex-shrink-0 flex items-center justify-center font-black overflow-hidden hover:scale-105 transition-transform"
+                            >
+                                {user?.avatar ? <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" /> : <User className="w-6 h-6" />}
+                            </Link>
                             <button 
                                 onClick={handleShareClick}
-                                className="flex items-center gap-2 px-6 py-4 bg-black text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:scale-105 transition-transform shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)]"
+                                className="flex-1 bg-gray-50 hover:bg-gray-100 border-2 border-black/5 rounded-full px-6 text-left text-gray-500 font-bold transition-colors text-sm"
                             >
-                                <Plus className="w-5 h-5" /> Share Idea
+                                Start a design spark...
                             </button>
+                            <div className="flex items-center gap-2 pr-2">
+                                <button onClick={handleShareClick} className="p-2 hover:bg-accent-yellow/10 rounded-lg transition-colors text-accent-yellow" title="Add Image">
+                                    <Sparkles className="w-6 h-6" />
+                                </button>
+                            </div>
                         </div>
 
-                        {/* Search & Filters */}
-                        <div className="flex flex-wrap items-center gap-4 py-6 border-y-2 border-black/5">
-                            <div className="flex-1 relative min-w-[300px]">
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                <input 
-                                    type="text" 
-                                    placeholder="Search ideas, designers, or tags..." 
-                                    className="w-full pl-12 pr-4 py-4 bg-white border-2 border-black rounded-2xl focus:outline-none font-bold"
-                                />
-                            </div>
-                            <div className="flex gap-2">
-                                {["Trending", "Newest", "Top Rated"].map((f) => (
-                                    <button 
-                                        key={f}
-                                        onClick={() => setFilter(f)}
-                                        className={cn(
-                                            "px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all border-2",
-                                            filter === f ? "bg-accent-yellow border-black shadow-[4px_4px_0px_0px_#000]" : "bg-white border-transparent hover:border-black/10"
-                                        )}
-                                    >
-                                        {f}
-                                    </button>
-                                ))}
-                            </div>
+                        {/* Feed Sorting */}
+                        <div className="flex items-center gap-2 pb-2">
+                            <div className="h-[2px] flex-1 bg-black/5" />
+                            {["Trending", "Newest", "Top"].map((f) => (
+                                <button 
+                                    key={f}
+                                    onClick={() => setFilter(f)}
+                                    className={cn(
+                                        "px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest transition-all",
+                                        filter === f ? "bg-black text-white" : "text-gray-400 hover:text-black hover:bg-black/5"
+                                    )}
+                                >
+                                    {f}
+                                </button>
+                            ))}
+                            <div className="h-[2px] flex-1 bg-black/5" />
                         </div>
 
                         {/* Feed */}
@@ -133,23 +151,23 @@ export default function CommunityPage() {
                                 </div>
                             )}
                         </div>
-                    </div>
+                    </main>
 
-                    {/* Sidebar */}
-                    <aside className="space-y-8">
+                    {/* Right Column: Trending & Creators (Reddit style) */}
+                    <aside className="hidden lg:block space-y-6 sticky top-[min(96px,calc(100vh-100%-24px))] self-start">
                         {/* Trending Sidebar */}
-                        <div className="bg-white border-2 border-black rounded-[32px] p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-                            <h3 className="text-xl font-black uppercase italic tracking-tight mb-6 flex items-center gap-2">
-                                <TrendingUp className="w-5 h-5 text-accent-red" /> Trending Now
+                        <div className="bg-white border-2 border-black rounded-[24px] p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                            <h3 className="text-sm font-black uppercase tracking-widest mb-6 flex items-center gap-2">
+                                <TrendingUp className="w-4 h-4 text-accent-red" /> Trending Sparks
                             </h3>
                             <div className="space-y-4">
                                 {TRENDING_IDEAS.map((item, i) => (
                                     <div key={item.id} className="group cursor-pointer">
-                                        <div className="flex items-center gap-4">
-                                            <span className="text-2xl font-black text-gray-200 group-hover:text-black transition-colors italic">0{i+1}</span>
+                                        <div className="flex items-start gap-3">
+                                            <span className="font-black text-gray-300 group-hover:text-black transition-colors italic">0{i+1}</span>
                                             <div>
-                                                <div className="font-bold text-sm group-hover:underline">{item.title}</div>
-                                                <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{item.category} • {item.likes} LIKES</div>
+                                                <div className="font-bold text-xs group-hover:underline leading-snug">{item.title}</div>
+                                                <div className="text-[9px] font-black text-gray-400 uppercase tracking-widest mt-0.5">{item.category} • {item.likes}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -157,41 +175,58 @@ export default function CommunityPage() {
                             </div>
                         </div>
 
+                        {/* Community Stats */}
+                        <div className="bg-black text-white border-2 border-black rounded-[24px] p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
+                             <h3 className="text-xs font-black uppercase tracking-widest text-gray-400 mb-6 flex items-center gap-2">
+                                <BarChart3 className="w-4 h-4 text-accent-blue" /> Pulse Check
+                            </h3>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <div className="text-xl font-black">2.4k</div>
+                                    <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Active Now</div>
+                                </div>
+                                <div>
+                                    <div className="text-xl font-black">152</div>
+                                    <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">New Sparks</div>
+                                </div>
+                            </div>
+                        </div>
+
                         {/* Top Creators */}
-                        <div className="bg-white border-2 border-black rounded-[32px] p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-                            <h3 className="text-xl font-black uppercase italic tracking-tight mb-6 flex items-center gap-2">
-                                <Award className="w-5 h-5 text-accent-yellow" /> Top Brains
+                        <div className="bg-white border-2 border-black rounded-[24px] p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                            <h3 className="text-sm font-black uppercase tracking-widest mb-6 flex items-center gap-2">
+                                <Award className="w-4 h-4 text-accent-yellow" /> Top Designers
                             </h3>
                             <div className="flex flex-wrap gap-2">
-                                {[1, 2, 3, 4, 5].map((i) => (
+                                {[1, 2, 3, 4, 5, 6].map((i) => (
                                     <img 
                                         key={i}
-                                        src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i}`} 
-                                        className="w-10 h-10 rounded-full border-2 border-black bg-gray-50 hover:scale-110 transition-transform cursor-pointer" 
+                                        src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i * 123}`} 
+                                        className="w-8 h-8 rounded-full border-2 border-black bg-gray-50 hover:scale-110 transition-transform cursor-pointer" 
                                         alt="Top Brain" 
                                     />
                                 ))}
                             </div>
+                            <button className="w-full mt-6 py-2 border-2 border-black rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-black hover:text-white transition-all">
+                                View Leaderboard
+                            </button>
                         </div>
 
                         {/* External Links */}
-                        <div className="bg-white border-2 border-black rounded-[32px] p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-                            <h3 className="text-xl font-black uppercase italic tracking-tight mb-6">Join the Tribe</h3>
-                            <div className="space-y-4">
+                         <div className="px-6 space-y-4">
+                            <div className="flex flex-wrap gap-x-4 gap-y-2">
                                 {COMMUNITY_LINKS.map((link) => (
                                     <a 
                                         key={link.name} 
                                         href={link.href}
-                                        className="flex items-center justify-between group"
+                                        className="text-[10px] font-bold text-gray-400 hover:text-black transition-colors uppercase tracking-widest flex items-center gap-1.5"
                                     >
-                                        <div className="flex items-center gap-3">
-                                            <link.icon className={cn("w-5 h-5", link.color)} />
-                                            <span className="font-bold text-sm">{link.name}</span>
-                                        </div>
-                                        <ArrowUpRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        <link.icon className="w-3 h-3" />
+                                        {link.name}
                                     </a>
                                 ))}
                             </div>
+                            <p className="text-[9px] font-bold text-gray-300 uppercase tracking-widest">© 2026 Design-Hunt Tribe</p>
                         </div>
                     </aside>
                 </div>

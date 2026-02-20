@@ -8,7 +8,7 @@ import { cookies } from "next/headers";
 // Helper to fetch data
 async function getChallenge(id: string) {
   try {
-    const res = await fetch(`http://localhost:5000/api/challenges/${id}`, { cache: "no-store" });
+    const res = await fetch(`/api/challenges/${id}`, { cache: "no-store" });
     if (!res.ok) return null;
     return res.json();
   } catch (e) {
@@ -22,7 +22,7 @@ async function getSubmissions(id: string) {
     const token = cookieStore.get("token")?.value;
     
     try {
-      const res = await fetch(`http://localhost:5000/api/challenges/${id}/submissions`, { 
+      const res = await fetch(`/api/challenges/${id}/submissions`, { 
           cache: "no-store",
           headers: token ? { Cookie: `token=${token}` } : {}
       });
@@ -35,7 +35,7 @@ async function getSubmissions(id: string) {
 
 async function getLeaderboard(id: string) {
     try {
-      const res = await fetch(`http://localhost:5000/api/challenges/${id}/leaderboard`, { cache: "no-store" });
+      const res = await fetch(`/api/challenges/${id}/leaderboard`, { cache: "no-store" });
       if (!res.ok) return [];
       return res.json();
     } catch (e) {

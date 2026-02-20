@@ -1,31 +1,33 @@
-import { NextResponse, NextRequest } from "next/server";
-import db from "@/lib/db";
-import { jwtVerify } from "jose";
+import express from "express";
+import jwt from "jsonwebtoken";
+import db from "../db";
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "default-secret-key-change-me",
-);
+const router = express.Router();
+const JWT_SECRET = process.env.JWT_SECRET || "designhunt_secret_key_123";
 
-export async function GET(req: NextRequest) {
+// Middleware to verify session
+const authenticate = (req: any, res: any, next: any) => {
+  const token = req.cookies.token;
+  if (!token) return res.status(401).json({ error: "Unauthorized" });
+
   try {
-    const token = req.cookies.get("token")?.value;
+    const payload = jwt.verify(token, JWT_SECRET) as any;
+    req.userId = payload.userId || payload.id;
+    next();
+  } catch (error) {
+    res.status(401).json({ error: "Invalid token" });
+  }
+};
 
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { payload } = await jwtVerify(token, JWT_SECRET);
-    const userId = payload.userId as string;
-
+router.get("/", authenticate, (req: any, res: any) => {
+  try {
+    const userId = req.userId;
     const user = db
       .prepare("SELECT * FROM users WHERE id = ?")
       .get(userId) as any;
 
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
+    if (!user) return res.status(404).json({ error: "User not found" });
 
-    // Fetch enrollments
     const enrollments = db
       .prepare(
         `
@@ -43,6 +45,7 @@ export async function GET(req: NextRequest) {
 
     const userProfile = {
       user: {
+        id: user.id,
         name: user.name,
         email: user.email,
         role: user.role,
@@ -69,12 +72,11 @@ export async function GET(req: NextRequest) {
       badges: [],
     };
 
-    return NextResponse.json(userProfile);
+    res.json(userProfile);
   } catch (error) {
-    console.error("Profile Error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch profile" },
-      { status: 500 },
-    );
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch profile" });
   }
-}
+});
+
+export default router;

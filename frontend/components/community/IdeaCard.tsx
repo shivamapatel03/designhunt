@@ -1,54 +1,65 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, MessageCircle, Share2, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/providers/auth-provider";
 import { toast } from "sonner";
-import { CommentModal } from "./CommentModal";
+import { InlineComments } from "./InlineComments";
+import { ReactionPicker, REACTIONS } from "./ReactionPicker";
+import { EditIdeaModal } from "./EditIdeaModal";
+import { Edit2, MoreHorizontal } from "lucide-react";
 
 export function IdeaCard({ idea, small }: { idea: any, small?: boolean }) {
     const { user } = useAuth();
-    const [liked, setLiked] = useState(false);
+    const [liked, setLiked] = useState(idea.liked || false);
     const [likesCount, setLikesCount] = useState(idea.likes_count || 0);
     const [commentsCount, setCommentsCount] = useState(idea.comments_count || 0);
-    const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
+    const [showComments, setShowComments] = useState(false);
+    const [reactionType, setReactionType] = useState<string | null>(idea.liked ? (idea.reaction_type || 'heart') : null);
+    const [showReactions, setShowReactions] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isLiking, setIsLiking] = useState(false);
+    const reactionTimer = useRef<any>(null);
 
     const timeAgo = new Date(idea.created_at).toLocaleDateString(undefined, {
         month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
     });
 
-    const handleLike = async () => {
-        if (!user) {
-            toast.error("Join the tribe to like this spark!", {
-                action: {
-                    label: "Login",
-                    onClick: () => window.location.href = "/login"
-                }
-            });
-            return;
-        }
-
+    const handleLike = async (type: string = 'heart') => {
         if (isLiking) return;
 
-        const newLiked = !liked;
+        const isUnliking = liked && reactionType === type;
+        const newLiked = !isUnliking;
+        const newReactionType = isUnliking ? null : type;
+
         setLiked(newLiked);
-        setLikesCount((prev: number) => newLiked ? prev + 1 : prev - 1);
+        setReactionType(newReactionType);
+        if (isUnliking) {
+            setLikesCount((prev: number) => prev - 1);
+        } else if (!liked) {
+            setLikesCount((prev: number) => prev + 1);
+        }
+        
         setIsLiking(true);
+        setShowReactions(false);
 
         try {
             const res = await fetch(`/api/ideas/${idea.id}/like`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ user_id: user.id })
+                body: JSON.stringify({ 
+                    user_id: user?.id || "GUEST",
+                    type: type 
+                })
             });
             if (!res.ok) throw new Error();
         } catch (error) {
-            setLiked(!newLiked);
-            setLikesCount((prev: number) => !newLiked ? prev + 1 : prev - 1);
-            toast.error("Failed to update like status.");
+            // Revert on error
+            setLiked(liked);
+            setReactionType(reactionType);
+            toast.error("Failed to update reaction.");
         } finally {
             setIsLiking(false);
         }
@@ -80,113 +91,175 @@ export function IdeaCard({ idea, small }: { idea: any, small?: boolean }) {
             if (res.ok) {
                 toast.success("Design spark removed.");
                 window.location.reload(); 
+            } else {
+                const data = await res.json();
+                toast.error(data.error || "Failed to delete idea.");
             }
         } catch (error) {
-            toast.error("Failed to delete idea.");
+            toast.error("An error occurred while deleting.");
         }
     };
 
     return (
-        <>
-            <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={cn(
-                    "group bg-white border-2 border-black rounded-[32px] shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-transform relative",
-                    small ? "p-6 rounded-[24px] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]" : "p-8"
-                )}
-            >
-                {user?.id === idea.user_id && (
-                    <button 
-                        onClick={handleDelete}
-                        className="absolute top-6 right-6 p-2 text-gray-300 hover:text-accent-red hover:bg-accent-red/5 rounded-xl transition-all z-10"
-                        title="Delete Spark"
-                    >
-                        <Trash2 className="w-5 h-5" />
-                    </button>
-                )}
-
-                <div className="flex justify-between items-start mb-6">
-                    <div className="flex items-center gap-4">
-                        <div className={cn(
-                            "rounded-full border-2 border-black bg-accent-yellow flex items-center justify-center font-black overflow-hidden",
-                            small ? "w-10 h-10 text-base" : "w-12 h-12 text-lg"
-                        )}>
+        <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={cn(
+                "group bg-white border-2 border-black rounded-[24px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all relative overflow-hidden",
+                small ? "p-4" : "p-5"
+            )}
+        >
+            <div className="flex-1 min-w-0">
+                {/* Header */}
+                <div className="flex justify-between items-center mb-3">
+                    <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full border-2 border-black bg-accent-yellow flex items-center justify-center font-black text-xs overflow-hidden shadow-sm">
                             {idea.user_avatar ? (
                                 <img src={idea.user_avatar} alt={idea.user_handle} className="w-full h-full object-cover" />
                             ) : (
                                 idea.user_handle?.charAt(0).toUpperCase() || "A"
                             )}
                         </div>
-                        <div>
-                            <div className={cn("font-black leading-tight", small ? "text-base" : "text-lg")}>
-                                {idea.user_handle || "Anonymous Designer"}
-                            </div>
-                            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                                @{idea.user_handle?.toLowerCase().replace(/\s/g, '') || "designer"}
-                            </div>
+                        <div className="flex items-baseline gap-2">
+                            <span className="font-black text-sm truncate max-w-[120px]">
+                                {idea.user_handle || "Anonymous"}
+                            </span>
+                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">
+                                • {timeAgo}
+                            </span>
                         </div>
                     </div>
-                    <div className="text-[10px] font-black text-gray-300 uppercase tracking-widest">{timeAgo}</div>
+
+                    {user?.id === idea.user_id && (
+                        <div className="flex gap-1">
+                            <button 
+                                onClick={() => setIsEditModalOpen(true)}
+                                className="p-1 text-gray-300 hover:text-black hover:bg-gray-50 rounded-lg transition-all"
+                            >
+                                <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button 
+                                onClick={handleDelete}
+                                className="p-1 text-gray-300 hover:text-accent-red hover:bg-accent-red/5 rounded-lg transition-all"
+                            >
+                                <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                        </div>
+                    )}
                 </div>
 
+                {/* Text Body */}
                 <p className={cn(
-                    "text-gray-700 font-medium leading-relaxed mb-6",
-                    small ? "text-base" : "text-lg"
+                    "text-gray-700 font-medium leading-relaxed mb-4 whitespace-pre-wrap break-words",
+                    small ? "text-sm" : "text-[15px]"
                 )}>
                     {idea.idea}
                 </p>
 
+                {/* Image */}
                 {idea.image && (
-                    <div className="mb-8 rounded-2xl overflow-hidden border-2 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] transition-transform group-hover:scale-[1.01]">
-                        <img src={idea.image} className="w-full h-auto max-h-[400px] object-cover" alt="Design Spark" />
+                    <div className="mb-4 rounded-xl overflow-hidden border-2 border-black max-w-2xl">
+                        <img src={idea.image} className="w-full h-auto max-h-[400px] object-cover" alt="Spark" />
                     </div>
                 )}
 
-                <div className="flex items-center justify-between pt-6 border-t border-black/5">
-                    <div className="flex gap-6">
+                {/* Action Bar (LinkedIn style: Like, Comment, Share) */}
+                <div className="flex items-center gap-1 pt-2 border-t border-black/5">
+                    <div 
+                        className="relative"
+                        onMouseEnter={() => {
+                            if (reactionTimer.current) clearTimeout(reactionTimer.current);
+                            setShowReactions(true);
+                        }}
+                        onMouseLeave={() => {
+                            reactionTimer.current = setTimeout(() => setShowReactions(false), 500);
+                        }}
+                    >
+                        <ReactionPicker 
+                            isVisible={showReactions} 
+                            onSelect={(type) => handleLike(type)} 
+                        />
                         <button 
-                            onClick={handleLike}
+                            onClick={() => handleLike(reactionType || 'heart')}
                             className={cn(
-                                "flex items-center gap-2 font-black text-sm transition-all active:scale-90", 
-                                liked ? "text-accent-red" : "text-gray-400 hover:text-black"
+                                "flex items-center gap-2 px-3 py-1.5 rounded-xl font-bold text-xs transition-all active:scale-95", 
+                                liked ? "bg-accent-yellow/10" : "text-gray-500 hover:bg-gray-100"
                             )}
                         >
                             <motion.div
                                 animate={liked ? { scale: [1, 1.4, 1] } : {}}
                                 transition={{ duration: 0.3 }}
+                                className={cn(liked ? (REACTIONS.find(r => r.type === reactionType)?.color || "text-accent-red") : "text-gray-400")}
                             >
-                                <Heart className={cn("w-5 h-5", liked ? "fill-accent-red" : "")} />
+                                {liked && reactionType ? (
+                                    (() => {
+                                        const R = REACTIONS.find(r => r.type === reactionType);
+                                        return R ? <R.icon className="w-4 h-4 fill-current" /> : <Heart className="w-4 h-4" />;
+                                    })()
+                                ) : (
+                                    <Heart className="w-4 h-4" />
+                                )}
                             </motion.div>
-                            {likesCount}
-                        </button>
-                        <button 
-                            onClick={() => setIsCommentModalOpen(true)}
-                            className="flex items-center gap-2 font-black text-sm text-gray-400 hover:text-black transition-colors"
-                        >
-                            <MessageCircle className="w-5 h-5" />
-                            {commentsCount}
+                            <span className={cn(liked ? "text-black" : "text-gray-500")}>
+                                {likesCount > 0 && likesCount} Like
+                            </span>
                         </button>
                     </div>
+
+                    <button 
+                        onClick={() => setShowComments(!showComments)}
+                        className={cn(
+                            "flex items-center gap-2 px-3 py-1.5 rounded-xl font-bold text-xs transition-colors",
+                            showComments ? "bg-black text-white" : "text-gray-500 hover:bg-gray-100"
+                        )}
+                    >
+                        <MessageCircle className={cn("w-4 h-4", showComments ? "fill-white" : "fill-none")} />
+                        {commentsCount} <span className="hidden sm:inline">Comments</span>
+                    </button>
+                    
                     <button 
                         onClick={handleShare}
-                        className="p-3 hover:bg-black hover:text-white border-2 border-transparent hover:border-black rounded-2xl transition-all"
+                        className="flex items-center gap-2 px-3 py-1.5 text-gray-500 hover:bg-gray-100 rounded-xl font-bold text-xs transition-colors"
                     >
-                        <Share2 className="w-5 h-5" />
+                        <Share2 className="w-4 h-4" />
+                        <span className="hidden sm:inline">Share</span>
                     </button>
                 </div>
-            </motion.div>
+
+                {/* Comments Section */}
+                <AnimatePresence>
+                    {showComments && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="overflow-hidden mt-4"
+                        >
+                            <div className="pl-4 border-l-2 border-black/5">
+                                <InlineComments 
+                                    ideaId={idea.id} 
+                                    user={user} 
+                                    onCommentAdded={() => setCommentsCount((prev: number) => prev + 1)}
+                                />
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
 
             <AnimatePresence>
-                {isCommentModalOpen && (
-                    <CommentModal 
+                {isEditModalOpen && (
+                    <EditIdeaModal 
                         idea={idea} 
                         user={user} 
-                        onClose={() => setIsCommentModalOpen(false)} 
-                        onCommentAdded={() => setCommentsCount((prev: number) => prev + 1)}
+                        onClose={() => setIsEditModalOpen(false)} 
+                        onSuccess={() => {
+                            setIsEditModalOpen(false);
+                            window.location.reload();
+                        }} 
                     />
                 )}
             </AnimatePresence>
-        </>
+        </motion.div>
     );
 }
