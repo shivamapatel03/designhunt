@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
     Sparkles, TrendingUp, Award, Instagram, Globe, 
@@ -33,6 +33,32 @@ export default function CommunityPage() {
     const [filter, setFilter] = useState("Trending");
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+    const sidebarRef = useRef<HTMLDivElement>(null);
+    const [stickyOffset, setStickyOffset] = useState("96px");
+
+    useEffect(() => {
+        const updateOffset = () => {
+            if (sidebarRef.current) {
+                const height = sidebarRef.current.offsetHeight;
+                const vh = window.innerHeight;
+                // If sidebar fits, stick at 96px. If not, stick so bottom is visible.
+                const offset = Math.min(96, vh - height - 24);
+                setStickyOffset(`${offset}px`);
+            }
+        };
+
+        const observer = new ResizeObserver(updateOffset);
+        if (sidebarRef.current) observer.observe(sidebarRef.current);
+        window.addEventListener('resize', updateOffset);
+        
+        // Initial calculation
+        updateOffset();
+
+        return () => {
+            observer.disconnect();
+            window.removeEventListener('resize', updateOffset);
+        };
+    }, []);
 
     useEffect(() => {
         fetchIdeas();
@@ -154,7 +180,11 @@ export default function CommunityPage() {
                     </main>
 
                     {/* Right Column: Trending & Creators (Reddit style) */}
-                    <aside className="hidden lg:block space-y-6 sticky top-[min(96px,calc(100vh-100%-24px))] self-start">
+                    <aside 
+                        className="hidden lg:block space-y-6 sticky self-start transition-[top] duration-300"
+                        style={{ top: stickyOffset }}
+                        ref={sidebarRef}
+                    >
                         {/* Trending Sidebar */}
                         <div className="bg-white border-2 border-black rounded-[24px] p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                             <h3 className="text-sm font-black uppercase tracking-widest mb-6 flex items-center gap-2">
