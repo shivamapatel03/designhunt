@@ -2,25 +2,25 @@
 
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, MessageCircle, Share2, Trash2 } from "lucide-react";
+import { Heart, MessageCircle, Share2, Trash2, Edit2, Play, MoreHorizontal, Bookmark } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/providers/auth-provider";
 import { toast } from "sonner";
 import { InlineComments } from "./InlineComments";
 import { ReactionPicker, REACTIONS } from "./ReactionPicker";
 import { EditIdeaModal } from "./EditIdeaModal";
-import { Edit2, MoreHorizontal } from "lucide-react";
 
-export function IdeaCard({ idea, small }: { idea: any, small?: boolean }) {
+export function IdeaCard({ idea, small, onClick }: { idea: any, small?: boolean, onClick?: () => void }) {
     const { user } = useAuth();
     const [liked, setLiked] = useState(idea.liked || false);
     const [likesCount, setLikesCount] = useState(idea.likes_count || 0);
     const [commentsCount, setCommentsCount] = useState(idea.comments_count || 0);
-    const [showComments, setShowComments] = useState(false);
     const [reactionType, setReactionType] = useState<string | null>(idea.liked ? (idea.reaction_type || 'heart') : null);
     const [showReactions, setShowReactions] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isLiking, setIsLiking] = useState(false);
+    const [saved, setSaved] = useState(idea.saved || false);
+    const [isSaving, setIsSaving] = useState(false);
     const reactionTimer = useRef<any>(null);
 
     const timeAgo = new Date(idea.created_at).toLocaleDateString(undefined, {
@@ -56,7 +56,6 @@ export function IdeaCard({ idea, small }: { idea: any, small?: boolean }) {
             });
             if (!res.ok) throw new Error();
         } catch (error) {
-            // Revert on error
             setLiked(liked);
             setReactionType(reactionType);
             toast.error("Failed to update reaction.");
@@ -65,8 +64,9 @@ export function IdeaCard({ idea, small }: { idea: any, small?: boolean }) {
         }
     };
 
-    const handleShare = () => {
-        const url = `${window.location.origin}/community?idea=${idea.id}`;
+    const handleShare = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const url = `${window.location.origin}/ideas?idea=${idea.id}`;
         if (navigator.share) {
             navigator.share({
                 title: "Check out this design spark on Design-Hunt!",
@@ -79,7 +79,35 @@ export function IdeaCard({ idea, small }: { idea: any, small?: boolean }) {
         }
     };
 
-    const handleDelete = async () => {
+    const handleSave = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (isSaving) return;
+        if (!user) {
+            toast.error("Please login to save ideas.");
+            return;
+        }
+
+        setIsSaving(true);
+        const newSaved = !saved;
+        setSaved(newSaved);
+
+        try {
+            const res = await fetch(`/api/ideas/${idea.id}/save`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" }
+            });
+            if (!res.ok) throw new Error();
+            toast.success(newSaved ? "Idea saved to your collection!" : "Idea removed from saved.");
+        } catch (error) {
+            setSaved(!newSaved);
+            toast.error("Failed to update save status.");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleDelete = async (e: React.MouseEvent) => {
+        e.stopPropagation();
         if (!user || !confirm("Are you sure you want to remove this design spark?")) return;
 
         try {
@@ -105,147 +133,138 @@ export function IdeaCard({ idea, small }: { idea: any, small?: boolean }) {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className={cn(
-                "group bg-white border-2 border-black rounded-[24px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all relative overflow-hidden",
-                small ? "p-4" : "p-5"
+                "group bg-white border border-gray-100/60 rounded-2xl shadow-sm hover:shadow-md transition-all relative overflow-hidden flex flex-col",
+                small ? "p-3" : "p-4 md:p-5"
             )}
         >
-            <div className="flex-1 min-w-0">
-                {/* Header */}
-                <div className="flex justify-between items-center mb-3">
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full border-2 border-black bg-accent-yellow flex items-center justify-center font-black text-xs overflow-hidden shadow-sm">
-                            {idea.user_avatar ? (
-                                <img src={idea.user_avatar} alt={idea.user_handle} className="w-full h-full object-cover" />
-                            ) : (
-                                idea.user_handle?.charAt(0).toUpperCase() || "A"
-                            )}
-                        </div>
-                        <div className="flex items-baseline gap-2">
-                            <span className="font-black text-sm truncate max-w-[120px]">
-                                {idea.user_handle || "Anonymous"}
-                            </span>
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">
-                                • {timeAgo}
-                            </span>
-                        </div>
+            {/* Header - Always accessible */}
+            <div className="flex justify-between items-center mb-3">
+                <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-full border border-gray-200 bg-gray-50 flex items-center justify-center font-bold text-xs overflow-hidden">
+                        {idea.user_avatar ? (
+                            <img src={idea.user_avatar} alt={idea.user_handle} className="w-full h-full object-cover" />
+                        ) : (
+                            idea.user_handle?.charAt(0).toUpperCase() || "A"
+                        )}
                     </div>
-
-                    {user?.id === idea.user_id && (
-                        <div className="flex gap-1">
-                            <button 
-                                onClick={() => setIsEditModalOpen(true)}
-                                className="p-1 text-gray-300 hover:text-black hover:bg-gray-50 rounded-lg transition-all"
-                            >
-                                <Edit2 className="w-3.5 h-3.5" />
-                            </button>
-                            <button 
-                                onClick={handleDelete}
-                                className="p-1 text-gray-300 hover:text-accent-red hover:bg-accent-red/5 rounded-lg transition-all"
-                            >
-                                <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                        </div>
-                    )}
+                    <div className="flex items-baseline gap-2">
+                        <span className="font-bold text-sm text-gray-900 truncate max-w-[120px]">
+                            {idea.user_handle || "Anonymous"}
+                        </span>
+                        <span className="text-[11px] font-medium text-gray-400 whitespace-nowrap">
+                            • {timeAgo}
+                        </span>
+                    </div>
                 </div>
 
-                {/* Text Body */}
+                {user?.id === idea.user_id && (
+                    <div className="flex gap-1">
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); setIsEditModalOpen(true); }}
+                            className="p-1 text-gray-300 hover:text-black hover:bg-gray-50 rounded-lg transition-all"
+                        >
+                            <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button 
+                            onClick={handleDelete}
+                            className="p-1 text-gray-300 hover:text-accent-red hover:bg-accent-red/5 rounded-lg transition-all"
+                        >
+                            <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                    </div>
+                )}
+            </div>
+
+            {/* Clickable Area for Detail View */}
+            <div 
+                className="cursor-pointer flex-1 flex flex-col"
+                onClick={onClick}
+            >
                 <p className={cn(
-                    "text-gray-700 font-medium leading-relaxed mb-4 whitespace-pre-wrap break-words",
+                    "text-gray-700 font-medium leading-relaxed mb-4 whitespace-pre-wrap break-words line-clamp-3",
                     small ? "text-sm" : "text-[15px]"
                 )}>
                     {idea.idea}
                 </p>
 
-                {/* Image */}
-                {idea.image && (
-                    <div className="mb-4 rounded-xl overflow-hidden border-2 border-black max-w-2xl">
-                        <img src={idea.image} className="w-full h-auto max-h-[400px] object-cover" alt="Spark" />
+                {idea.video ? (
+                    <div className="mb-4 rounded-xl overflow-hidden border border-gray-100 aspect-video bg-black relative group/video mt-auto shadow-sm">
+                        <video src={idea.video} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover/video:bg-black/40 transition-colors">
+                            <Play className="w-10 h-10 text-white fill-current opacity-80" />
+                        </div>
                     </div>
-                )}
-
-                {/* Action Bar (LinkedIn style: Like, Comment, Share) */}
-                <div className="flex items-center gap-1 pt-2 border-t border-black/5">
-                    <div 
-                        className="relative"
-                        onMouseEnter={() => {
-                            if (reactionTimer.current) clearTimeout(reactionTimer.current);
-                            setShowReactions(true);
-                        }}
-                        onMouseLeave={() => {
-                            reactionTimer.current = setTimeout(() => setShowReactions(false), 500);
-                        }}
-                    >
-                        <ReactionPicker 
-                            isVisible={showReactions} 
-                            onSelect={(type) => handleLike(type)} 
-                        />
-                        <button 
-                            onClick={() => handleLike(reactionType || 'heart')}
-                            className={cn(
-                                "flex items-center gap-2 px-3 py-1.5 rounded-xl font-bold text-xs transition-all active:scale-95", 
-                                liked ? "bg-accent-yellow/10" : "text-gray-500 hover:bg-gray-100"
-                            )}
-                        >
-                            <motion.div
-                                animate={liked ? { scale: [1, 1.4, 1] } : {}}
-                                transition={{ duration: 0.3 }}
-                                className={cn(liked ? (REACTIONS.find(r => r.type === reactionType)?.color || "text-accent-red") : "text-gray-400")}
-                            >
-                                {liked && reactionType ? (
-                                    (() => {
-                                        const R = REACTIONS.find(r => r.type === reactionType);
-                                        return R ? <R.icon className="w-4 h-4 fill-current" /> : <Heart className="w-4 h-4" />;
-                                    })()
-                                ) : (
-                                    <Heart className="w-4 h-4" />
-                                )}
-                            </motion.div>
-                            <span className={cn(liked ? "text-black" : "text-gray-500")}>
-                                {likesCount > 0 && likesCount} Like
-                            </span>
-                        </button>
+                ) : idea.image ? (
+                    <div className="mb-4 rounded-xl overflow-hidden border border-gray-100 aspect-[4/3] bg-gray-50 mt-auto shadow-sm">
+                        <img src={idea.image} className="w-full h-full object-cover" alt="Spark" />
                     </div>
+                ) : null}
+            </div>
 
+            {/* Action Bar */}
+            <div className="flex items-center gap-1 pt-2 border-t border-black/5 mt-auto">
+                <div 
+                    className="relative"
+                    onMouseEnter={() => {
+                        if (reactionTimer.current) clearTimeout(reactionTimer.current);
+                        setShowReactions(true);
+                    }}
+                    onMouseLeave={() => {
+                        reactionTimer.current = setTimeout(() => setShowReactions(false), 500);
+                    }}
+                >
+                    <ReactionPicker 
+                        isVisible={showReactions} 
+                        onSelect={(type) => handleLike(type)} 
+                    />
                     <button 
-                        onClick={() => setShowComments(!showComments)}
+                        onClick={(e) => { e.stopPropagation(); handleLike(reactionType || 'heart'); }}
                         className={cn(
-                            "flex items-center gap-2 px-3 py-1.5 rounded-xl font-bold text-xs transition-colors",
-                            showComments ? "bg-black text-white" : "text-gray-500 hover:bg-gray-100"
+                            "flex items-center gap-2 px-3 py-1.5 rounded-xl font-bold text-xs transition-all active:scale-95", 
+                            liked ? "bg-accent-yellow/10" : "text-gray-500 hover:bg-gray-100"
                         )}
                     >
-                        <MessageCircle className={cn("w-4 h-4", showComments ? "fill-white" : "fill-none")} />
-                        {commentsCount} <span className="hidden sm:inline">Comments</span>
-                    </button>
-                    
-                    <button 
-                        onClick={handleShare}
-                        className="flex items-center gap-2 px-3 py-1.5 text-gray-500 hover:bg-gray-100 rounded-xl font-bold text-xs transition-colors"
-                    >
-                        <Share2 className="w-4 h-4" />
-                        <span className="hidden sm:inline">Share</span>
+                        <div className={cn(liked ? (REACTIONS.find(r => r.type === reactionType)?.color || "text-accent-red") : "text-gray-400")}>
+                            {liked && reactionType ? (
+                                (() => {
+                                    const R = REACTIONS.find(r => r.type === reactionType);
+                                    return R ? <R.icon className="w-4 h-4 fill-current" /> : <Heart className="w-4 h-4" />;
+                                })()
+                            ) : (
+                                <Heart className="w-4 h-4" />
+                            )}
+                        </div>
+                        <span className={cn(liked ? "text-black" : "text-gray-500")}>
+                            {likesCount > 0 && likesCount}
+                        </span>
                     </button>
                 </div>
 
-                {/* Comments Section */}
-                <AnimatePresence>
-                    {showComments && (
-                        <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="overflow-hidden mt-4"
-                        >
-                            <div className="pl-4 border-l-2 border-black/5">
-                                <InlineComments 
-                                    ideaId={idea.id} 
-                                    user={user} 
-                                    onCommentAdded={() => setCommentsCount((prev: number) => prev + 1)}
-                                />
-                            </div>
-                        </motion.div>
+                <button 
+                    onClick={(e) => { e.stopPropagation(); onClick?.(); }}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-xl font-bold text-xs text-gray-500 hover:bg-gray-100 transition-colors"
+                >
+                    <MessageCircle className="w-4 h-4" />
+                    {commentsCount}
+                </button>
+                <button  
+                    onClick={handleShare}
+                    className="flex items-center gap-2 px-3 py-1.5 text-gray-500 hover:bg-gray-100 rounded-xl font-bold text-xs transition-colors ml-auto"
+                >
+                    <Share2 className="w-4 h-4" />
+                </button>
+                <button 
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className={cn(
+                        "flex items-center gap-2 px-3 py-1.5 rounded-xl font-bold text-xs transition-colors disabled:opacity-50",
+                        saved ? "text-accent-blue bg-accent-blue/10" : "text-gray-500 hover:bg-gray-100"
                     )}
-                </AnimatePresence>
+                >
+                    <Bookmark className={cn("w-4 h-4", saved ? "fill-current" : "")} />
+                </button>
             </div>
+
 
             <AnimatePresence>
                 {isEditModalOpen && (

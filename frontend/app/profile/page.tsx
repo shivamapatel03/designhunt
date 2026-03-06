@@ -15,7 +15,7 @@ import {
   Linkedin, Award, Clock, CheckCircle2, 
   Flame, Layout, Type, LogOut, Settings as SettingsIcon,
   BookOpen, History as HistoryIcon, User as UserIcon, Save,
-  Rocket, PlusCircle, Heart, Loader2
+  Rocket, PlusCircle, Heart, Loader2, Bookmark
 } from "lucide-react";
 import { IdeaCard } from "@/components/community/IdeaCard";
 import { ShareIdeaModal } from "@/components/community/ShareIdeaModal";
@@ -28,6 +28,10 @@ function ProfileContent() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [userIdeas, setUserIdeas] = useState<any[]>([]);
   const [isLoadingIdeas, setIsLoadingIdeas] = useState(false);
+  const [savedIdeas, setSavedIdeas] = useState<any[]>([]);
+  const [isLoadingSaved, setIsLoadingSaved] = useState(false);
+  const [likedIdeas, setLikedIdeas] = useState<any[]>([]);
+  const [isLoadingLiked, setIsLoadingLiked] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [editForm, setEditForm] = useState({
     name: "",
@@ -54,6 +58,10 @@ function ProfileContent() {
   useEffect(() => {
     if (activeTab === "shared") {
         fetchUserIdeas();
+    } else if (activeTab === "saved") {
+        fetchSavedIdeas();
+    } else if (activeTab === "liked") {
+        fetchLikedIdeas();
     }
   }, [activeTab, data?.user?.id]);
 
@@ -99,6 +107,38 @@ function ProfileContent() {
         console.error("Error fetching user ideas:", error);
     } finally {
         setIsLoadingIdeas(false);
+    }
+  };
+
+  const fetchSavedIdeas = async () => {
+    if (!data?.user?.id) return;
+    setIsLoadingSaved(true);
+    try {
+        const res = await fetch("/api/ideas?sort=saved");
+        if (res.ok) {
+            const ideas = await res.json();
+            setSavedIdeas(ideas);
+        }
+    } catch (error) {
+        console.error("Error fetching saved ideas:", error);
+    } finally {
+        setIsLoadingSaved(false);
+    }
+  };
+
+  const fetchLikedIdeas = async () => {
+    if (!data?.user?.id) return;
+    setIsLoadingLiked(true);
+    try {
+        const res = await fetch("/api/ideas?sort=liked");
+        if (res.ok) {
+            const ideas = await res.json();
+            setLikedIdeas(ideas);
+        }
+    } catch (error) {
+        console.error("Error fetching liked ideas:", error);
+    } finally {
+        setIsLoadingLiked(false);
     }
   };
 
@@ -180,6 +220,7 @@ function ProfileContent() {
   const tabs: { id: string, label: string, icon: any }[] = [
     { id: "overview", label: "Overview", icon: Layout },
     { id: "shared", label: "Shared Ideas", icon: Share2 },
+    { id: "saved", label: "Saved Ideas", icon: Bookmark },
     { id: "liked", label: "Liked Ideas", icon: Heart },
     { id: "settings", label: "Settings", icon: SettingsIcon },
   ];
@@ -273,11 +314,55 @@ function ProfileContent() {
                 </div>
             )}
 
+            {activeTab === "saved" && (
+                <div className="space-y-6">
+                    <div className="flex justify-between items-center mb-6">
+                        <h3 className="text-2xl font-black uppercase tracking-tighter italic">Your Saved Ideas</h3>
+                    </div>
+                    
+                    {isLoadingSaved ? (
+                        <div className="py-20 text-center">
+                            <Loader2 className="w-8 h-8 animate-spin mx-auto text-gray-300" />
+                        </div>
+                    ) : savedIdeas.length > 0 ? (
+                        <div className="grid gap-6">
+                            {savedIdeas.map((idea) => (
+                                <IdeaCard small key={idea.id} idea={idea} />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-20 bg-white border-2 border-black border-dashed rounded-[32px]">
+                            <Bookmark className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                            <h3 className="text-xl font-black uppercase">No saved ideas</h3>
+                            <p className="text-gray-500 font-bold text-xs mt-2 uppercase tracking-widest">Ideas you bookmark will appear here.</p>
+                        </div>
+                    )}
+                </div>
+            )}
+
             {activeTab === "liked" && (
-                <div className="text-center py-20 bg-white border-2 border-black border-dashed rounded-[32px]">
-                    <Heart className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                    <h3 className="text-xl font-black uppercase">Your Liked Ideas</h3>
-                    <p className="text-gray-500 font-bold text-xs mt-2 uppercase tracking-widest">Ideas you like will appear here.</p>
+                <div className="space-y-6">
+                    <div className="flex justify-between items-center mb-6">
+                        <h3 className="text-2xl font-black uppercase tracking-tighter italic">Your Liked Ideas</h3>
+                    </div>
+                    
+                    {isLoadingLiked ? (
+                        <div className="py-20 text-center">
+                            <Loader2 className="w-8 h-8 animate-spin mx-auto text-gray-300" />
+                        </div>
+                    ) : likedIdeas.length > 0 ? (
+                        <div className="grid gap-6">
+                            {likedIdeas.map((idea) => (
+                                <IdeaCard small key={idea.id} idea={idea} />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-20 bg-white border-2 border-black border-dashed rounded-[32px]">
+                            <Heart className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                            <h3 className="text-xl font-black uppercase">No liked ideas</h3>
+                            <p className="text-gray-500 font-bold text-xs mt-2 uppercase tracking-widest">Ideas you like will appear here.</p>
+                        </div>
+                    )}
                 </div>
             )}
 

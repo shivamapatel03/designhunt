@@ -85,7 +85,7 @@ export default function ForgotPasswordPage() {
               {message && (
                 <div className="p-4 bg-green-50 border-2 border-black rounded-2xl text-center">
                   <p className="font-black text-xs uppercase mb-4 text-green-700">{message}</p>
-                  <Link href="/reset-password" size="sm" className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-xl font-black text-[10px] uppercase italic hover:bg-gray-800 transition-all">
+                  <Link href="/reset-password" className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-xl font-black text-[10px] uppercase italic hover:bg-gray-800 transition-all">
                     Enter Code <ArrowRight className="w-3 h-3" />
                   </Link>
                 </div>

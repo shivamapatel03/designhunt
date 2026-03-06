@@ -22,7 +22,7 @@ export default function SystemGuard({ children }: { children: React.ReactNode })
         setMaintenanceMode(data.MAINTENANCE_MODE === true);
       }
     } catch (err) {
-      console.error("Failed to check system status");
+      console.error("Failed to check system status:", err);
     } finally {
         setIsLoading(false);
     }

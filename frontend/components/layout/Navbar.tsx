@@ -4,14 +4,14 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Home, Library, BookOpen, PenTool, Trophy, User, Zap, Rocket, Menu, X, LayoutDashboard, LogIn, Users } from "lucide-react";
+import { Home, Library, BookOpen, PenTool, Trophy, User, Zap, Rocket, Menu, X, LayoutDashboard, LogIn, Users, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/providers/auth-provider";
 
 const navItems = [
   { name: "Home", href: "/", icon: Home },
   { name: "Library", href: "/library", icon: Library },
-  { name: "Community", href: "/community", icon: Users },
+  { name: "Idea Sparks", href: "/ideas", icon: Sparkles },
   { name: "Theory", href: "/theory", icon: BookOpen },
   { name: "Tools", href: "/tools", icon: PenTool },
 ];
@@ -99,7 +99,7 @@ export function Navbar() {
 
       {/* Desktop Floating Navbar */}
       <div className="hidden md:block fixed bottom-8 md:top-8 md:bottom-auto left-1/2 -translate-x-1/2 z-50 w-max max-w-[95vw]">
-      <nav className="flex items-center gap-1 md:gap-2 px-2 md:px-4 py-2 md:py-3 bg-white/80 backdrop-blur-md border-2 border-black rounded-full shadow-[4px_4px_0px_0px_#000]">
+      <nav className="flex items-center gap-1 md:gap-2 px-2 md:px-4 py-2 md:py-3 bg-white/90 backdrop-blur-md border border-gray-200 rounded-full shadow-lg">
         
         {currentNavItems.map((item) => {
           const isActive = pathname === item.href;
@@ -114,7 +114,7 @@ export function Navbar() {
               {isActive && (
                 <motion.div
                   layoutId="activeTab"
-                  className="absolute inset-0 bg-black rounded-full"
+                  className="absolute inset-0 bg-gray-900 rounded-full"
                   transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                 />
               )}
@@ -136,11 +136,11 @@ export function Navbar() {
         <Link
             href={getDashboardHref()}
             className={cn(
-                "group relative p-2 md:p-3 rounded-full transition-colors border-2 border-transparent hover:border-black",
-                (pathname === "/profile" || pathname === "/tutor-dashboard" || pathname === "/super-admin") ? "bg-accent-yellow text-black border-black" : "hover:bg-accent-yellow"
+                "group relative p-2 md:p-3 rounded-full transition-colors border border-transparent hover:border-gray-200",
+                (pathname === "/profile" || pathname === "/tutor-dashboard" || pathname === "/super-admin") ? "bg-gray-100 text-gray-900 border-gray-200" : "hover:bg-gray-50"
             )}
         >
-             {user ? <User className="w-5 h-5 md:w-6 md:h-6 text-black" /> : <LogIn className="w-5 h-5 md:w-6 md:h-6 text-black" />}
+             {user ? <User className="w-5 h-5 md:w-6 md:h-6 text-gray-700" /> : <LogIn className="w-5 h-5 md:w-6 md:h-6 text-gray-700" />}
               <span className="hidden md:block absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black text-white text-xs font-bold px-2 py-1 rounded border border-black whitespace-nowrap pointer-events-none">
                 {user ? "Profile" : "Login"}
              </span>

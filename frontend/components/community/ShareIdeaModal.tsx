@@ -2,20 +2,42 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Camera, Loader2, ArrowUpRight } from "lucide-react";
+import { Plus, Camera, Loader2, ArrowUpRight, Video } from "lucide-react";
 import { toast } from "sonner";
 
 export function ShareIdeaModal({ user, onClose, onSuccess }: { user: any, onClose: () => void, onSuccess: () => void }) {
     const [newIdea, setNewIdea] = useState("");
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
     const [isPosting, setIsPosting] = useState(false);
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            if (file.size > 5 * 1024 * 1024) {
+                toast.error("Image too large. Please keep it under 5MB.");
+                return;
+            }
             const reader = new FileReader();
             reader.onloadend = () => {
                 setSelectedImage(reader.result as string);
+                setSelectedVideo(null); // Clear video if image selected
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            if (file.size > 20 * 1024 * 1024) {
+                toast.error("Video too large. Please keep it under 20MB.");
+                return;
+            }
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setSelectedVideo(reader.result as string);
+                setSelectedImage(null); // Clear image if video selected
             };
             reader.readAsDataURL(file);
         }
@@ -31,6 +53,7 @@ export function ShareIdeaModal({ user, onClose, onSuccess }: { user: any, onClos
                 body: JSON.stringify({
                     idea: newIdea,
                     image: selectedImage,
+                    video: selectedVideo,
                     user_id: user?.id,
                     user_handle: user?.name,
                     user_avatar: user?.avatar
@@ -68,8 +91,8 @@ export function ShareIdeaModal({ user, onClose, onSuccess }: { user: any, onClos
                 <div className="absolute top-0 right-0 w-32 h-32 bg-accent-yellow -mr-16 -mt-16 rotate-45 border-l-4 border-black" />
                 
                 <div className="relative z-10">
-                    <h2 className="text-4xl font-black italic uppercase tracking-tighter mb-2">Share Your Spark</h2>
-                    <p className="text-gray-500 font-bold uppercase text-xs tracking-widest mb-8">What's on your mind? Share it with the tribe.</p>
+                    <h2 className="text-4xl font-black italic uppercase tracking-tighter mb-2">Ignite a Spark</h2>
+                    <p className="text-gray-500 font-bold uppercase text-xs tracking-widest mb-8">Got a design idea? Share it with the design tribe.</p>
                     
                     <div className="space-y-4">
                         <textarea 
@@ -80,22 +103,35 @@ export function ShareIdeaModal({ user, onClose, onSuccess }: { user: any, onClos
                             className="w-full h-32 bg-gray-50 border-2 border-black rounded-[24px] p-6 text-xl font-medium outline-none focus:ring-4 focus:ring-accent-yellow transition-all resize-none"
                         />
 
-                        {/* Image Upload Area */}
+                        {/* Media Upload Area */}
                         <div className="flex gap-4">
-                            {!selectedImage ? (
-                                <label className="flex-1 border-2 border-black border-dashed rounded-2xl p-6 hover:bg-gray-50 cursor-pointer transition-colors flex flex-col items-center justify-center gap-2 group">
-                                    <div className="p-3 bg-gray-100 rounded-xl group-hover:scale-110 transition-transform">
-                                        <Camera className="w-6 h-6 text-gray-400" />
-                                    </div>
-                                    <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Add a Screenshot / Sketch</span>
-                                    <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
-                                </label>
+                            {!selectedImage && !selectedVideo ? (
+                                <div className="flex-1 flex gap-4">
+                                    <label className="flex-1 border-2 border-black border-dashed rounded-2xl p-6 hover:bg-gray-50 cursor-pointer transition-colors flex flex-col items-center justify-center gap-2 group">
+                                        <div className="p-3 bg-gray-100 rounded-xl group-hover:scale-110 transition-transform">
+                                            <Camera className="w-6 h-6 text-gray-400" />
+                                        </div>
+                                        <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Image / Sketch</span>
+                                        <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+                                    </label>
+                                    <label className="flex-1 border-2 border-black border-dashed rounded-2xl p-6 hover:bg-gray-50 cursor-pointer transition-colors flex flex-col items-center justify-center gap-2 group">
+                                        <div className="p-3 bg-gray-100 rounded-xl group-hover:scale-110 transition-transform">
+                                            <Video className="w-6 h-6 text-gray-400" />
+                                        </div>
+                                        <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Video Demo</span>
+                                        <input type="file" className="hidden" accept="video/*" onChange={handleVideoChange} />
+                                    </label>
+                                </div>
                             ) : (
-                                <div className="flex-1 relative border-2 border-black rounded-2xl overflow-hidden group">
-                                    <img src={selectedImage} className="w-full h-40 object-cover" alt="Selected" />
+                                <div className="flex-1 relative border-2 border-black rounded-2xl overflow-hidden group h-48 bg-black">
+                                    {selectedImage ? (
+                                        <img src={selectedImage} className="w-full h-full object-cover" alt="Selected" />
+                                    ) : (
+                                        <video src={selectedVideo!} className="w-full h-full object-cover" />
+                                    )}
                                     <button 
-                                        onClick={() => setSelectedImage(null)}
-                                        className="absolute top-2 right-2 p-2 bg-black text-white rounded-full hover:scale-110 transition-transform shadow-lg"
+                                        onClick={() => { setSelectedImage(null); setSelectedVideo(null); }}
+                                        className="absolute top-2 right-2 p-2 bg-black text-white rounded-full hover:scale-110 transition-transform shadow-lg z-10"
                                     >
                                         <Plus className="w-4 h-4 rotate-45" />
                                     </button>

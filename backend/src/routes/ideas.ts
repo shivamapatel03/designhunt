@@ -43,29 +43,71 @@ router.get("/", (req, res) => {
     const token = req.cookies.token;
     let userId: string | null = null;
 
+    let isAuthenticated = false;
+
     if (token) {
       try {
         const payload = jwt.verify(token, JWT_SECRET) as any;
         userId = payload.userId || payload.id;
+        isAuthenticated = true;
       } catch (e) {
         // Token invalid, ignore
       }
     }
 
-    const ideas = db
-      .prepare("SELECT * FROM ideas ORDER BY created_at DESC")
-      .all() as any[];
+    const effectiveUserId = userId || `GUEST_${req.ip || "unknown"}`;
 
-    if (userId) {
+    const { sort } = req.query;
+    let query = "SELECT * FROM ideas";
+    if (sort === "top") {
+      query += " ORDER BY likes_count DESC";
+    } else if (sort === "trending") {
+      // Trending: Recent and liked
+      query +=
+        " ORDER BY (likes_count * 1.5 + comments_count) DESC, created_at DESC";
+    } else if (sort === "saved") {
+      if (!isAuthenticated)
+        return res.status(401).json({ error: "Unauthorized" });
+      query =
+        "SELECT ideas.* FROM ideas JOIN idea_saves ON ideas.id = idea_saves.idea_id WHERE idea_saves.user_id = ? ORDER BY idea_saves.created_at DESC";
+    } else if (sort === "liked") {
+      if (!isAuthenticated)
+        return res.status(401).json({ error: "Unauthorized" });
+      query =
+        "SELECT ideas.* FROM ideas JOIN idea_likes ON ideas.id = idea_likes.idea_id WHERE idea_likes.user_id = ? ORDER BY idea_likes.created_at DESC";
+    } else {
+      query += " ORDER BY created_at DESC";
+    }
+
+    const ideas =
+      (sort === "saved" || sort === "liked") && isAuthenticated
+        ? (db.prepare(query).all(userId) as any[])
+        : (db.prepare(query).all() as any[]);
+
+    if (effectiveUserId) {
       // Mark ideas liked by the user
       const likedIdeas = db
-        .prepare("SELECT idea_id FROM idea_likes WHERE user_id = ?")
-        .all(userId) as any[];
-      const likedIds = new Set(likedIdeas.map((l) => l.idea_id));
+        .prepare(
+          "SELECT idea_id, reaction_type FROM idea_likes WHERE user_id = ?",
+        )
+        .all(effectiveUserId) as any[];
+      const likedMap = new Map(
+        likedIdeas.map((l) => [l.idea_id, l.reaction_type]),
+      );
+
+      const savedIds = new Set();
+      if (isAuthenticated && userId) {
+        const savedIdeas = db
+          .prepare("SELECT idea_id FROM idea_saves WHERE user_id = ?")
+          .all(userId) as any[];
+        savedIdeas.forEach((s) => savedIds.add(s.idea_id));
+      }
 
       const enrichedIdeas = ideas.map((idea) => ({
         ...idea,
-        liked: likedIds.has(idea.id),
+        liked: likedMap.has(idea.id),
+        reaction_type: likedMap.get(idea.id) || null,
+        saved: savedIds.has(idea.id),
       }));
       return res.json(enrichedIdeas);
     }
@@ -262,6 +304,36 @@ router.post("/:id/comment", authenticateOptional, (req: any, res: any) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to post comment" });
+  }
+});
+
+// TOGGLE SAVE IDEA
+router.post("/:id/save", authenticate, (req: any, res: any) => {
+  try {
+    const idea_id = req.params.id;
+    const user_id = req.userId;
+
+    const existingSave = db
+      .prepare("SELECT id FROM idea_saves WHERE idea_id = ? AND user_id = ?")
+      .get(idea_id, user_id);
+
+    if (existingSave) {
+      // Unsave
+      db.prepare(
+        "DELETE FROM idea_saves WHERE idea_id = ? AND user_id = ?",
+      ).run(idea_id, user_id);
+      res.json({ success: true, saved: false });
+    } else {
+      // Save
+      db.prepare("INSERT INTO idea_saves (idea_id, user_id) VALUES (?, ?)").run(
+        idea_id,
+        user_id,
+      );
+      res.json({ success: true, saved: true });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to save idea" });
   }
 });
 

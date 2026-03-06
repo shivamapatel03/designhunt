@@ -289,6 +289,15 @@ try {
     content TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (idea_id) REFERENCES ideas(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS idea_saves (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    idea_id INTEGER NOT NULL,
+    user_id TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (idea_id) REFERENCES ideas(id) ON DELETE CASCADE,
+    UNIQUE(idea_id, user_id)
   );`);
 
   db.prepare(

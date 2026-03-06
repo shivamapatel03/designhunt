@@ -4,10 +4,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Heart, Zap, Star, Flame, Trophy } from "lucide-react";
 
 export const REACTIONS = [
-    { type: 'heart', icon: Heart, color: 'text-accent-red', label: 'Love' },
+    { type: 'heart', icon: Heart, color: 'text-black', label: 'Love' },
     { type: 'mindblown', icon: Zap, color: 'text-accent-yellow', label: 'Wow' },
-    { type: 'fire', icon: Flame, color: 'text-accent-orange', label: 'Hot' },
-    { type: 'top', icon: Trophy, color: 'text-accent-blue', label: 'Top' },
+    { type: 'fire', icon: Flame, color: 'text-black', label: 'Hot' },
+    { type: 'top', icon: Trophy, color: 'text-blue-500', label: 'Top' },
     { type: 'gem', icon: Star, color: 'text-purple-500', label: 'Gem' }
 ];
 
@@ -25,7 +25,7 @@ export function ReactionPicker({
                     initial={{ opacity: 0, scale: 0.8, y: 10 }}
                     animate={{ opacity: 1, scale: 1, y: -45 }}
                     exit={{ opacity: 0, scale: 0.8, y: 10 }}
-                    className="absolute z-50 bg-white border-2 border-black rounded-full p-1.5 flex gap-1 shadow-[4px_4px_0px_0px_black] left-0"
+                    className="absolute z-50 bg-white border border-gray-100 rounded-full p-2 flex gap-2 shadow-lg left-0"
                 >
                     {REACTIONS.map((reaction, index) => (
                         <motion.button
