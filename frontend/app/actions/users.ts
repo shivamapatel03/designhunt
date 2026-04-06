@@ -38,3 +38,35 @@ export const getUserStats = cache(async () => {
     return { count: 0, recentUsers: [] };
   }
 });
+
+export const getTopCreators = cache(async (limit = 5) => {
+  try {
+    const creators = db.prepare(`
+      SELECT 
+        u.id, 
+        u.name, 
+        u.username as handle, 
+        u.avatar, 
+        COUNT(i.id) as ideas_count, 
+        SUM(i.likes_count) as total_likes
+      FROM users u
+      LEFT JOIN ideas i ON u.id = i.user_id
+      GROUP BY u.id
+      HAVING ideas_count > 0
+      ORDER BY total_likes DESC, ideas_count DESC
+      LIMIT ?
+    `).all(limit) as {
+      id: string;
+      name: string;
+      handle: string;
+      avatar: string;
+      ideas_count: number;
+      total_likes: number;
+    }[];
+    
+    return creators;
+  } catch (error) {
+    console.error("Failed to fetch top creators:", error);
+    return [];
+  }
+});

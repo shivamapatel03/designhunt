@@ -1,133 +1,73 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
-import { MouseEvent, useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 
 export function Footer() {
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  function handleMouseMove({ currentTarget, clientX, clientY }: MouseEvent) {
-    const { left, top } = currentTarget.getBoundingClientRect();
-    mouseX.set(clientX - left);
-    mouseY.set(clientY - top);
-  }
-
   return (
-    <footer className="border-t bg-background relative overflow-hidden" onMouseMove={handleMouseMove}>
-      <div className="container mx-auto px-4 py-8 relative z-10">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+    <footer className="bg-black text-white relative pt-20 pb-0 overflow-hidden border-t-8 border-accent-blue">
+      <div className="container mx-auto px-6 md:px-16 lg:px-24 relative z-10 pb-32">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-12">
+          
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <span className="text-lg font-bold border-2 border-primary px-2 py-1 bg-primary text-primary-foreground">
+            <Link href="/" className="flex items-center gap-2 mb-6">
+              <span className="text-xl font-black border-4 border-white px-3 py-1 bg-white text-black tracking-tighter">
                 DH
               </span>
-              <span className="text-lg font-bold">Design-Hunt</span>
+              <span className="text-2xl font-black uppercase italic tracking-tighter">Design-Hunt</span>
             </Link>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-gray-400 font-medium leading-relaxed max-w-xs">
               The structured learning platform for designers. Master your craft with theory, tools, and practice.
             </p>
           </div>
           
           <div>
-            <h3 className="font-semibold mb-4">Learn</h3>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/theory" className="hover:underline">Theory Library</Link></li>
-              <li><Link href="/tools" className="hover:underline">Tool Mastery</Link></li>
-              <BecomeTutorLink />
+            <h3 className="font-black uppercase tracking-widest text-gray-500 mb-6 text-sm">Explore</h3>
+            <ul className="space-y-4 text-sm font-bold">
+              <li><Link href="/theory" className="hover:text-accent-blue transition-colors">Theory Library</Link></li>
+              <li><Link href="/tools" className="hover:text-accent-pink transition-colors">Tool Mastery</Link></li>
             </ul>
           </div>
           
           <div>
-            <h3 className="font-semibold mb-4">Resources</h3>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/theory/color" className="hover:underline">Color Wheel</Link></li>
-              <li><Link href="/theory/typography" className="hover:underline">Type Scale</Link></li>
-              <li><Link href="/library/illustrations" className="hover:underline">Illustrations</Link></li>
-              <li><Link href="/theory/layout" className="hover:underline">Grid Generator</Link></li>
+            <h3 className="font-black uppercase tracking-widest text-gray-500 mb-6 text-sm">Resources</h3>
+            <ul className="space-y-4 text-sm font-bold">
+              <li><Link href="/theory/color" className="hover:text-[#FFD700] transition-colors">Color Wheel</Link></li>
+              <li><Link href="/theory/typography" className="hover:text-accent-blue transition-colors">Type Scale</Link></li>
+              <li><Link href="/library/illustrations" className="hover:text-accent-pink transition-colors">Illustrations</Link></li>
+              <li><Link href="/theory/layout" className="hover:text-[#FFD700] transition-colors">Grid Generator</Link></li>
             </ul>
           </div>
           
           <div>
-            <h3 className="font-semibold mb-4">Company</h3>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/about" className="hover:underline">About</Link></li>
-              <li><Link href="/critique" className="hover:underline font-bold text-accent-yellow">Explore AI Execution Lab</Link></li>
-              <li><Link href="/theory" className="hover:underline">AI Feedback</Link></li>
-              <li>
-                <a 
-                  href="https://buymeacoffee.com/designhunt" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-[#FFDD00] text-black font-black rounded-xl border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all text-sm italic tracking-tight"
-                >
-                  <span className="text-lg">☕</span> Buy me a coffee
-                </a>
-              </li>
+            <h3 className="font-black uppercase tracking-widest text-gray-500 mb-6 text-sm">Company</h3>
+            <ul className="space-y-4 text-sm font-bold">
+              <li><Link href="/about" className="hover:text-white transition-colors">About Story</Link></li>
+              <li><Link href="/critique" className="hover:text-[#FFD700] transition-colors">Execution Lab</Link></li>
+              <li><Link href="/theory" className="hover:text-white transition-colors">Feedback</Link></li>
             </ul>
           </div>
         </div>
-        <div className="mt-8 pt-8 border-t text-center text-sm text-muted-foreground flex justify-between items-center">
-          <p>&copy; {new Date().getFullYear()} Design-Hunt. All rights reserved.</p>
+
+        <div className="mt-16 pt-8 border-t-2 border-white/10 text-center md:text-left text-xs font-bold text-gray-500 uppercase flex flex-col md:flex-row justify-between items-center gap-4">
+          <p>&copy; {new Date().getFullYear()} DESIGN-HUNT. ALL RIGHTS RESERVED.</p>
+          <div className="flex gap-4">
+              <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
+              <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
+          </div>
         </div>
       </div>
       
-      {/* Large Typographic Effect - Dancing Letters */}
-      <div className="w-full relative overflow-hidden flex justify-center items-center bg-background select-none cursor-default pb-0 pt-0">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:14px_24px]"></div>
-        
-        <div className="flex relative z-10 pointer-events-auto">
-          {"DesignHunt".split("").map((letter, i) => (
-            <motion.span
-              key={i}
-              className="text-[13vw] font-black uppercase tracking-tighter leading-[0.8] transition-colors duration-300 text-neutral-200 hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-br hover:from-accent-blue hover:via-accent-pink hover:to-accent-yellow cursor-pointer inline-block"
-              whileHover={{ 
-                scale: 1.1,
-                y: -10,
-                rotate: Math.random() * 10 - 5
-              }}
-              transition={{ type: "spring", stiffness: 300 }}
-            >
-              {letter}
-            </motion.span>
-          ))}
-        </div>
+      {/* Decorative Bottom Edge Shapes */}
+      <div className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none flex justify-between items-end overflow-hidden opacity-90">
+         {/* Purple Shape */}
+         <div className="w-32 h-20 bg-[#C084FC] rounded-t-full translate-y-8 -translate-x-4 mix-blend-screen"></div>
+         {/* Pink Starburst Shape */}
+         <div className="w-24 h-24 bg-[#F472B6] rotate-45 translate-y-12 mix-blend-screen transform origin-bottom border-4 border-black"></div>
+         {/* Blue Abstract */}
+         <div className="w-40 h-24 bg-[#3B82F6] rounded-tl-[100px] translate-y-10 mix-blend-screen"></div>
+         {/* Green Circle */}
+         <div className="w-28 h-28 bg-[#4ADE80] rounded-full translate-y-16 translate-x-8 mix-blend-screen"></div>
       </div>
     </footer>
   );
-}
-
-function BecomeTutorLink() {
-    const [enableMarketplace, setEnableMarketplace] = useState(false);
-    const router = useRouter();
-
-    useEffect(() => {
-        fetch("/api/settings")
-            .then(res => res.json())
-            .then(data => {
-                if (data && data.ENABLE_MARKETPLACE) {
-                    setEnableMarketplace(data.ENABLE_MARKETPLACE);
-                }
-            })
-            .catch(err => console.error("Failed to fetch settings:", err));
-    }, []);
-
-    const handleClick = (e: any) => {
-        if (!enableMarketplace) {
-            e.preventDefault();
-            alert("This feature is presently under development.");
-        } else {
-            router.push("/become-tutor");
-        }
-    };
-
-    return (
-        <li>
-            <button onClick={handleClick} className="hover:underline text-left">
-                Become a Tutor
-            </button>
-        </li>
-    );
 }

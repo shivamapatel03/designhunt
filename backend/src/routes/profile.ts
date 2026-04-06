@@ -66,6 +66,8 @@ router.get("/", authenticate, (req: any, res: any) => {
         },
         bio: user.bio || "Design enthusiast.",
         skills: user.skills ? JSON.parse(user.skills) : [],
+        portfolio_items: user.portfolio_items ? JSON.parse(user.portfolio_items) : [],
+        looking_for_work: !!user.looking_for_work,
       },
       history: [],
       enrollments: enrollments,
@@ -76,6 +78,23 @@ router.get("/", authenticate, (req: any, res: any) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to fetch profile" });
+  }
+});
+
+router.post("/decrement-scans", authenticate, (req: any, res: any) => {
+  try {
+    const userId = req.userId;
+    const user = db.prepare("SELECT scan_balance FROM users WHERE id = ?").get(userId) as any;
+    
+    if (user && user.scan_balance > 0) {
+      db.prepare("UPDATE users SET scan_balance = scan_balance - 1 WHERE id = ?").run(userId);
+      return res.json({ success: true, remaining: user.scan_balance - 1 });
+    }
+    
+    res.status(400).json({ error: "Insufficient scan balance" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 

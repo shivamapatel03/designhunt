@@ -109,7 +109,7 @@ export function SearchFilters() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search for courses, topic, or instructor..."
-          className="w-full pl-12 pr-10 py-4 bg-gray-50 border-2 border-transparent focus:bg-white focus:border-black rounded-xl outline-none transition-all placeholder:font-medium font-bold text-lg"
+          className="w-full pl-12 pr-10 py-4 bg-gray-50 border-2 border-transparent focus:bg-white focus:border-black rounded-xl outline-none transition-all placeholder:font-normal font-medium font-clash text-black text-lg"
         />
         {query && (
             <button 

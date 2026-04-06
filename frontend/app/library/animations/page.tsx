@@ -180,14 +180,14 @@ export default function AnimationsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-20">
+    <div className="min-h-screen bg-gray-50 pt-14 md:pt-16 pb-12">
       <div className="container mx-auto px-4 md:px-8">
         <div className="max-w-4xl mx-auto mb-16 text-center">
             <Link href="/library" className="inline-flex items-center gap-2 text-gray-400 hover:text-black font-bold mb-8 transition-colors">
                 <ArrowLeft className="w-4 h-4" /> Back to Library
             </Link>
             
-            <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tighter">
+            <h1 className="text-5xl md:text-7xl font-clash font-black mb-6 tracking-tighter">
                 Animation <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-purple to-accent-pink">Mega Pack</span>
             </h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">

@@ -1,32 +1,83 @@
-
 "use client";
 
 import { useState } from "react";
 import { CheckCircle2, Zap, Loader2, Star } from "lucide-react";
+import { loadRazorpayScript } from "@/lib/razorpay";
 
 interface ProUpgradeCardProps {
   isPro: boolean;
+  userEmail?: string;
+  userName?: string;
   onUpgrade: () => void;
 }
 
-export function ProUpgradeCard({ isPro, onUpgrade }: ProUpgradeCardProps) {
-  const [loading, setLoading] = useState(false);
+export function ProUpgradeCard({ isPro, userEmail, userName, onUpgrade }: ProUpgradeCardProps) {
+  const [loadingAmount, setLoadingAmount] = useState<number | null>(null);
 
-  const handleUpgrade = async () => {
-    setLoading(true);
+  const handleUpgrade = async (amount: number) => {
+    setLoadingAmount(amount);
     try {
-      const res = await fetch("/api/upgrade-pro", { method: "POST" });
-      if (res.ok) {
-        onUpgrade();
-        alert("Welcome to Pro! You now have access to premium features.");
-      } else {
-        alert("Something went wrong. Please try again.");
+      const res = await loadRazorpayScript();
+      if (!res) {
+        alert("Razorpay SDK failed to load. Are you online?");
+        return;
       }
-    } catch (error) {
+
+      // Create Order on Backend
+      const orderResponse = await fetch(`/api/payments/create-order`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount }),
+      });
+      const orderData = await orderResponse.json();
+
+      if (!orderResponse.ok) throw new Error(orderData.error);
+
+      // Open Razorpay Checkout
+      const options = {
+        key: orderData.key,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "DesignHunt",
+        description: "Unlock Pro Features",
+        order_id: orderData.orderId,
+        handler: async function (response: any) {
+          // Verify Payment
+          const verifyResponse = await fetch(`/api/payments/verify`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              amount: amount
+            }),
+          });
+          
+          if (verifyResponse.ok) {
+            alert("Payment successful! You are now a PRO member.");
+            onUpgrade();
+          } else {
+            const verifyData = await verifyResponse.json();
+            alert("Payment verification failed: " + verifyData.error);
+          }
+        },
+        prefill: {
+          name: userName,
+          email: userEmail,
+        },
+        theme: {
+          color: "#000000",
+        },
+      };
+
+      const rzp1 = new (window as any).Razorpay(options);
+      rzp1.open();
+    } catch (error: any) {
       console.error(error);
-      alert("Failed to connect to server.");
+      alert("Payment failed: " + error.message);
     } finally {
-      setLoading(false);
+      setLoadingAmount(null);
     }
   };
 
@@ -50,53 +101,43 @@ export function ProUpgradeCard({ isPro, onUpgrade }: ProUpgradeCardProps) {
   }
 
   return (
-    <div className="bg-gradient-to-br from-gray-900 to-black text-white p-8 rounded-[32px] border-4 border-black relative overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]">
+    <div className="bg-gradient-to-br from-gray-900 to-black text-white p-8 rounded-[40px] border-4 border-black relative overflow-hidden shadow-[12px_12px_0px_0px_rgba(0,0,0,0.5)]">
        {/* Decorative Elements */}
-       <div className="absolute top-0 right-0 w-64 h-64 bg-accent-blue/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
-       <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent-pink/20 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2" />
+       <div className="absolute top-0 right-0 w-64 h-64 bg-accent-blue/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
+       <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent-pink/10 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2" />
 
-      <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-8 justify-between">
-        <div className="space-y-6 max-w-lg">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-yellow text-black text-xs font-black uppercase tracking-widest mb-4 shadow-[2px_2px_0px_0px_rgba(255,255,255,0.2)]">
-               <Zap className="w-3 h-3 fill-black" /> Upgrade to Pro
-            </div>
-            <h3 className="text-4xl font-black mb-4 leading-tight">
-              Unlock the Full <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-blue via-purple-400 to-accent-pink">Design Hunt</span> Experience.
-            </h3>
-            <p className="text-gray-400 font-medium text-lg">
-              Get exclusive access to premium resources for just <span className="text-white font-black">$1/month</span>.
-            </p>
+      <div className="relative z-10">
+        <div className="mb-10 text-center md:text-left">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-yellow text-black text-xs font-black uppercase tracking-widest mb-4">
+             <Zap className="w-3 h-3 fill-black" /> Pro Tiers
           </div>
-
-          <ul className="space-y-3">
-            {[
-              "Downloadable UI Kits & Source Files",
-              "Advanced Theory Modules",
-              "Pro Badge on Profile",
-              "Priority Support"
-            ].map((benefit, i) => (
-              <li key={i} className="flex items-center gap-3 font-bold text-gray-300">
-                <CheckCircle2 className="w-5 h-5 text-green-500" /> {benefit}
-              </li>
-            ))}
-          </ul>
+          <h3 className="text-4xl font-black mb-2">Power up your Design Agent</h3>
+          <p className="text-gray-400 font-medium">Choose a plan to get instant AI teardowns of your work.</p>
         </div>
 
-        <div className="w-full md:w-auto flex flex-col items-center gap-4 bg-white/5 p-6 rounded-2xl border border-white/10 backdrop-blur-sm">
-            <div className="text-center">
-                <span className="text-3xl font-black">$1</span>
-                <span className="text-gray-400 font-bold">/month</span>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { name: "Single", scans: "1 Scan", price: 10, color: "accent-blue" },
+            { name: "Starter", scans: "10 Scans", price: 199, color: "accent-blue" },
+            { name: "Popular", scans: "20 Scans", price: 599, color: "accent-yellow" },
+            { name: "Unlimited", scans: "45 Scans", price: 999, color: "accent-pink" }
+          ].map((tier) => (
+            <div key={tier.name} className="bg-white/5 border border-white/10 p-4 rounded-[24px] hover:bg-white/10 transition-all flex flex-col justify-between group h-full">
+              <div>
+                <div className={`text-${tier.color} font-black uppercase text-[10px] tracking-widest mb-1`}>{tier.name}</div>
+                <div className="text-xl font-black mb-1 leading-tight">{tier.scans}</div>
+                <div className="text-sm font-bold text-gray-500 mb-4 font-mono">₹{tier.price}</div>
+              </div>
+              
+              <button
+                onClick={() => handleUpgrade(tier.price)}
+                disabled={loadingAmount !== null}
+                className={`w-full py-2 ${tier.name === 'Popular' ? 'bg-accent-yellow text-black' : 'bg-white/10 text-white hover:bg-white/20'} font-black rounded-lg transition-all flex items-center justify-center gap-2 text-xs`}
+              >
+                {loadingAmount === tier.price ? <Loader2 className="w-3 h-3 animate-spin" /> : "Buy"}
+              </button>
             </div>
-            <button
-                onClick={handleUpgrade}
-                disabled={loading}
-                className="w-full md:w-64 py-4 bg-white text-black font-black rounded-xl hover:bg-gray-100 transition-all shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] active:translate-y-[2px] active:shadow-none flex items-center justify-center gap-2"
-            >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Go Pro Now"}
-            </button>
-            <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Cancel Anytime</p>
+          ))}
         </div>
       </div>
     </div>

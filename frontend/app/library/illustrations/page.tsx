@@ -54,7 +54,7 @@ const ILLUSTRATION_RESOURCES = [
 
 export default function IllustrationsPage() {
   return (
-    <div className="min-h-screen bg-white pt-24 pb-12">
+    <div className="min-h-screen bg-white pt-14 md:pt-16 pb-8">
       <div className="container mx-auto px-4 md:px-8 max-w-6xl">
         
         {/* Breadcrumb */}
@@ -64,7 +64,7 @@ export default function IllustrationsPage() {
             <span className="text-black">Illustrations</span>
         </div>
 
-        <h1 className="text-5xl font-black mb-6">Illustration Sets</h1>
+        <h1 className="text-5xl font-clash font-black mb-6">Illustration Sets</h1>
         <p className="text-xl text-gray-600 mb-12 max-w-2xl">
             Curated list of high-quality, open-source illustration libraries to bring your UI to life.
         </p>

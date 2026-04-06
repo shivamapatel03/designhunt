@@ -35,6 +35,8 @@ import { getPendingCourses, approveCourse, rejectCourse, getSystemStats } from "
 import { DuelsManager } from "@/components/admin/DuelsManager"; 
 import { ToolsManager } from "@/components/admin/ToolsManager"; 
 import { IdeasManager } from "@/components/super-admin/IdeasManager";
+import { ExpertReviewsManager } from "@/components/super-admin/ExpertReviewsManager";
+
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState("courses");
   const [uploading, setUploading] = useState(false);
@@ -157,6 +159,12 @@ export default function AdminPage() {
             active={activeTab === "ideas"} 
             onClick={() => setActiveTab("ideas")} 
           />
+          <AdminSidebarItem 
+            icon={Edit2} 
+            label="Reviews" 
+            active={activeTab === "reviews"} 
+            onClick={() => setActiveTab("reviews")} 
+          />
           <div className="pt-8 border-t border-gray-100 mt-auto">
             <button 
                 onClick={() => window.location.href = '/api/auth/logout'}
@@ -176,7 +184,8 @@ export default function AdminPage() {
                  activeTab === 'courses' ? 'Review Queue' : 
                  activeTab === 'pricing' ? 'Pricing Control' : 
                  activeTab === 'duels' ? 'Duel Arena' : 
-                 activeTab === 'tools' ? 'Tools Manager' : 'Library'}
+                 activeTab === 'tools' ? 'Tools Manager' : 
+                 activeTab === 'reviews' ? 'Expert Reviews' : 'Library'}
             </h1>
           </div>
 
@@ -200,6 +209,12 @@ export default function AdminPage() {
 
           {activeTab === 'ideas' && (
               <IdeasManager isAdmin={true} />
+          )}
+
+          {activeTab === 'reviews' && (
+              <div className="bg-white p-8 rounded-[32px] border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                <ExpertReviewsManager isAdmin={true} />
+              </div>
           )}
 
           {activeTab === 'courses' && (

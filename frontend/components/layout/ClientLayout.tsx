@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
+import { CookieConsent } from "./CookieConsent";
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -16,6 +17,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
         {children}
       </main>
       {!isFullscreen && !isAdmin && <Footer />}
+      <CookieConsent />
     </>
   );
 }

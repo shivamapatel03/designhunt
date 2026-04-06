@@ -15,6 +15,10 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [timeLeft, setTimeLeft] = useState(30);
+  const [canResend, setCanResend] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState("");
   const router = useRouter();
 
   // Redundancy Fix
@@ -25,9 +29,48 @@ export default function LoginPage() {
         : user.role === 'TUTOR' ? '/tutor-dashboard' 
         : '/profile';
       
-      router.replace(target); // Use replace to prevent back-button loop
+      router.replace(target);
     }
   }, [user, router]);
+
+  useEffect(() => {
+    if (showOtp && timeLeft > 0) {
+      const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+      return () => clearTimeout(timer);
+    } else if (timeLeft === 0) {
+      setCanResend(true);
+    }
+  }, [showOtp, timeLeft]);
+
+  const handleResend = async () => {
+    if (!canResend || resendLoading) return;
+
+    setResendLoading(true);
+    setError("");
+    setResendMessage("");
+
+    try {
+      const res = await fetch("/api/auth/resend-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: formData.email, type: "login" }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setResendMessage("New code sent!");
+        setTimeLeft(30);
+        setCanResend(false);
+      } else {
+        setError(data.error || "Failed to resend");
+      }
+    } catch (err) {
+      setError("Network error. Please try again.");
+    } finally {
+      setResendLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,25 +119,25 @@ export default function LoginPage() {
       </div>
 
       <div className="flex-1 flex items-center justify-center p-4 relative z-10">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-[340px]">
           <motion.div 
             initial={{ scale: 0.98, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-white border-[3px] border-black rounded-[32px] shadow-[8px_8px_0px_0px_#000] p-6 md:p-10 relative overflow-hidden"
+            className="bg-white border-[3px] border-black rounded-[28px] shadow-[6px_6px_0px_0px_#000] p-5 md:p-6 relative overflow-hidden"
           >
             {/* Header Sticker */}
             <div className="absolute top-4 right-4 bg-accent-yellow border-2 border-black px-3 py-1 rounded-full font-black text-[10px] uppercase italic -rotate-12 shadow-[3px_3px_0px_0px_#000]">
               Secure
             </div>
 
-            <div className="mb-8 text-center sm:text-left">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-accent-blue border-2 border-black rounded-xl mb-4 shadow-[4px_4px_0px_0px_#000]">
-                <Zap className="w-6 h-6 text-white fill-white" />
+            <div className="mb-4 text-center sm:text-left">
+              <div className="inline-flex items-center justify-center w-10 h-10 bg-accent-blue border-2 border-black rounded-lg mb-2.5 shadow-[3px_3px_0px_0px_#000]">
+                <Zap className="w-4 h-4 text-white fill-white" />
               </div>
-              <h1 className="text-3xl font-black italic tracking-tighter uppercase mb-1">
+              <h1 className="text-xl font-black italic tracking-tighter uppercase mb-0">
                 The <span className="text-accent-blue">Recruit</span>
               </h1>
-              <p className="text-sm font-bold text-gray-400 italic">Access the learning mainframe and challenges.</p>
+              <p className="text-[10px] font-bold text-gray-400 italic">Access the learning mainframe and challenges.</p>
             </div>
 
             <AnimatePresence mode="wait">
@@ -111,7 +154,7 @@ export default function LoginPage() {
                   <button 
                     type="button"
                     onClick={() => window.location.href = '/api/auth/google'}
-                    className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-white border-[3px] border-black rounded-2xl font-black text-base shadow-[4px_4px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all group">
+                    className="w-full flex items-center justify-center gap-3 py-2.5 px-4 bg-white border-[3px] border-black rounded-xl font-black text-sm shadow-[4px_4px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all group">
                     <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                       <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -138,7 +181,7 @@ export default function LoginPage() {
                         required
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="w-full px-4 py-3 bg-white border-[3px] border-black rounded-2xl font-black text-base outline-none focus:bg-accent-yellow shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] focus:shadow-[2px_2px_0px_0px_#000] focus:translate-x-1 focus:translate-y-1 transition-all"
+                        className="w-full px-4 py-2 bg-white border-[3px] border-black rounded-xl font-black text-sm outline-none focus:bg-accent-yellow shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] focus:shadow-[2px_2px_0px_0px_#000] focus:translate-x-1 focus:translate-y-1 transition-all"
                         placeholder="NAME@URL.COM"
                       />
                     </div>
@@ -150,7 +193,7 @@ export default function LoginPage() {
                         required
                         value={formData.password}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                        className="w-full px-4 py-3 bg-white border-[3px] border-black rounded-2xl font-black text-base outline-none focus:bg-accent-blue focus:text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] focus:shadow-[2px_2px_0px_0px_#000] focus:translate-x-1 focus:translate-y-1 transition-all"
+                        className="w-full px-4 py-2 bg-white border-[3px] border-black rounded-xl font-black text-sm outline-none focus:bg-accent-blue focus:text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] focus:shadow-[2px_2px_0px_0px_#000] focus:translate-x-1 focus:translate-y-1 transition-all"
                         placeholder="••••••••"
                       />
                       <div className="flex justify-end mt-1">
@@ -163,8 +206,8 @@ export default function LoginPage() {
 
                    {error && <p className="p-3 bg-red-50 border-2 border-black rounded-xl font-black text-xs text-center italic">{error}</p>}
 
-                  <button disabled={loading} className="w-full py-4 bg-black text-white font-black text-xl rounded-[24px] shadow-[6px_6px_0px_0px_#ffd700] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all flex items-center justify-center gap-3 italic uppercase">
-                    {loading ? 'WAIT...' : 'Proceed'} <ArrowRight className="w-6 h-6" />
+                  <button disabled={loading} className="w-full py-3 bg-black text-white font-black text-lg rounded-[20px] shadow-[4px_4px_0px_0px_#ffd700] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all flex items-center justify-center gap-2 italic uppercase">
+                    {loading ? 'WAIT...' : 'Proceed'} <ArrowRight className="w-5 h-5" />
                   </button>
                 </motion.form>
               ) : (
@@ -196,6 +239,29 @@ export default function LoginPage() {
                     <button disabled={loading} className="w-full py-4 bg-accent-yellow text-black font-black text-xl rounded-[24px] border-[3px] border-black shadow-[6px_6px_0px_0px_#000] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all uppercase italic">
                       {loading ? 'VERIFYING...' : 'Break Through'}
                     </button>
+                    
+                    <div className="text-center">
+                        {!canResend ? (
+                            <p className="text-[10px] font-black uppercase italic text-gray-400">
+                                Resend in <span className="text-black not-italic">{timeLeft}s</span>
+                            </p>
+                        ) : (
+                            <button 
+                                type="button" 
+                                onClick={handleResend}
+                                disabled={resendLoading}
+                                className="text-[10px] font-black uppercase italic text-black hover:text-accent-blue transition-colors disabled:opacity-50"
+                            >
+                                {resendLoading ? "Sending..." : "Resend Verification Code"}
+                            </button>
+                        )}
+                        {resendMessage && (
+                            <p className="mt-1 text-[10px] font-black uppercase italic text-green-600 animate-pulse">
+                                {resendMessage}
+                            </p>
+                        )}
+                    </div>
+
                     <button type="button" onClick={() => setShowOtp(false)} className="text-[10px] font-black uppercase italic text-gray-400 hover:text-black transition-colors">
                       Abort Request
                     </button>
@@ -204,8 +270,8 @@ export default function LoginPage() {
               )}
             </AnimatePresence>
 
-            <div className="mt-8 text-center">
-              <p className="text-base font-black text-gray-300">
+            <div className="mt-4 text-center">
+              <p className="text-[10px] font-bold text-gray-300">
                 New?{' '}
                 <Link href="/signup" className="text-black hover:underline underline-offset-4 decoration-accent-blue decoration-2">
                   Create Account

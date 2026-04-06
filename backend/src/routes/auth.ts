@@ -8,9 +8,75 @@ import {
   sendPasswordResetEmail,
 } from "../lib/email";
 import { randomUUID } from "crypto";
+import { client as redis, isHealthy as isRedisHealthy } from "../lib/redis";
+
+const OTP_EXPIRY_SECONDS = 600; // 10 minutes
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || "designhunt_secret_key_123";
+
+/**
+ * Stores an OTP in Redis if healthy, otherwise falls back to SQLite.
+ */
+async function storeOtp(email: string, otp: string, type: "signup" | "login" | "admin", hashed = false) {
+  const redisKey = `otp:${type}:${email}`;
+  const valueToStore = hashed ? await bcrypt.hash(otp, 10) : otp;
+
+  if (isRedisHealthy()) {
+    try {
+      await redis.set(redisKey, valueToStore, { EX: OTP_EXPIRY_SECONDS });
+      return { success: true, storedIn: "redis" };
+    } catch (err) {
+      console.error("Redis set error, falling back to DB:", err);
+    }
+  }
+
+  // Fallback to SQLite
+  const expiresAt = new Date(Date.now() + OTP_EXPIRY_SECONDS * 1000).toISOString();
+  db.prepare(
+    "UPDATE users SET otp_code = ?, otp_expires_at = ? WHERE email = ?"
+  ).run(valueToStore, expiresAt, email);
+  
+  return { success: true, storedIn: "db" };
+}
+
+/**
+ * Retrieves an OTP from Redis or SQLite.
+ */
+async function getStoredOtp(email: string, type: "signup" | "login" | "admin") {
+  const redisKey = `otp:${type}:${email}`;
+
+  if (isRedisHealthy()) {
+    try {
+      const redisOtp = await redis.get(redisKey);
+      if (redisOtp) return redisOtp;
+    } catch (err) {
+      console.error("Redis get error, checking DB:", err);
+    }
+  }
+
+  // Check SQLite
+  const user = db.prepare("SELECT otp_code, otp_expires_at FROM users WHERE email = ?").get(email) as any;
+  if (user && user.otp_code && new Date(user.otp_expires_at) > new Date()) {
+    return user.otp_code;
+  }
+
+  return null;
+}
+
+/**
+ * Clears an OTP from both Redis and SQLite.
+ */
+async function clearOtp(email: string, type: "signup" | "login" | "admin") {
+  if (isRedisHealthy()) {
+    try {
+      await redis.del(`otp:${type}:${email}`);
+    } catch (err) {
+      console.error("Redis del error:", err);
+    }
+  }
+  db.prepare("UPDATE users SET otp_code = NULL, otp_expires_at = NULL WHERE email = ?").run(email);
+}
 
 // SIGNUP
 router.post("/signup", async (req, res) => {
@@ -34,11 +100,12 @@ router.post("/signup", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const userId = randomUUID();
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpires = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-
     db.prepare(
-      "INSERT INTO users (id, email, password, name, otp_code, otp_expires_at, email_verified) VALUES (?, ?, ?, ?, ?, ?, 0)",
-    ).run(userId, email, hashedPassword, name, otp, otpExpires);
+      "INSERT INTO users (id, email, password, name, email_verified) VALUES (?, ?, ?, ?, 0)",
+    ).run(userId, email, hashedPassword, name);
+
+    // Store OTP (Redis or DB Fallback)
+    await storeOtp(email, otp, "signup");
 
     const emailRes = await sendVerificationEmail(email, otp);
 
@@ -57,6 +124,41 @@ router.post("/signup", async (req, res) => {
     });
   } catch (error) {
     console.error("Signup Error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// RESEND OTP
+router.post("/resend-otp", async (req, res) => {
+  try {
+    const { email, type = "signup" } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    const user = db
+      .prepare("SELECT * FROM users WHERE email = ?")
+      .get(email) as any;
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    if (type === "signup") {
+      if (user.email_verified) {
+        return res.status(400).json({ error: "Email already verified" });
+      }
+      await storeOtp(email, otp, "signup");
+      await sendVerificationEmail(email, otp);
+    } else if (type === "login") {
+      await storeOtp(email, otp, "login", true); // Login OTPs are usually hashed
+      await sendAdminLoginEmail(email, otp, user.role);
+    }
+
+    res.json({ success: true, message: "New OTP sent" });
+  } catch (error) {
+    console.error("Resend OTP Error:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -85,14 +187,17 @@ router.post("/verify", async (req, res) => {
       return;
     }
 
-    const now = new Date().toISOString();
-    if (user.otp_code !== otp || user.otp_expires_at < now) {
+    const storedOtp = await getStoredOtp(email, "signup");
+    if (!storedOtp || storedOtp !== otp) {
       res.status(400).json({ error: "Invalid or expired code" });
       return;
     }
 
+    // Clear OTP (Redis & DB)
+    await clearOtp(email, "signup");
+
     db.prepare(
-      "UPDATE users SET email_verified = 1, otp_code = NULL, otp_expires_at = NULL WHERE id = ?",
+      "UPDATE users SET email_verified = 1 WHERE id = ?",
     ).run(user.id);
 
     const token = jwt.sign(
@@ -113,7 +218,12 @@ router.post("/verify", async (req, res) => {
     res.json({
       success: true,
       redirect: "/onboarding",
-      user: { name: user.name, email: user.email, role: user.role },
+      user: { 
+        name: user.name, 
+        email: user.email, 
+        role: user.role,
+        handle: user.username ? `@${user.username}` : `@${user.name.toLowerCase().replace(/\s+/g, "")}`
+      },
     });
   } catch (error) {
     console.error("Verify Error:", error);
@@ -150,12 +260,8 @@ router.post("/login", async (req, res) => {
       const staffRoles = ["TUTOR", "ADMIN", "SUPER_ADMIN"];
       if (staffRoles.includes(user.role)) {
         const code = Math.floor(100000 + Math.random() * 900000).toString();
-        const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-        const hashedOtp = await bcrypt.hash(code, 10);
-
-        db.prepare(
-          "UPDATE users SET otp_code = ?, otp_expires_at = ? WHERE id = ?",
-        ).run(hashedOtp, expiresAt, user.id);
+        // Store OTP (Redis or DB Fallback)
+        await storeOtp(email, code, "login", true);
 
         await sendAdminLoginEmail(email, code, user.role);
         res.json({ success: true, requiresOtp: true });
@@ -176,12 +282,9 @@ router.post("/login", async (req, res) => {
       const staffRoles = ["TUTOR", "ADMIN", "SUPER_ADMIN"];
       if (staffRoles.includes(user.role)) {
         const code = Math.floor(100000 + Math.random() * 900000).toString();
-        const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-        const hashedOtp = await bcrypt.hash(code, 10);
-
-        db.prepare(
-          "UPDATE users SET otp_code = ?, otp_expires_at = ? WHERE id = ?",
-        ).run(hashedOtp, expiresAt, user.id);
+        
+        // Store OTP (Redis or DB Fallback)
+        await storeOtp(email, code, "login", true);
 
         const emailResult = await sendAdminLoginEmail(email, code, user.role);
         if (!emailResult.success) {
@@ -197,26 +300,21 @@ router.post("/login", async (req, res) => {
         return;
       }
     } else if (step === "verify") {
-      if (
-        !user.otp_code ||
-        !user.otp_expires_at ||
-        new Date() > new Date(user.otp_expires_at)
-      ) {
+      const storedHashedOtp = await getStoredOtp(email, "login");
+      if (!storedHashedOtp) {
         res
           .status(400)
           .json({ error: "Invalid or expired verification session" });
         return;
       }
 
-      const isOtpValid = await bcrypt.compare(otp, user.otp_code);
+      const isOtpValid = await bcrypt.compare(otp, storedHashedOtp);
       if (!isOtpValid) {
         res.status(401).json({ error: "Invalid verification code" });
         return;
       }
 
-      db.prepare(
-        "UPDATE users SET otp_code = NULL, otp_expires_at = NULL WHERE id = ?",
-      ).run(user.id);
+      await clearOtp(email, "login");
     }
 
     // Create session
@@ -250,7 +348,12 @@ router.post("/login", async (req, res) => {
 
     res.json({
       success: true,
-      user: { name: user.name, email: user.email, role: user.role },
+      user: { 
+        name: user.name, 
+        email: user.email, 
+        role: user.role,
+        handle: user.username ? `@${user.username}` : `@${user.name.toLowerCase().replace(/\s+/g, "")}`
+      },
       redirect,
     });
   } catch (error) {
@@ -273,12 +376,12 @@ router.get("/me", async (req, res) => {
     const userId = payload.userId || payload.id;
     const user = db
       .prepare(
-        "SELECT id, name, email, role, avatar, username FROM users WHERE id = ?",
+        "SELECT id, name, email, role, avatar, username, is_pro, scan_balance FROM users WHERE id = ?",
       )
       .get(userId) as any;
 
     if (!user) {
-      res.status(401).json({ user: null });
+      res.clearCookie("token").status(401).json({ user: null });
       return;
     }
 
@@ -291,7 +394,7 @@ router.get("/me", async (req, res) => {
 
     res.json({ user: userData });
   } catch (e) {
-    res.status(401).json({ user: null });
+    res.clearCookie("token").status(401).json({ user: null });
   }
 });
 
@@ -337,11 +440,9 @@ router.post("/admin-login-step1", async (req, res) => {
 
     // Generate OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
-    db.prepare(
-      "UPDATE users SET otp_code = ?, otp_expires_at = ? WHERE id = ?",
-    ).run(otp, expiresAt, user.id);
+    // Store OTP (Redis or DB Fallback)
+    await storeOtp(email, otp, "admin");
 
     // Send Email
     const emailResult = await sendAdminLoginEmail(email, otp, user.role);
@@ -378,18 +479,16 @@ router.post("/admin-login-step2", async (req, res) => {
       return res.status(400).json({ message: "User not found" });
     }
 
-    // Verify OTP
+    // Verify OTP (Redis or DB)
     const cleanOtp = String(otp).trim();
-    const storedOtp = String(user.otp_code).trim();
+    const storedOtp = await getStoredOtp(email, "admin");
 
-    if (storedOtp !== cleanOtp || new Date(user.otp_expires_at) < new Date()) {
+    if (!storedOtp || String(storedOtp).trim() !== cleanOtp) {
       return res.status(400).json({ message: "Invalid or expired OTP" });
     }
 
-    // Clear OTP
-    db.prepare(
-      "UPDATE users SET otp_code = NULL, otp_expires_at = NULL WHERE id = ?",
-    ).run(user.id);
+    // Clear OTP (Redis & DB)
+    await clearOtp(email, "admin");
 
     // Set Cookie
     const token = jwt.sign(

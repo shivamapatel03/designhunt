@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Edu_SA_Beginner, Inter, Black_Han_Sans, Plus_Jakarta_Sans } from "next/font/google";
 import { ClientLayout } from "@/components/layout/ClientLayout";
-import { CustomCursor } from "@/components/ui/custom-cursor";
+
 import { AuthProvider } from "@/components/providers/auth-provider";
 import SystemGuard from "@/components/SystemGuard";
 import SystemBanner from "@/components/SystemBanner";
@@ -18,10 +18,33 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+});
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: "--font-plus-jakarta",
+  subsets: ["latin"],
+});
+
+const eduSA = Edu_SA_Beginner({
+  variable: "--font-edu-sa",
+  subsets: ["latin"],
+});
+
+const blackHanSans = Black_Han_Sans({
+  weight: "400",
+  variable: "--font-black-han-sans",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
   title: "Design-Hunt | Master UI/UX Design",
   description: "Interactive learning platform for modern designers. Master theory, tools, and challenges with AI feedback.",
 };
+
+import { GoogleTranslate } from "@/components/providers/google-translate";
 
 export default function RootLayout({
   children,
@@ -31,11 +54,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col pb-24 md:pb-32 bg-background text-foreground`}
-      >
+          className={`${geistSans.variable} ${geistMono.variable} ${eduSA.variable} ${inter.variable} ${blackHanSans.variable} ${plusJakartaSans.variable} antialiased min-h-screen flex flex-col bg-background text-foreground`}
+        >
         <AuthProvider>
+          <GoogleTranslate />
           <SystemGuard>
-            <CustomCursor />
             <SystemBanner />
             <ClientLayout>
               {children}

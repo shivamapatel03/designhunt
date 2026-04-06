@@ -18,10 +18,54 @@ try {
     ).run();
     console.log("Migration: Added reaction_type column to idea_likes");
   } catch (e) {
-    // Column likely already exists, or table doesn't exist yet.
-    // This is fine, as the table creation will handle it if it's new.
-    // console.log("Migration: reaction_type column already exists or other error:", e.message);
+    // Column likely already exists
   }
+
+  try {
+    db.prepare(
+      "ALTER TABLE users ADD COLUMN portfolio_items TEXT DEFAULT '[]'",
+    ).run();
+    console.log("Migration: Added portfolio_items column to users");
+  } catch (e) {}
+
+  try {
+    db.prepare(
+      "ALTER TABLE users ADD COLUMN looking_for_work BOOLEAN DEFAULT 0",
+    ).run();
+    console.log("Migration: Added looking_for_work column to users");
+  } catch (e) {}
+
+  try {
+    db.prepare(
+      "ALTER TABLE users ADD COLUMN is_pro BOOLEAN DEFAULT 0",
+    ).run();
+    console.log("Migration: Added is_pro column to users");
+  } catch (e) {}
+
+  try {
+    db.prepare(
+      "ALTER TABLE users ADD COLUMN scan_balance INTEGER DEFAULT 0",
+    ).run();
+    console.log("Migration: Added scan_balance column to users");
+  } catch (e) {}
+
+  try {
+    db.prepare(
+      "ALTER TABLE transactions ADD COLUMN razorpay_order_id TEXT",
+    ).run();
+  } catch (e) {}
+
+  try {
+    db.prepare(
+      "ALTER TABLE transactions ADD COLUMN razorpay_payment_id TEXT",
+    ).run();
+  } catch (e) {}
+
+  try {
+    db.prepare(
+      "ALTER TABLE transactions ADD COLUMN razorpay_signature TEXT",
+    ).run();
+  } catch (e) {}
 
   // Create tables if they don't exist
   db.exec(`
@@ -44,7 +88,52 @@ try {
     email_verified BOOLEAN DEFAULT 0,
     last_login DATETIME,
     status TEXT DEFAULT 'APPROVED', -- APPROVED, PENDING, REJECTED
+    portfolio_items TEXT DEFAULT '[]', -- JSON string
+    looking_for_work BOOLEAN DEFAULT 0,
+    is_pro BOOLEAN DEFAULT 0,
+    scan_balance INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+  `);
+
+  // (rest of the system_settings table or other tables)
+
+  db.exec(`
+  CREATE TABLE IF NOT EXISTS expert_reviews (
+    id TEXT PRIMARY KEY,
+    author_name TEXT NOT NULL,
+    author_title TEXT,
+    rating REAL DEFAULT 5.0,
+    content TEXT NOT NULL,
+    author_image TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS transactions (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    amount REAL NOT NULL,
+    currency TEXT DEFAULT 'USD',
+    status TEXT DEFAULT 'completed', -- completed, pending, failed
+    type TEXT DEFAULT 'subscription', -- subscription, one_time, refund
+    description TEXT,
+    razorpay_order_id TEXT,
+    razorpay_payment_id TEXT,
+    razorpay_signature TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+  );
+
+  CREATE TABLE IF NOT EXISTS labs (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT,
+    owner_id TEXT NOT NULL,
+    members TEXT DEFAULT '[]', -- JSON array of user IDs
+    canvas_state TEXT DEFAULT '{}', -- JSON state of the design board
+    status TEXT DEFAULT 'ACTIVE', -- ACTIVE, ARCHIVED
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(owner_id) REFERENCES users(id)
   );
 
   CREATE TABLE IF NOT EXISTS courses (
@@ -206,6 +295,7 @@ try {
     related_lesson_id TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
+
   CREATE TABLE IF NOT EXISTS daily_duels (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
@@ -242,18 +332,6 @@ try {
     details TEXT, -- JSON string
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (admin_id) REFERENCES users(id)
-  );
-
-  CREATE TABLE IF NOT EXISTS transactions (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    amount REAL NOT NULL,
-    currency TEXT DEFAULT 'USD',
-    status TEXT DEFAULT 'completed', -- completed, pending, failed
-    type TEXT DEFAULT 'subscription', -- subscription, one_time, refund
-    description TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id)
   );
 
   CREATE TABLE IF NOT EXISTS ideas (
@@ -298,7 +376,8 @@ try {
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (idea_id) REFERENCES ideas(id) ON DELETE CASCADE,
     UNIQUE(idea_id, user_id)
-  );`);
+  );
+  `);
 
   db.prepare(
     "INSERT OR IGNORE INTO system_settings (key, value) VALUES ('SUPER_ADMIN_CODE', 'DESIGNHUNT12')",

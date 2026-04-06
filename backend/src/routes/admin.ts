@@ -262,4 +262,48 @@ router.post(
   },
 );
 
+// Get all Expert Reviews
+router.get("/expert-reviews", authenticateToken, (req: any, res) => {
+  try {
+    const reviews = db.prepare("SELECT * FROM expert_reviews ORDER BY created_at DESC").all();
+    res.json(reviews);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch reviews" });
+  }
+});
+
+// Create an Expert Review
+router.post("/expert-reviews", authenticateToken, (req: any, res) => {
+  try {
+    const { author_name, author_title, rating, content, author_image } = req.body;
+    
+    if (!author_name || !content) {
+      return res.status(400).json({ error: "Name and content are required" });
+    }
+
+    const id = randomUUID();
+    db.prepare(
+      "INSERT INTO expert_reviews (id, author_name, author_title, rating, content, author_image) VALUES (?, ?, ?, ?, ?, ?)"
+    ).run(id, author_name, author_title || null, rating || 5.0, content, author_image || null);
+
+    logAction(req.user.id, "CREATE_EXPERT_REVIEW", id, { author_name });
+    res.json({ success: true, id });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to create review" });
+  }
+});
+
+// Delete an Expert Review
+router.delete("/expert-reviews/:id", authenticateToken, (req: any, res) => {
+  try {
+    const { id } = req.params;
+    db.prepare("DELETE FROM expert_reviews WHERE id = ?").run(id);
+    
+    logAction(req.user.id, "DELETE_EXPERT_REVIEW", id, {});
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to delete review" });
+  }
+});
+
 export default router;

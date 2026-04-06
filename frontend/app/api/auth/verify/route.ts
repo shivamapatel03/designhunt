@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
+import redis from '@/lib/redis';
 import { SignJWT } from 'jose';
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'default-secret-key-change-me');
@@ -22,13 +23,15 @@ export async function POST(req: Request) {
          return NextResponse.json({ success: true, redirect: '/onboarding' });
     }
 
-    // Verify OTP
-    const now = new Date().toISOString();
-    if (user.otp_code !== otp || user.otp_expires_at < now) {
+    // Verify OTP from Redis
+    const cachedOtp = await redis.get(`otp:${email}`);
+    
+    if (!cachedOtp || cachedOtp !== otp) {
       return NextResponse.json({ error: 'Invalid or expired code' }, { status: 400 });
     }
 
-    // Mark as verified
+    // Mark as verified and remove OTP from Redis
+    await redis.del(`otp:${email}`);
     db.prepare('UPDATE users SET email_verified = 1, otp_code = NULL, otp_expires_at = NULL WHERE id = ?').run(user.id);
 
     // Create Session

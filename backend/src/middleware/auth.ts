@@ -43,7 +43,11 @@ export const requireSuperAdmin = (
   res: Response,
   next: NextFunction,
 ) => {
-  if (req.user && req.user.role === "SUPER_ADMIN") {
+  if (
+    req.user && 
+    req.user.role === "SUPER_ADMIN" && 
+    req.user.email === "shivampatel2330@gmail.com"
+  ) {
     next();
   } else {
     res.status(403).json({ error: "Access denied. Super Admin only." });

@@ -1,29 +1,66 @@
 "use client";
 
+import { useRef } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight, BookOpen, PenTool, Layout } from "lucide-react";
-import { ReactNode } from "react";
-import { motion } from "framer-motion";
+import Image from "next/image";
 
 export function MasterDesignSection() {
+  const sectionRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"]
+  });
+
+  const yLeft = useTransform(scrollYProgress, [0, 1], [0, -150]);
+  const yRight = useTransform(scrollYProgress, [0, 1], [0, 150]);
+  const rotateLeft = useTransform(scrollYProgress, [0, 1], [0, 45]);
+  const rotateRight = useTransform(scrollYProgress, [0, 1], [0, -45]);
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.2
+        staggerChildren: 0.1
       }
     }
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
   };
 
+  const theoryButtons = [
+    { title: "Typography", href: "/theory/typography", img: "/theorybutton/typography.png" },
+    { title: "Color Theory", href: "/theory/color", img: "/theorybutton/colortheory.png" },
+    { title: "Layout & Grids", href: "/theory/layout", img: "/theorybutton/layout.png" },
+    { title: "Design System", href: "/theory/design-systems", img: "/theorybutton/designsystem.png" },
+    { title: "Visual Hierarchy", href: "/theory/visual-hierarchy", img: "/theorybutton/visualherarchy.png" },
+    { title: "Motion", href: "/theory/motion", img: "/theorybutton/motion.png" },
+    { title: "UX Laws", href: "/theory/ux-laws", img: "/theorybutton/UX Laws.png" },
+    { title: "Accessibility", href: "/theory/accessibility", img: "/theorybutton/accessibility.png" },
+  ];
+
   return (
-    <section className="py-24 bg-[#fafafa] overflow-hidden">
-        <div className="container mx-auto px-6 md:px-16 lg:px-24">
+    <section ref={sectionRef} className="relative py-24 overflow-hidden">
+        {/* Background Shapes */}
+        <motion.div 
+          style={{ y: yLeft, rotate: rotateLeft }}
+          className="absolute -left-32 md:-left-48 top-10 w-40 md:w-64 lg:w-[320px] opacity-[0.15] pointer-events-none z-0"
+        >
+          <img src="/bg/asterisk.png" alt="" className="w-full h-auto" />
+        </motion.div>
+
+        <motion.div 
+          style={{ y: yRight, rotate: rotateRight }}
+          className="absolute -right-32 md:-right-48 bottom-10 w-40 md:w-64 lg:w-[320px] opacity-[0.15] pointer-events-none z-0"
+        >
+          <img src="/bg/flower.png" alt="" className="w-full h-auto" />
+        </motion.div>
+
+        <div className="container relative z-10 mx-auto px-6 md:px-16 lg:px-24">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -31,8 +68,8 @@ export function MasterDesignSection() {
             transition={{ duration: 0.6 }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-black mb-6 tracking-tight">Everything You Need to <br className="hidden md:block"/> Master Design</h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium">Structured modules designed to take you from beginner to expert.</p>
+            <h2 className="text-4xl md:text-5xl font-black mb-6 tracking-tight font-clash">Everything You Need to <br className="hidden md:block"/> Master Design</h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium font-clash">Structured modules designed to take you from beginner to expert.</p>
           </motion.div>
           
           <motion.div 
@@ -40,69 +77,38 @@ export function MasterDesignSection() {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
-            className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+            className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6"
           >
-            <FeatureCard 
-              icon={<BookOpen className="w-10 h-10" />}
-              title="Resource Library"
-              description="Icons, Typography, and Wireframes to speed up your workflow."
-              color="bg-accent-yellow"
-              href="/library"
-              variants={itemVariants}
-            />
-            <FeatureCard 
-              icon={<PenTool className="w-10 h-10" />}
-              title="Theory Library"
-              description="Interactive design guide. Color, Typography, Grid, and more."
-              color="bg-accent-blue"
-              href="/theory"
-              textColor="text-white"
-              variants={itemVariants}
-            />
-             <FeatureCard 
-              icon={<Layout className="w-10 h-10" />}
-              title="Tool Mastery"
-              description="Master Figma, Webflow, Rive, and more with practical tasks."
-              color="bg-accent-pink"
-              href="/tools"
-              textColor="text-white"
-              variants={itemVariants}
-            />
+            {theoryButtons.map((button, index) => (
+              <TheoryButton 
+                key={index}
+                title={button.title}
+                href={button.href}
+                img={button.img}
+                variants={itemVariants}
+              />
+            ))}
           </motion.div>
         </div>
       </section>
   );
 }
 
-interface FeatureCardProps { 
-    icon: ReactNode; 
-    title: string; 
-    description: string; 
-    color: string; 
-    href: string; 
-    textColor?: string;
-    variants?: any;
-}
-
-function FeatureCard({ icon, title, description, color, href, textColor = "text-black", variants }: FeatureCardProps) {
+function TheoryButton({ title, href, img, variants }: { title: string; href: string; img: string; variants: any }) {
   return (
     <motion.div variants={variants}>
-        <Link href={href} className={`group block p-10 rounded-[32px] border-2 border-black shadow-[8px_8px_0px_0px_#000] transition-all hover:-translate-y-2 hover:shadow-[12px_12px_0px_0px_#000] relative overflow-hidden ${color} ${textColor}`}>
-            {/* Background Pattern */}
-            <div className="absolute top-0 right-0 p-24 bg-white/10 rounded-bl-[100px] transition-transform duration-500 group-hover:scale-110" />
-            
-            <div className="relative z-10">
-                <div className={`mb-6 p-4 rounded-2xl border-2 border-black inline-flex ${textColor === 'text-white' ? 'bg-white text-black' : 'bg-black text-white'}`}>
-                    {icon}
-                </div>
-                <h3 className="text-3xl font-black mb-3">{title}</h3>
-                <p className={`text-lg font-medium leading-relaxed mb-8 opacity-90`}>{description}</p>
-                
-                <div className={`inline-flex items-center gap-2 font-black text-lg border-b-2 ${textColor === 'text-white' ? 'border-white' : 'border-black'} pb-1 group-hover:gap-4 transition-all`}>
-                    Explore <ArrowRight className="w-5 h-5" />
-                </div>
-            </div>
-        </Link>
+      <Link 
+        href={href} 
+        className="group relative block w-full aspect-[240/100] hover:-translate-y-1 transition-transform duration-200"
+      >
+        <Image 
+          src={img} 
+          alt={title} 
+          fill 
+          className="object-contain"
+        />
+      </Link>
     </motion.div>
   );
 }
+

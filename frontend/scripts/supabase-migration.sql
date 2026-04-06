@@ -15,6 +15,8 @@ create table if not exists public.users (
     bio text,
     skills jsonb,
     social_links jsonb,
+    portfolio_items jsonb default '[]',
+    looking_for_work boolean default false,
     onboarding_completed boolean default false,
     otp_code text,
     otp_expires_at timestamp with time zone,

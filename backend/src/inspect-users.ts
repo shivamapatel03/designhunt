@@ -1,4 +1,15 @@
 import db from "./db";
 
-const users = db.prepare("SELECT id, username, email, is_pro FROM users").all();
-console.log(JSON.stringify(users, null, 2));
+const inspect = () => {
+  try {
+    const schema = db.prepare("PRAGMA table_info(users)").all() as any[];
+    console.log("Users Table Schema:");
+    schema.forEach(col => {
+      console.log(`- ${col.name}: ${col.type}`);
+    });
+  } catch (error) {
+    console.error("Error inspecting DB:", error);
+  }
+};
+
+inspect();

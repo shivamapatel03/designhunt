@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import authRoutes from "./routes/auth";
+import { connectRedis } from "./lib/redis";
 import challengeRoutes from "./routes/challenges";
 import duelsRoutes from "./routes/duels";
 
@@ -13,6 +14,8 @@ import settingsRoutes from "./routes/settings";
 import tutorRoutes from "./routes/tutor";
 import ideasRoutes from "./routes/ideas";
 import profileRoutes from "./routes/profile";
+import labsRoutes from "./routes/labs";
+import paymentRoutes from "./routes/payments";
 import db from "./db";
 
 dotenv.config();
@@ -35,11 +38,12 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/challenges", challengeRoutes);
 app.use("/api/tools", toolsRoutes);
 app.use("/api/duels", duelsRoutes);
-app.use("/api/duels", duelsRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/tutor", tutorRoutes);
 app.use("/api/ideas", ideasRoutes);
 app.use("/api/profile", profileRoutes);
+app.use("/api/labs", labsRoutes);
+app.use("/api/payments", paymentRoutes);
 
 // Basic health check
 app.get("/", (req, res) => {
@@ -60,6 +64,13 @@ app.post("/api/upgrade-pro", (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Server running on http://localhost:${PORT}`);
+  await connectRedis();
 });
+
+// Diagnostic: Keep the event loop alive
+setInterval(() => {
+  // dummy log every minute to ensure we stay alive
+  // console.log("Still alive...");
+}, 60000);

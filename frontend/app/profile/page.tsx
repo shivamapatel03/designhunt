@@ -15,7 +15,7 @@ import {
   Linkedin, Award, Clock, CheckCircle2, 
   Flame, Layout, Type, LogOut, Settings as SettingsIcon,
   BookOpen, History as HistoryIcon, User as UserIcon, Save,
-  Rocket, PlusCircle, Heart, Loader2, Bookmark
+  Rocket, PlusCircle, Heart, Loader2, Bookmark, X
 } from "lucide-react";
 import { IdeaCard } from "@/components/community/IdeaCard";
 import { ShareIdeaModal } from "@/components/community/ShareIdeaModal";
@@ -84,13 +84,17 @@ function ProfileContent() {
     try {
       const res = await fetch("/api/profile");
       if (!res.ok) {
+        if (res.status === 401) {
+            await fetch("/api/auth/logout", { method: "POST" });
+            window.location.href = "/login";
+            return;
+        }
         throw new Error("Failed to fetch profile");
       }
       const profile = await res.json();
       setData(profile);
     } catch (err) {
       console.error(err);
-      if (typeof window !== 'undefined') window.location.href = '/login';
     }
   };
 
@@ -161,7 +165,9 @@ function ProfileContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             ...editForm,
-            social_links: socialLinks
+            social_links: socialLinks,
+            looking_for_work: data.user.looking_for_work,
+            portfolio_items: data.user.portfolio_items
         })
       });
       if (res.ok) {
@@ -212,13 +218,18 @@ function ProfileContent() {
 
   if (!data) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin w-8 h-8 border-4 border-black border-t-transparent rounded-full"/></div>;
 
-  if (data.error) {
-    if (typeof window !== 'undefined') window.location.href = '/login';
+  if (data?.error) {
+    if (typeof window !== 'undefined') {
+        fetch("/api/auth/logout", { method: "POST" }).then(() => {
+            window.location.href = '/login';
+        });
+    }
     return null;
   }
 
   const tabs: { id: string, label: string, icon: any }[] = [
     { id: "overview", label: "Overview", icon: Layout },
+    { id: "portfolio", label: "Portfolio", icon: Rocket },
     { id: "shared", label: "Shared Ideas", icon: Share2 },
     { id: "saved", label: "Saved Ideas", icon: Bookmark },
     { id: "liked", label: "Liked Ideas", icon: Heart },
@@ -228,7 +239,7 @@ function ProfileContent() {
   return (
     <div className="min-h-screen bg-[#f8f7f4] pt-32 pb-24">
       {showCelebrate && <Celebrate />}
-      <div className="container mx-auto max-w-5xl px-6">
+      <div className="container mx-auto max-w-[1600px] px-6">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row gap-8 items-center md:items-start mb-12 text-center md:text-left">
            <div className="relative">
@@ -238,9 +249,16 @@ function ProfileContent() {
            <div className="flex-1 space-y-4 w-full">
                    <div className="flex flex-col md:flex-row justify-between items-start gap-4">
                       <div>
-                          <h1 className="text-4xl font-black flex items-center gap-3">
-                            {data.user.name}
-                          </h1>
+                          <div className="flex items-center gap-3">
+                            <h1 className="text-4xl font-black italic uppercase tracking-tighter">
+                              {data.user.name}
+                            </h1>
+                            {data.user.looking_for_work && (
+                              <span className="px-3 py-1 bg-[#FFCF0D] border-2 border-black rounded-full text-[10px] font-black uppercase tracking-widest shadow-[2px_2px_0px_0px_#000]">
+                                🟢 Looking for work
+                              </span>
+                            )}
+                          </div>
                           <p className="text-gray-500 font-medium">{data.user.handle} • {data.user.bio}</p>
                       </div>
                       <div className="flex gap-2">
@@ -281,6 +299,75 @@ function ProfileContent() {
                      <DailyLawCard className="mb-0" />
                 </div>
             )}
+            
+            {activeTab === "portfolio" && (
+                <div className="space-y-6">
+                    <div className="flex justify-between items-center mb-6">
+                        <h3 className="text-2xl font-black uppercase tracking-tighter italic">Your Portfolio</h3>
+                        <button 
+                            onClick={() => {
+                                const title = prompt("Project Title:");
+                                if (title) {
+                                    const description = prompt("Project Description:");
+                                    const image = prompt("Image URL (optional):") || "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80";
+                                    const url = prompt("Project URL (optional):") || "#";
+                                    const newPortfolio = [...(data.user.portfolio_items || []), { id: Date.now(), title, description, image, url }];
+                                    setData({ ...data, user: { ...data.user, portfolio_items: newPortfolio } });
+                                }
+                            }}
+                            className="flex items-center gap-2 px-6 py-3 bg-black text-white rounded-xl font-bold text-sm hover:scale-105 transition-transform shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]"
+                        >
+                            <PlusCircle className="w-4 h-4" /> Add Project
+                        </button>
+                    </div>
+
+                    {data.user.portfolio_items?.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {data.user.portfolio_items.map((project: any) => (
+                                <motion.div 
+                                    key={project.id}
+                                    whileHover={{ y: -5 }}
+                                    className="bg-white border-2 border-black rounded-[24px] overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] group"
+                                >
+                                    <div className="aspect-video bg-gray-100 border-b-2 border-black relative overflow-hidden">
+                                        <img src={project.image} alt={project.title} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                                        <div className="absolute top-4 right-4 group-hover:translate-x-0 translate-x-12 opacity-0 group-hover:opacity-100 transition-all">
+                                            <button 
+                                                onClick={() => {
+                                                    const newItems = data.user.portfolio_items.filter((p: any) => p.id !== project.id);
+                                                    setData({ ...data, user: { ...data.user, portfolio_items: newItems } });
+                                                }}
+                                                className="w-10 h-10 bg-white border-2 border-black rounded-xl flex items-center justify-center hover:bg-black hover:text-white transition-colors shadow-[4px_4px_0px_0px_#000]"
+                                            >
+                                                <X className="w-5 h-5" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="p-6">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <h4 className="text-xl font-black uppercase tracking-tight">{project.title}</h4>
+                                            <a href={project.url} target="_blank" rel="noopener noreferrer" className="p-2 hover:bg-black/5 rounded-lg">
+                                                <Share2 className="w-4 h-4" />
+                                            </a>
+                                        </div>
+                                        <p className="text-gray-500 font-medium text-sm mb-4 line-clamp-2">{project.description}</p>
+                                        <div className="flex items-center gap-2">
+                                            <span className="px-3 py-1 bg-black text-white text-[10px] font-black uppercase rounded-full">Case Study</span>
+                                            <span className="px-3 py-1 border-2 border-black text-[10px] font-black uppercase rounded-full italic">UI/UX</span>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-24 bg-white border-2 border-black border-dashed rounded-[40px]">
+                            <Rocket className="w-16 h-16 mx-auto mb-6 text-gray-200" />
+                            <h3 className="text-2xl font-black uppercase tracking-tighter">Your Portfolio is Empty</h3>
+                            <p className="text-gray-500 font-bold text-xs mt-2 uppercase tracking-widest max-w-[300px] mx-auto">Showcase your best design work to the community and potential clients.</p>
+                        </div>
+                    )}
+                </div>
+            )}
 
             {activeTab === "shared" && (
                 <div className="space-y-6">
@@ -299,7 +386,7 @@ function ProfileContent() {
                             <Loader2 className="w-8 h-8 animate-spin mx-auto text-gray-300" />
                         </div>
                     ) : userIdeas.length > 0 ? (
-                        <div className="grid gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6">
                             {userIdeas.map((idea) => (
                                 <IdeaCard small key={idea.id} idea={idea} />
                             ))}
@@ -325,7 +412,7 @@ function ProfileContent() {
                             <Loader2 className="w-8 h-8 animate-spin mx-auto text-gray-300" />
                         </div>
                     ) : savedIdeas.length > 0 ? (
-                        <div className="grid gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6">
                             {savedIdeas.map((idea) => (
                                 <IdeaCard small key={idea.id} idea={idea} />
                             ))}
@@ -351,7 +438,7 @@ function ProfileContent() {
                             <Loader2 className="w-8 h-8 animate-spin mx-auto text-gray-300" />
                         </div>
                     ) : likedIdeas.length > 0 ? (
-                        <div className="grid gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6">
                             {likedIdeas.map((idea) => (
                                 <IdeaCard small key={idea.id} idea={idea} />
                             ))}
@@ -410,9 +497,26 @@ function ProfileContent() {
                                        className="w-full p-4 bg-gray-50 border-2 border-black/5 rounded-xl font-medium h-24 resize-none focus:border-black outline-none transition-colors"
                                    />
                                </div>
+                               <div className="mt-4 flex items-center gap-3 p-4 bg-[#FFCF0D]/10 border-2 border-[#FFCF0D] rounded-2xl">
+                                    <input 
+                                        type="checkbox"
+                                        id="lookingForWork"
+                                        checked={data.user.looking_for_work}
+                                        onChange={e => {
+                                            setData({
+                                                ...data,
+                                                user: { ...data.user, looking_for_work: e.target.checked }
+                                            });
+                                        }}
+                                        className="w-5 h-5 accent-black cursor-pointer shadow-sm"
+                                    />
+                                    <label htmlFor="lookingForWork" className="text-sm font-bold cursor-pointer select-none text-black">
+                                        Show "Looking for work" badge on my profile
+                                    </label>
+                                </div>
                            </div>
                        </div>
-   
+    
                        <div className="pt-8 border-t-2 border-black/5">
                            <h4 className="text-xl font-black mb-6 flex items-center gap-2">
                                <Share2 className="w-5 h-5 text-accent-pink" /> Social Presence
@@ -450,7 +554,7 @@ function ProfileContent() {
                                </div>
                            </div>
                        </div>
-   
+    
                        <div className="flex justify-end pt-6">
                            <button 
                                type="submit"
@@ -463,7 +567,7 @@ function ProfileContent() {
                        </div>
                    </form>
                </div>
-   
+    
                {/* Security Section */}
                <div className="bg-white border-2 border-black rounded-[32px] p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
                    <h3 className="text-2xl font-black mb-8 flex items-center gap-3">
@@ -511,7 +615,7 @@ function ProfileContent() {
                            Update Password
                        </button>
                    </form>
-   
+    
                    <div className="mt-12 pt-12 border-t-2 border-black/5">
                        <h4 className="text-xl font-black mb-4 text-red-500">Danger Zone</h4>
                        <p className="text-gray-500 text-sm font-medium mb-6">Once you delete your account, there is no going back. Please be certain.</p>

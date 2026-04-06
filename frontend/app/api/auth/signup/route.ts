@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
+import redis from '@/lib/redis';
 import bcrypt from 'bcryptjs';
 import { sendVerificationEmail } from '@/lib/email';
 
@@ -26,9 +27,12 @@ export async function POST(req: Request) {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const otpExpires = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 minutes
 
-    // Insert user with OTP
-    db.prepare('INSERT INTO users (id, email, password, name, otp_code, otp_expires_at, email_verified) VALUES (?, ?, ?, ?, ?, ?, 0)')
-      .run(userId, email, hashedPassword, name, otp, otpExpires);
+    // Insert user without OTP since we store OTP in Redis
+    db.prepare('INSERT INTO users (id, email, password, name, email_verified) VALUES (?, ?, ?, ?, 0)')
+      .run(userId, email, hashedPassword, name);
+
+    // Store OTP in Redis (expires in 600 seconds = 10 minutes)
+    await redis.set(`otp:${email}`, otp, 'EX', 600);
 
     // Send verification email
     const emailRes = await sendVerificationEmail(email, otp);

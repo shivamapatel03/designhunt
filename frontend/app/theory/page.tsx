@@ -1,59 +1,22 @@
 import Link from "next/link";
-import { ArrowRight, Palette, Type, Layout, MousePointer, Scale, Eye, Box, LayoutTemplate, Beaker } from "lucide-react";
+import { ArrowRight, Palette, Type, Layout, MousePointer, Scale, Eye, Box, LayoutTemplate } from "lucide-react";
 import { ReactNode } from "react";
-import { DailyLawCard } from "@/components/theory/DailyLawCard";
-import { InteractionLab } from "@/components/theory/InteractionLab";
-import { DailyPracticalSession } from "@/components/theory/DailyPracticalSession";
-import { IdeaCredits } from "@/components/theory/IdeaCredits";
 
 export default function TheoryPage() {
   return (
-    <div className="container mx-auto px-4 pt-32 md:pt-48 pb-12 lg:pb-20 max-w-7xl">
-      <div className="text-center max-w-3xl mx-auto mb-16">
+    <div className="container mx-auto px-4 pt-16 md:pt-20 pb-12 lg:pb-20 max-w-7xl">
+      <div className="text-center max-w-3xl mx-auto mb-6">
         <h1 className="text-5xl font-extrabold mb-4">Design Theory Hub</h1>
         <p className="text-xl text-muted-foreground">
            Master the fundamental principles that power great interfaces. Interactive guides for beginners and pros.
         </p>
       </div>
 
-      <DailyLawCard className="mb-20" />
 
 
 
-      {/* Daily Practical Session - NEW */}
-      <DailyPracticalSession />
 
-      {/* Playground Showcase Section - NEW */}
-      <section className="mb-20">
-        <div className="relative group overflow-hidden rounded-[40px] border-2 border-black bg-black p-1">
-          <div className="absolute inset-0 bg-gradient-to-r from-accent-blue/20 via-accent-pink/20 to-accent-yellow/20 group-hover:opacity-100 opacity-50 transition-opacity" />
-          <div className="relative bg-white rounded-[38px] p-8 md:p-12 flex flex-col lg:flex-row items-center gap-12 border-2 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all overflow-hidden translate-x-[-4px] translate-y-[-4px]">
-            
-            <div className="flex-1 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-pink/10 border border-accent-pink/20 text-accent-pink text-xs font-black uppercase tracking-widest">
-                <Beaker className="w-3 h-3" /> Experimental sandbox
-              </div>
-              <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter italic">The Interaction Lab</h2>
-              <p className="text-xl text-gray-500 font-medium leading-relaxed max-w-xl">
-                Theory isn't just for reading. Experience the fundamental laws of design through interactive experiments. **Play with Gestalt, Kerning, and UX physics.**
-              </p>
-              <Link 
-                href="/theory/playground"
-                className="inline-flex items-center gap-2 px-8 py-4 bg-black text-white font-black rounded-2xl hover:opacity-90 transition-opacity uppercase tracking-widest"
-              >
-                Enter the Hub <ArrowRight className="w-5 h-5" />
-              </Link>
-            </div>
 
-            <div className="w-full lg:w-1/2 relative bg-gray-50 rounded-[32px] border-4 border-dashed border-gray-100 p-1 group-hover:border-accent-blue/30 transition-colors overflow-hidden">
-                <InteractionLab />
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      <IdeaCredits />
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
          <LinkCard 

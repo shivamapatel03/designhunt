@@ -41,8 +41,8 @@ export default function TypographyPage() {
   })).reverse();
 
   return (
-    <div className="min-h-screen bg-white pt-24 pb-12">
-      <div className="container mx-auto px-4 md:px-8 max-w-6xl">
+    <div className="min-h-screen bg-white pt-14 md:pt-16 pb-12">
+      <div className="container mx-auto px-4 md:px-4 max-w-6xl">
         
         {/* Header */}
          <div className="flex items-center gap-2 text-sm text-gray-500 mb-8 font-medium">
@@ -51,7 +51,7 @@ export default function TypographyPage() {
             <span className="text-black">Typography</span>
         </div>
 
-        <h1 className="text-5xl font-black mb-6">Typography System</h1>
+        <h1 className="text-5xl font-clash font-black mb-6">Typography System</h1>
         <p className="text-xl text-gray-600 mb-12 max-w-2xl">
             Interactive type scale calculator and font previewer. Experiment with different ratios to find your perfect rhythm.
         </p>

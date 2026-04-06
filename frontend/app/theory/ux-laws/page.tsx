@@ -3,11 +3,11 @@ import Link from "next/link";
 
 export default function UXLawsPage() {
   return (
-    <div className="container mx-auto px-4 py-8 md:py-12">
-        <Link href="/theory" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-black mb-8">
+    <div className="container mx-auto px-4 pt-14 md:pt-16 pb-12">
+        <Link href="/theory" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-black mb-2">
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to Theory Hub
         </Link>
-        <header className="max-w-3xl mb-12">
+        <header className="max-w-3xl mb-6">
             <h1 className="text-4xl md:text-5xl font-extrabold mb-4">Laws of UX</h1>
             <p className="text-xl text-muted-foreground leading-relaxed">
                 Psychological principles that govern how users interact with interfaces. Designing against these laws creates friction.
@@ -16,30 +16,7 @@ export default function UXLawsPage() {
 
          <div className="grid gap-12">
             
-            {/* Fitts's Law */}
-            <section className="bg-white border-2 border-black rounded-xl p-8 shadow-[4px_4px_0px_0px_#000]">
-                <div className="flex items-start gap-4 mb-6">
-                    <div className="p-3 bg-accent-blue text-white rounded-lg border-2 border-black">
-                        <Target className="w-6 h-6" />
-                    </div>
-                    <div>
-                        <h2 className="text-2xl font-bold mb-2">Fitts's Law</h2>
-                        <p className="text-gray-600 text-lg">
-                            The time to acquire a target is a function of the distance to and size of the target.
-                        </p>
-                    </div>
-                </div>
-                <div className="bg-gray-100 p-8 rounded-lg flex flex-col items-center justify-center gap-8 h-64 border-2 border-dashed border-gray-300">
-                    <div className="flex items-center gap-12 w-full justify-center">
-                         <button className="w-8 h-8 rounded-full bg-red-400 border border-black hover:scale-110 transition-transform"></button>
-                         <span className="text-sm text-gray-400">Hard to hit (Small + Far)</span>
-                    </div>
-                     <div className="flex items-center gap-12 w-full justify-center">
-                         <button className="w-32 py-4 rounded-xl bg-green-500 border-2 border-black text-white font-bold hover:scale-105 transition-transform">Easy Target</button>
-                         <span className="text-sm text-gray-400">Easy to hit (Large + Close)</span>
-                    </div>
-                </div>
-            </section>
+
 
              {/* Hick's Law */}
             <section className="bg-white border-2 border-black rounded-xl p-8 shadow-[4px_4px_0px_0px_#000]">

@@ -48,7 +48,7 @@ export function InlineComments({
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     user_id: user?.id || "GUEST",
-                    user_handle: user?.handle || "Guest Designer",
+                    user_handle: user?.handle || user?.name || "Guest Designer",
                     user_avatar: user?.avatar || null,
                     content: newComment
                 })
@@ -58,7 +58,10 @@ export function InlineComments({
                 setNewComment("");
                 fetchComments();
                 onCommentAdded();
-                toast.success("Design feedback shared!");
+                toast.success("Design feedback shared!", {
+                    description: "Your spark has been added to the discussion.",
+                    icon: "💬"
+                });
             }
         } catch (error) {
             toast.error("Failed to post comment.");

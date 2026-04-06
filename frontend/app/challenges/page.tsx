@@ -25,8 +25,8 @@ export default async function ChallengesPage() {
   const challenges = await getChallenges();
 
   return (
-    <div className="container mx-auto px-6 pt-32 md:pt-48 pb-12 md:px-16 lg:px-24">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
+    <div className="container mx-auto px-6 pt-14 md:pt-16 pb-12 md:px-16 lg:px-24">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6">
          <div>
             <div className="flex items-center gap-3 mb-4">
                <div className="p-3 bg-accent-pink rounded-xl border-2 border-black shadow-[4px_4px_0px_0px_#000]">

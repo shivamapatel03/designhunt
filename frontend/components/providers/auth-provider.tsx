@@ -11,6 +11,8 @@ interface User {
   avatar?: string;
   handle?: string;
   xp?: number;
+  is_pro?: number | boolean;
+  scan_balance?: number;
 }
 
 interface AuthContextType {

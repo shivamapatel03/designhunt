@@ -84,7 +84,7 @@ export default function ColorsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white pt-24 pb-12">
+    <div className="min-h-screen bg-white pt-14 md:pt-16 pb-8">
       <div className="container mx-auto px-4 md:px-8 max-w-6xl">
         
         {/* Header */}
@@ -95,7 +95,7 @@ export default function ColorsPage() {
                     <ChevronRight className="w-4 h-4" />
                     <span className="text-black">Colors</span>
                 </div>
-                <h1 className="text-5xl font-black mb-4">Color System</h1>
+                <h1 className="text-5xl font-clash font-black mb-4">Color System</h1>
                 <p className="text-xl text-gray-600 max-w-2xl">
                     The core palette used across Design-Hunt. Click any swatch to copy its value.
                 </p>

@@ -239,13 +239,13 @@ export default function IconsPage() {
   const activeLib = LIBRARIES.find(l => l.id === activeLibId) || LIBRARIES[0];
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-20">
+    <div className="min-h-screen bg-gray-50 pt-14 md:pt-16">
       
       {/* Container */}
-      <div className="flex flex-col lg:flex-row min-h-[calc(100vh-80px)]">
+      <div className="flex flex-col lg:flex-row min-h-[calc(100vh-64px)]">
         
         {/* Sidebar */}
-        <div className="w-full lg:w-80 bg-white border-r border-gray-200 lg:h-[calc(100vh-80px)] lg:sticky lg:top-20 overflow-y-auto">
+        <div className="w-full lg:w-80 bg-white border-r border-gray-200 lg:h-[calc(100vh-64px)] lg:sticky lg:top-16 overflow-y-auto">
              <div className="p-6">
                 <div className="flex items-center gap-2 text-sm text-gray-500 mb-6 font-medium">
                     <Link href="/library" className="hover:text-black">Library</Link>

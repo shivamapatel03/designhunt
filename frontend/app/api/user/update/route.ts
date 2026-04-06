@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     const userId = payload.userId as string;
 
     const body = await req.json();
-    const { name, username, bio, skills, role, avatar, social_links } = body;
+    const { name, username, bio, skills, role, avatar, social_links, portfolio_items, looking_for_work } = body;
 
     // Check if username is taken (if changed)
     if (username) {
@@ -42,6 +42,8 @@ export async function POST(req: NextRequest) {
             role = COALESCE(?, role),
             avatar = COALESCE(?, avatar),
             social_links = COALESCE(?, social_links),
+            portfolio_items = COALESCE(?, portfolio_items),
+            looking_for_work = COALESCE(?, looking_for_work),
             onboarding_completed = 1
         WHERE id = ?
     `);
@@ -54,6 +56,8 @@ export async function POST(req: NextRequest) {
       role || null,
       avatar || null,
       JSON.stringify(social_links || {}),
+      JSON.stringify(portfolio_items || []),
+      looking_for_work === undefined ? null : (looking_for_work ? 1 : 0),
       userId,
     );
 

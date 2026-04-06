@@ -34,6 +34,8 @@ import {
   Bell
 } from "lucide-react";
 import { IdeasManager } from "@/components/super-admin/IdeasManager";
+import { ExpertReviewsManager } from "@/components/super-admin/ExpertReviewsManager";
+
 
 import { 
   approveTutorRequest, 
@@ -48,10 +50,14 @@ import {
 import { getCourses, updateCoursePrice, Course } from "@/app/actions/courses";
 import { cn } from "@/lib/utils";
 import { ChallengesManager } from "@/components/super-admin/ChallengesManager";
+import { useAuth } from "@/components/providers/auth-provider";
+import Link from "next/link";
+
+const ALLOWED_EMAIL = "shivampatel2330@gmail.com";
 
 export default function SuperAdminPage() {
-  const [activeTab, setActiveTab] = useState<'users' | 'stats' | 'audit' | 'settings' | 'financials' | 'challenges' | 'ideas'>('users');
-  const [allUsers, setAllUsers] = useState<any[]>([]);
+  const { user, loading } = useAuth();
+  const [activeTab, setActiveTab] = useState<'stats' | 'audit' | 'settings' | 'financials' | 'challenges' | 'ideas' | 'reviews'>('stats');
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [financials, setFinancials] = useState<any>({ totalRevenue: 0, mrr: 0, activeSubscriptions: 0, recentTransactions: [] });
@@ -103,11 +109,7 @@ export default function SuperAdminPage() {
         const count = Array.isArray(ideasData) ? ideasData.length : 0;
         setStats(prev => ({ ...prev, ideaCount: count }));
 
-        if (activeTab === 'users') {
-            const res = await fetch("/api/admin/users");
-            const data = await res.json();
-            setAllUsers(data);
-        } else if (activeTab === 'audit') {
+        if (activeTab === 'audit') {
             const res = await fetch("/api/admin/audit-logs");
             const data = await res.json();
             setAuditLogs(Array.isArray(data) ? data : []);
@@ -148,31 +150,7 @@ export default function SuperAdminPage() {
       }
   };
 
-  const handleRoleUpdate = async (userId: string, newRole: string) => {
-      const res = await updateUserRole(userId, newRole);
-      if (res.success) {
-          setAllUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u));
-      }
-  };
 
-  const handleDeleteUser = async (id: string) => {
-      if(!confirm("Are you sure you want to delete this user? This action cannot be undone.")) return;
-      
-      try {
-        const res = await fetch("/api/admin/delete-user", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id }),
-        });
-        if (res.ok) {
-            setAllUsers(prev => prev.filter(u => u.id !== id));
-        } else {
-            alert("Failed to delete user");
-        }
-      } catch (err) {
-        alert("Error deleting user");
-      }
-  };
 
   const handleCreateAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -214,12 +192,12 @@ export default function SuperAdminPage() {
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex flex-wrap gap-2">
             {[
-                { id: 'users', label: 'Users', icon: Users },
                 // { id: 'financials', label: 'Financials', icon: DollarSign },
                 { id: 'audit', label: 'Audit Logs', icon: Copy },
                 { id: 'settings', label: 'Settings', icon: Settings },
                 { id: 'ideas', label: 'Notifications', icon: Bell },
                 { id: 'challenges', label: 'Challenges', icon: Trophy },
+                { id: 'reviews', label: 'Reviews', icon: Edit2 },
                 { id: 'stats', label: 'System', icon: BarChart }
             ].map((tab) => (
                 <button
@@ -299,76 +277,7 @@ export default function SuperAdminPage() {
              </div>
         )}
 
-        {/* Users Tab */}
-        {activeTab === 'users' && (
-            <div className="space-y-6">
-                <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-black uppercase italic">User Management</h2>
-                    <button 
-                        onClick={() => setShowCreateAdmin(true)}
-                        className="flex items-center gap-2 px-6 py-3 bg-accent-blue text-white rounded-xl border-2 border-black font-black uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-                    >
-                        <Plus className="w-5 h-5" />
-                        Create Admin
-                    </button>
-                </div>
 
-                <div className="bg-white border-4 border-black rounded-[32px] overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-                    <table className="w-full">
-                        <thead className="bg-black text-white">
-                            <tr>
-                                <th className="py-4 px-6 text-left font-black uppercase text-xs tracking-wider">User</th>
-                                <th className="py-4 px-6 text-left font-black uppercase text-xs tracking-wider">Role</th>
-                                <th className="py-4 px-6 text-left font-black uppercase text-xs tracking-wider">Email</th>
-                                <th className="py-4 px-6 text-right font-black uppercase text-xs tracking-wider">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200">
-                            {allUsers.map((user) => (
-                                <tr key={user.id} className="hover:bg-gray-50 transition-colors">
-                                    <td className="py-4 px-6">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-gray-200 border-2 border-black overflow-hidden">
-                                                <img src={user.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=" + user.name} alt={user.name} className="w-full h-full object-cover" />
-                                            </div>
-                                            <div>
-                                                <div className="font-bold text-sm">{user.name}</div>
-                                                <div className="text-xs text-gray-500 font-mono">ID: {user.id.slice(0,8)}...</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="py-4 px-6">
-                                        <select 
-                                            value={user.role}
-                                            onChange={(e) => handleRoleUpdate(user.id, e.target.value)}
-                                            className="px-3 py-1 bg-gray-100 border-2 border-transparent hover:border-black rounded-lg text-xs font-bold uppercase cursor-pointer"
-                                            disabled={user.role === 'SUPER_ADMIN'}
-                                        >
-                                            <option value="USER">User</option>
-                                            <option value="ADMIN">Admin</option>
-                                            <option value="TUTOR">Tutor</option>
-                                            <option value="SUPER_ADMIN" disabled>Super Admin</option>
-                                        </select>
-                                    </td>
-                                    <td className="py-4 px-6 font-mono text-sm">{user.email}</td>
-                                    <td className="py-4 px-6 text-right">
-                                        {user.role !== 'SUPER_ADMIN' && (
-                                            <button 
-                                                onClick={() => handleDeleteUser(user.id)}
-                                                className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                                title="Delete User"
-                                            >
-                                                <Trash2 className="w-5 h-5" />
-                                            </button>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        )}
 
         {/* Financials Tab - Temporarily Disabled
         {activeTab === 'financials' && (
@@ -617,6 +526,10 @@ export default function SuperAdminPage() {
 
         {activeTab === 'ideas' && (
             <IdeasManager isAdmin={false} />
+        )}
+
+        {activeTab === 'reviews' && (
+            <ExpertReviewsManager isAdmin={true} />
         )}
 
         {/* System Health */}

@@ -4,12 +4,11 @@ import Link from "next/link";
 
 export default function LayoutPage() {
   return (
-    <div className="container mx-auto px-4 py-8 md:py-12">
-        <Link href="/theory" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-black mb-8">
+    <div className="container mx-auto px-4 pt-14 md:pt-16 pb-12">
+        <Link href="/theory" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-black mb-2">
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to Theory Hub
         </Link>
-
-        <header className="max-w-3xl mb-12">
+        <header className="max-w-3xl mb-6">
             <h1 className="text-4xl md:text-5xl font-extrabold mb-4">Layout & Grids</h1>
             <p className="text-xl text-muted-foreground leading-relaxed">
                 Invisible lines that hold your design together. Grids establish structure, alignment, and consistency.

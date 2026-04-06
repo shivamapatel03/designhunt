@@ -61,7 +61,7 @@ export function ShareIdeaModal({ user, onClose, onSuccess }: { user: any, onClos
             });
 
             if (res.ok) {
-                toast.success("Design spark shared with the tribe!");
+                toast.success("Design idea shared with the community!");
                 onSuccess();
             } else {
                 toast.error("Failed to share idea.");
@@ -91,8 +91,8 @@ export function ShareIdeaModal({ user, onClose, onSuccess }: { user: any, onClos
                 <div className="absolute top-0 right-0 w-32 h-32 bg-accent-yellow -mr-16 -mt-16 rotate-45 border-l-4 border-black" />
                 
                 <div className="relative z-10">
-                    <h2 className="text-4xl font-black italic uppercase tracking-tighter mb-2">Ignite a Spark</h2>
-                    <p className="text-gray-500 font-bold uppercase text-xs tracking-widest mb-8">Got a design idea? Share it with the design tribe.</p>
+                    <h2 className="text-4xl font-black italic uppercase tracking-tighter mb-2">Share an Idea</h2>
+                    <p className="text-gray-500 font-bold uppercase text-xs tracking-widest mb-8">Got a design idea? Share it with the community.</p>
                     
                     <div className="space-y-4">
                         <textarea 

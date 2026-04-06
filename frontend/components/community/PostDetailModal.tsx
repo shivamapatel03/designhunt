@@ -9,10 +9,57 @@ import { toast } from "sonner";
 import { InlineComments } from "./InlineComments";
 import { REACTIONS } from "./ReactionPicker";
 
-export function PostDetailModal({ post, onClose }: { post: any, onClose: () => void }) {
+export function PostDetailModal({ post, onClose, onUpdate }: { post: any, onClose: () => void, onUpdate?: (updatedPost: any) => void }) {
     const { user } = useAuth();
+    const [liked, setLiked] = useState(post.liked || false);
+    const [reactionType, setReactionType] = useState<string | null>(post.liked ? (post.reaction_type || 'heart') : null);
     const [likesCount, setLikesCount] = useState(post.likes_count || 0);
     const [commentsCount, setCommentsCount] = useState(post.comments_count || 0);
+    const [isLiking, setIsLiking] = useState(false);
+
+    const handleLike = async (type: string = 'heart') => {
+        if (isLiking) return;
+
+        const isUnliking = liked && reactionType === type;
+        const newLiked = !isUnliking;
+        const newReactionType = isUnliking ? null : type;
+
+        setLiked(newLiked);
+        setReactionType(newReactionType);
+        if (isUnliking) {
+            setLikesCount((prev: number) => prev - 1);
+        } else if (!liked) {
+            setLikesCount((prev: number) => prev + 1);
+        }
+        
+        setIsLiking(true);
+
+        try {
+            const res = await fetch(`/api/ideas/${post.id}/like`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    user_id: user?.id || "GUEST",
+                    type: type 
+                })
+            });
+            if (!res.ok) throw new Error();
+            
+            // Notify parent to sync feed
+            onUpdate?.({
+                ...post,
+                liked: newLiked,
+                reaction_type: newReactionType,
+                likes_count: isUnliking ? likesCount - 1 : (!liked ? likesCount + 1 : likesCount)
+            });
+        } catch (error) {
+            setLiked(liked);
+            setReactionType(reactionType);
+            toast.error("Failed to update reaction.");
+        } finally {
+            setIsLiking(false);
+        }
+    };
 
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-10">
@@ -45,60 +92,80 @@ export function PostDetailModal({ post, onClose }: { post: any, onClose: () => v
                 {/* Content Section - Right */}
                 <div className="flex-1 flex flex-col h-full bg-white overflow-hidden">
                     {/* Header */}
-                    <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full border border-gray-200 bg-gray-50 flex items-center justify-center font-bold text-sm overflow-hidden">
-                                {post.user_avatar ? (
-                                    <img src={post.user_avatar} alt={post.user_handle} className="w-full h-full object-cover" />
-                                ) : (
-                                    post.user_handle?.charAt(0).toUpperCase() || "A"
-                                )}
+                    <div className="p-6 border-b border-gray-100 flex flex-col gap-4">
+                        <div className="flex justify-between items-start">
+                            <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 rounded-full border border-gray-200 bg-gray-50 flex items-center justify-center font-bold text-sm overflow-hidden shrink-0">
+                                    {post.user_avatar ? (
+                                        <img src={post.user_avatar} alt={post.user_handle} className="w-full h-full object-cover" />
+                                    ) : (
+                                        post.user_handle?.charAt(0).toUpperCase() || "A"
+                                    )}
+                                </div>
+                                <div className="min-w-0">
+                                    <h3 className="font-bold text-base text-gray-900 truncate">
+                                        {post.idea?.split('\n')[0] || "Untitled Design"}
+                                    </h3>
+                                    <p className="text-sm font-medium text-gray-500 truncate">
+                                        {post.user_handle || "Anonymous"} 
+                                        <span className="mx-2 bg-gray-100 text-gray-500 font-bold text-[9px] px-1.5 py-0.5 rounded tracking-widest leading-none mt-0.5 align-middle">PRO</span>
+                                        • <span className="text-blue-500 font-bold hover:underline cursor-pointer ml-1">Follow</span>
+                                    </p>
+                                </div>
                             </div>
-                            <div>
-                                <h3 className="font-bold text-sm text-gray-900">{post.user_handle || "Anonymous"}</h3>
-                                <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wide">Shared a design spark</p>
+                            <div className="flex items-center gap-2 shrink-0 ml-4">
+                                <button className="hidden sm:flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-sm font-semibold transition-all">
+                                    Save
+                                </button>
+                                <button className="flex items-center gap-2 px-4 py-2 bg-gray-900 hover:bg-black text-white rounded-full text-sm font-bold transition-all shadow-sm">
+                                    Get in touch
+                                </button>
+                                <button 
+                                    onClick={onClose}
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-gray-900 ml-1"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
                             </div>
                         </div>
-                        <button 
-                            onClick={onClose}
-                            className="p-2 hover:bg-gray-50 rounded-full transition-colors border border-transparent hover:border-gray-200 text-gray-400 hover:text-gray-900"
-                        >
-                            <X className="w-6 h-6" />
-                        </button>
                     </div>
 
                     {/* Scrollable Area */}
-                    <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                        <div className="space-y-4">
-                            {/* Action Bar - Top Pills */}
-                            <div className="flex items-center gap-3 pt-2">
-                                <div className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-full font-black text-xs shadow-md">
-                                    <MessageCircle className="w-4 h-4 fill-white" />
+                    <div className="flex-1 overflow-y-auto p-6 space-y-8">
+                        <div className="space-y-6">
+                            {/* Stats & Actions */}
+                            <div className="flex flex-wrap items-center gap-4 pt-2">
+                                <button 
+                                    onClick={() => handleLike(reactionType || 'heart')}
+                                    disabled={isLiking}
+                                    className={cn(
+                                        "flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm transition-all shadow-sm border border-transparent",
+                                        liked ? "bg-red-50 text-red-500 border-red-100" : "bg-white border-gray-200 text-gray-700 hover:border-gray-300"
+                                    )}
+                                >
+                                    <Heart className={cn("w-4 h-4", liked && "fill-current")} />
+                                    <span>{likesCount} {likesCount === 1 ? 'Like' : 'Likes'}</span>
+                                </button>
+                                <div className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-full font-bold text-sm shadow-sm">
+                                    <MessageCircle className="w-4 h-4" />
                                     <span>{commentsCount}</span>
                                 </div>
-                                <button 
-                                    onClick={() => setLikesCount((prev: number) => prev + 1)}
-                                    className="flex items-center gap-2 px-4 py-2 bg-gray-50 border border-transparent hover:border-gray-200 rounded-full font-bold text-xs text-gray-600 transition-all"
-                                >
-                                    <Heart className="w-4 h-4" />
-                                    <span>{likesCount}</span>
-                                </button>
                                 <div className="flex-1" />
-                                <div className="flex items-center gap-2 text-gray-400">
-                                    <button className="p-2 hover:bg-gray-50 hover:text-gray-900 rounded-full transition-colors">
-                                        <Share2 className="w-4 h-4" />
-                                    </button>
-                                    <button className="p-2 hover:bg-red-50 hover:text-red-600 rounded-full transition-colors">
-                                        <Trash2 className="w-4 h-4" />
+                                <div className="flex items-center gap-2 text-gray-500">
+                                    <button className="px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 hover:text-gray-900 font-semibold text-sm transition-colors">
+                                        Share
                                     </button>
                                 </div>
                             </div>
 
-                            <p className="text-[15px] font-normal text-gray-700 leading-relaxed whitespace-pre-wrap pt-4">
-                                {post.idea}
-                            </p>
-                            <div className="flex items-center gap-4 text-[11px] font-medium text-gray-400">
-                                <span>{new Date(post.created_at).toLocaleDateString()}</span>
+                            <div className="prose prose-sm max-w-none">
+                                <p className="text-[15px] font-medium text-gray-800 leading-relaxed whitespace-pre-wrap">
+                                    {post.idea}
+                                </p>
+                            </div>
+                            
+                            <div className="text-[12px] font-semibold tracking-wide text-gray-400 uppercase">
+                                Published {new Date(post.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
                             </div>
                         </div>
 
@@ -109,7 +176,13 @@ export function PostDetailModal({ post, onClose }: { post: any, onClose: () => v
                             <InlineComments 
                                 ideaId={post.id} 
                                 user={user} 
-                                onCommentAdded={() => setCommentsCount((prev: number) => prev + 1)}
+                                onCommentAdded={() => {
+                                    setCommentsCount((prev: number) => prev + 1);
+                                    onUpdate?.({
+                                        ...post,
+                                        comments_count: commentsCount + 1
+                                    });
+                                }}
                             />
                         </div>
                     </div>

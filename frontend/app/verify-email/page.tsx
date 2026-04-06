@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Mail, ArrowRight, AlertCircle, CheckCircle2 } from "lucide-react";
@@ -13,6 +13,49 @@ function VerifyEmailContent() {
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [timeLeft, setTimeLeft] = useState(30);
+  const [canResend, setCanResend] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState("");
+
+  useEffect(() => {
+    if (timeLeft > 0) {
+      const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+      return () => clearTimeout(timer);
+    } else {
+      setCanResend(true);
+    }
+  }, [timeLeft]);
+
+  const handleResend = async () => {
+    if (!canResend || resendLoading) return;
+
+    setResendLoading(true);
+    setError("");
+    setResendMessage("");
+
+    try {
+      const res = await fetch("/api/auth/resend-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, type: "signup" }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setResendMessage("Verification code resent!");
+        setTimeLeft(30);
+        setCanResend(false);
+      } else {
+        setError(data.error || "Failed to resend");
+      }
+    } catch (err) {
+      setError("Network error. Please try again.");
+    } finally {
+      setResendLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,6 +134,28 @@ function VerifyEmailContent() {
         >
           {loading ? "Verifying..." : "Verify Email"} <ArrowRight className="w-5 h-5" />
         </button>
+
+        <div className="text-center pt-2">
+            {!canResend ? (
+                <p className="text-sm font-bold text-gray-400 italic">
+                    Resend code in <span className="text-black not-italic">{timeLeft}s</span>
+                </p>
+            ) : (
+                <button
+                    type="button"
+                    onClick={handleResend}
+                    disabled={resendLoading}
+                    className="text-sm font-black uppercase tracking-wider text-black hover:text-blue-600 transition-colors disabled:opacity-50"
+                >
+                    {resendLoading ? "Resending..." : "Resend Code"}
+                </button>
+            )}
+            {resendMessage && (
+                <p className="mt-2 text-xs font-bold text-green-600 animate-pulse">
+                    {resendMessage}
+                </p>
+            )}
+        </div>
       </form>
     </div>
   );
