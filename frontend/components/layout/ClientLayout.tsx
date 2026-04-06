@@ -9,14 +9,15 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isFullscreen = pathname === "/library/wireframes/editor";
   const isAdmin = pathname?.startsWith("/admin") || pathname?.startsWith("/super-admin");
+  const isAuthPage = pathname === "/login" || pathname === "/signup" || pathname === "/verify-email" || pathname?.startsWith("/onboarding");
 
   return (
     <>
-      {!isFullscreen && !isAdmin && <Navbar />}
+      {!isFullscreen && !isAdmin && !isAuthPage && <Navbar />}
       <main className="flex-1">
         {children}
       </main>
-      {!isFullscreen && !isAdmin && <Footer />}
+      {!isFullscreen && !isAdmin && !isAuthPage && <Footer />}
       <CookieConsent />
     </>
   );

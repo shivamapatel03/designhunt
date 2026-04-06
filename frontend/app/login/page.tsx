@@ -1,14 +1,15 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowLeft, ArrowRight, Zap, Star } from "lucide-react";
 import { useState, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { Globe, ChevronDown, CheckCircle2, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/components/providers/auth-provider";
 
 export default function LoginPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, login } = useAuth();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [otp, setOtp] = useState("");
   const [showOtp, setShowOtp] = useState(false);
@@ -19,6 +20,7 @@ export default function LoginPage() {
   const [canResend, setCanResend] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [resendMessage, setResendMessage] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   // Redundancy Fix
@@ -93,6 +95,7 @@ export default function LoginPage() {
           setShowOtp(true);
           setMessage(data.message);
         } else {
+          login(data.user);
           router.push(data.redirect || "/");
         }
       } else {
@@ -106,180 +109,194 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fafafa] flex flex-col font-sans selection:bg-accent-yellow selection:text-black">
-      {/* Brutalist Background Grid */}
-      <div className="fixed inset-0 pointer-events-none opacity-5">
-        <div className="h-full w-full bg-[linear-gradient(to_right,#000_1px,transparent_1px),linear-gradient(to_bottom,#000_1px,transparent_1px)] bg-[length:40px_40px]" />
-      </div>
-
-      <div className="p-4 md:p-8 relative z-10">
-        <Link href="/" className="inline-flex items-center text-xs font-black uppercase tracking-widest hover:translate-x-[-2px] transition-transform">
-          <ArrowLeft className="w-4 h-4 mr-2" /> Back
+    <div className="min-h-screen bg-[#fafafa] flex flex-col font-sans selection:bg-black selection:text-white overflow-hidden">
+      {/* Header - Top Icons */}
+      <div className="w-full p-8 md:p-12 flex justify-start items-center absolute top-0 left-0 z-20">
+        <Link href="/" className="transition-all hover:scale-105 active:scale-95">
+           <Image src="/logo/gloom.png" alt="logo" width={40} height={40} />
         </Link>
       </div>
 
-      <div className="flex-1 flex items-center justify-center p-4 relative z-10">
-        <div className="w-full max-w-[340px]">
-          <motion.div 
-            initial={{ scale: 0.98, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-white border-[3px] border-black rounded-[28px] shadow-[6px_6px_0px_0px_#000] p-5 md:p-6 relative overflow-hidden"
-          >
-            {/* Header Sticker */}
-            <div className="absolute top-4 right-4 bg-accent-yellow border-2 border-black px-3 py-1 rounded-full font-black text-[10px] uppercase italic -rotate-12 shadow-[3px_3px_0px_0px_#000]">
-              Secure
-            </div>
+      <div className="flex-1 flex flex-col items-center justify-center p-4 max-w-[340px] mx-auto w-full relative z-10">
+        <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col items-center mb-6"
+        >
+             <h1 className="text-xl font-bold tracking-tight text-black">
+                {showOtp ? "Verification" : "Welcome Back"}
+             </h1>
+             {showOtp && (
+                <p className="text-[9px] font-bold text-gray-400 mt-0.5 text-center">
+                    Secure login required
+                </p>
+             )}
+        </motion.div>
 
-            <div className="mb-4 text-center sm:text-left">
-              <div className="inline-flex items-center justify-center w-10 h-10 bg-accent-blue border-2 border-black rounded-lg mb-2.5 shadow-[3px_3px_0px_0px_#000]">
-                <Zap className="w-4 h-4 text-white fill-white" />
-              </div>
-              <h1 className="text-xl font-black italic tracking-tighter uppercase mb-0">
-                The <span className="text-accent-blue">Recruit</span>
-              </h1>
-              <p className="text-[10px] font-bold text-gray-400 italic">Access the learning mainframe and challenges.</p>
-            </div>
+        {/* Content Section */}
+        <AnimatePresence mode="wait">
+          {!showOtp ? (
+            <motion.div 
+                key="login-form"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="w-full space-y-6"
+            >
+                <form onSubmit={handleSubmit} className="space-y-3">
+                    {error && (
+                        <div className="p-2 bg-red-50 text-red-500 rounded-xl text-[9px] font-bold text-center border border-red-100 italic">
+                            {error}
+                        </div>
+                    )}
 
-            <AnimatePresence mode="wait">
-              {!showOtp ? (
-                <motion.form 
-                  key="login-form-compact"
-                  initial={{ opacity: 0, x: -5 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 5 }}
-                  onSubmit={handleSubmit} 
-                  className="space-y-4"
-                >
-                  {/* Google Login Button */}
-                  <button 
-                    type="button"
-                    onClick={() => window.location.href = '/api/auth/google'}
-                    className="w-full flex items-center justify-center gap-3 py-2.5 px-4 bg-white border-[3px] border-black rounded-xl font-black text-sm shadow-[4px_4px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all group">
-                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                    </svg>
-                    Google Login
-                  </button>
+                    <div className="space-y-2">
+                        <div className="space-y-1">
+                            <label className="block text-[10px] font-bold text-gray-700" htmlFor="email">Your email</label>
+                            <input 
+                                type="email" 
+                                id="email"
+                                value={formData.email}
+                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                className="w-full px-4 py-2.5 bg-gray-100 border-none rounded-xl font-medium text-sm focus:outline-none focus:ring-2 focus:ring-black/5 transition-all text-black placeholder:text-gray-400"
+                                placeholder="name@email.com"
+                                required
+                            />
+                        </div>
 
-                  <div className="relative py-2">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t-[3px] border-black"></div>
+                        <div className="space-y-1">
+                            <label className="block text-[10px] font-bold text-gray-700" htmlFor="password">Password</label>
+                            <div className="relative">
+                                <input 
+                                    type={showPassword ? "text" : "password"} 
+                                    id="password"
+                                    value={formData.password}
+                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                    className="w-full px-4 py-2.5 bg-gray-100 border-none rounded-xl font-medium text-sm focus:outline-none focus:ring-2 focus:ring-black/5 transition-all text-black placeholder:text-gray-400 pr-10"
+                                    placeholder="••••••••"
+                                    required
+                                />
+                                <button 
+                                    type="button" 
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black transition-colors"
+                                >
+                                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </button>
+                            </div>
+                            <div className="flex justify-end pt-0.5">
+                                <Link href="/forgot-password" title="Forgot Password" className="text-[9px] font-black text-gray-400 hover:text-black uppercase tracking-widest transition-colors">
+                                    Forgot Password?
+                                </Link>
+                            </div>
+                        </div>
                     </div>
-                    <div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest italic">
-                      <span className="px-3 bg-white border-2 border-black rounded-full">Or Mail</span>
-                    </div>
-                  </div>
 
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-[10px] font-black uppercase tracking-widest mb-1 shadow-sm" htmlFor="email">Email</label>
-                      <input 
-                        type="email" 
-                        required
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="w-full px-4 py-2 bg-white border-[3px] border-black rounded-xl font-black text-sm outline-none focus:bg-accent-yellow shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] focus:shadow-[2px_2px_0px_0px_#000] focus:translate-x-1 focus:translate-y-1 transition-all"
-                        placeholder="NAME@URL.COM"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-[10px] font-black uppercase tracking-widest mb-1 shadow-sm" htmlFor="password">Passkey</label>
-                      <input 
-                        type="password" 
-                        required
-                        value={formData.password}
-                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                        className="w-full px-4 py-2 bg-white border-[3px] border-black rounded-xl font-black text-sm outline-none focus:bg-accent-blue focus:text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] focus:shadow-[2px_2px_0px_0px_#000] focus:translate-x-1 focus:translate-y-1 transition-all"
-                        placeholder="••••••••"
-                      />
-                      <div className="flex justify-end mt-1">
-                        <Link href="/forgot-password" className="text-[10px] font-black uppercase italic text-gray-400 hover:text-accent-blue transition-colors">
-                          Forgot Password?
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-
-                   {error && <p className="p-3 bg-red-50 border-2 border-black rounded-xl font-black text-xs text-center italic">{error}</p>}
-
-                  <button disabled={loading} className="w-full py-3 bg-black text-white font-black text-lg rounded-[20px] shadow-[4px_4px_0px_0px_#ffd700] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all flex items-center justify-center gap-2 italic uppercase">
-                    {loading ? 'WAIT...' : 'Proceed'} <ArrowRight className="w-5 h-5" />
-                  </button>
-                </motion.form>
-              ) : (
-                <motion.form 
-                  key="otp-form-compact"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  onSubmit={handleSubmit}
-                  className="space-y-6"
-                >
-                  <div className="text-center p-6 bg-gray-50 border-[3px] border-black rounded-2xl border-dashed">
-                    <label className="block text-[10px] font-black uppercase tracking-widest mb-4" htmlFor="otp">Verification Hash</label>
-                    <input 
-                      type="text" 
-                      id="otp"
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value)}
-                      className="w-full bg-transparent text-center text-5xl font-black tracking-[0.1em] outline-none placeholder:text-gray-200"
-                      placeholder="000000"
-                      maxLength={6}
-                      required
-                      autoFocus
-                    />
-                  </div>
-
-                  {error && <p className="p-3 bg-red-50 border-2 border-black rounded-xl font-black text-xs text-center italic">{error}</p>}
-
-                  <div className="flex flex-col gap-3">
-                    <button disabled={loading} className="w-full py-4 bg-accent-yellow text-black font-black text-xl rounded-[24px] border-[3px] border-black shadow-[6px_6px_0px_0px_#000] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all uppercase italic">
-                      {loading ? 'VERIFYING...' : 'Break Through'}
+                    <button 
+                        disabled={loading} 
+                        className="w-full py-3 bg-black text-white font-bold text-sm rounded-xl hover:bg-gray-900 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                        {loading ? 'Entering...' : 'Sign In'}
                     </button>
-                    
-                    <div className="text-center">
+                </form>
+
+                {/* Signup Link */}
+                <div className="mt-2 text-center">
+                    <p className="text-[10px] font-bold text-gray-400">
+                        New here?{' '}
+                        <Link href="/signup" className="text-black hover:underline underline-offset-4 transition-all">
+                           Create Account
+                        </Link>
+                    </p>
+                </div>
+
+                {/* Separator */}
+                <div className="w-full flex items-center gap-2 my-2">
+                    <div className="flex-1 h-[1px] bg-gray-100"></div>
+                    <span className="text-[9px] font-black text-gray-300">Or</span>
+                    <div className="flex-1 h-[1px] bg-gray-100"></div>
+                </div>
+
+                {/* Google Signup */}
+                <button 
+                  onClick={() => window.location.href = '/api/auth/google'}
+                  className="w-full flex items-center justify-center py-2 bg-white border border-gray-200 rounded-xl font-bold text-sm hover:bg-gray-50 transition-all group"
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                  </svg>
+                </button>
+            </motion.div>
+          ) : (
+            <motion.form 
+                key="otp-form"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                onSubmit={handleSubmit}
+                className="w-full space-y-6"
+            >
+                <div className="space-y-3">
+                    <div className="bg-gray-100/50 border border-gray-100 rounded-2xl p-4 flex flex-col items-center justify-center">
+                        <label className="text-[10px] font-bold tracking-wider text-gray-400 mb-2 uppercase" htmlFor="otp">Security Code</label>
+                        <input 
+                            type="text" 
+                            id="otp"
+                            value={otp}
+                            onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
+                            className="w-full bg-transparent text-center text-2xl font-bold tracking-[0.2em] outline-none placeholder:text-gray-200 text-black appearance-none"
+                            placeholder="000000"
+                            required
+                            autoFocus
+                        />
+                    </div>
+
+                    {error && (
+                        <div className="p-3 bg-red-50 text-red-500 rounded-xl text-xs font-bold text-center border border-red-100 italic">
+                            {error}
+                        </div>
+                    )}
+                </div>
+
+                <div className="space-y-3">
+                    <button 
+                        disabled={loading || otp.length !== 6} 
+                        className="w-full py-3 bg-black text-white font-bold text-sm rounded-xl shadow-sm hover:bg-gray-900 transition-all flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50"
+                    >
+                        {loading ? 'Verifying...' : 'Verify Code'} <ArrowRight className="w-4 h-4" />
+                    </button>
+
+                    <div className="flex flex-col items-center gap-2">
                         {!canResend ? (
-                            <p className="text-[10px] font-black uppercase italic text-gray-400">
-                                Resend in <span className="text-black not-italic">{timeLeft}s</span>
+                            <p className="text-[10px] font-bold text-gray-400">
+                                Resend code in <span className="text-black">{timeLeft}s</span>
                             </p>
                         ) : (
                             <button 
                                 type="button" 
                                 onClick={handleResend}
                                 disabled={resendLoading}
-                                className="text-[10px] font-black uppercase italic text-black hover:text-accent-blue transition-colors disabled:opacity-50"
+                                className="text-[10px] font-bold text-black hover:underline underline-offset-4"
                             >
-                                {resendLoading ? "Sending..." : "Resend Verification Code"}
+                                {resendLoading ? "Requesting..." : "Resend Security Code"}
                             </button>
                         )}
-                        {resendMessage && (
-                            <p className="mt-1 text-[10px] font-black uppercase italic text-green-600 animate-pulse">
-                                {resendMessage}
-                            </p>
-                        )}
+                        
+                        <button 
+                            type="button" 
+                            onClick={() => setShowOtp(false)} 
+                            className="text-[10px] font-bold text-gray-400 hover:text-black transition-colors"
+                        >
+                            Back to Login
+                        </button>
                     </div>
-
-                    <button type="button" onClick={() => setShowOtp(false)} className="text-[10px] font-black uppercase italic text-gray-400 hover:text-black transition-colors">
-                      Abort Request
-                    </button>
-                  </div>
-                </motion.form>
-              )}
-            </AnimatePresence>
-
-            <div className="mt-4 text-center">
-              <p className="text-[10px] font-bold text-gray-300">
-                New?{' '}
-                <Link href="/signup" className="text-black hover:underline underline-offset-4 decoration-accent-blue decoration-2">
-                  Create Account
-                </Link>
-              </p>
-            </div>
-          </motion.div>
-        </div>
+                </div>
+            </motion.form>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

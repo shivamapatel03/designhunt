@@ -19,6 +19,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'User already exists' }, { status: 400 });
     }
 
+    // Check if name (Identification) is unique
+    const existingName = db.prepare('SELECT id FROM users WHERE name = ?').get(name);
+    if (existingName) {
+      return NextResponse.json({ error: 'username already exists make new' }, { status: 400 });
+    }
+
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
     const userId = crypto.randomUUID();

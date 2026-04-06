@@ -1,13 +1,22 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Create reusable transporter object using the default SMTP transport
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: parseInt(process.env.SMTP_PORT || '587'),
+  secure: false, // true for 465, false for other ports
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS, // App Password for Gmail
+  },
+});
 
 export async function sendVerificationEmail(email: string, code: string) {
   try {
-    const { data, error } = await resend.emails.send({
-      from: 'Design Hunt <onboarding@resend.dev>', // Use verified domain in production
-      to: [email],
-      subject: 'Verify your Design Hunt account',
+    const info = await transporter.sendMail({
+      from: `"Design Hunt" <${process.env.SMTP_USER}>`, // sender address
+      to: email, // list of receivers
+      subject: 'Verify your Design Hunt account', // Subject line
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
           <h1 style="color: #000; font-weight: 900;">Welcome to Design Hunt!</h1>
@@ -20,23 +29,19 @@ export async function sendVerificationEmail(email: string, code: string) {
       `,
     });
 
-    if (error) {
-      console.error('Resend Error:', error);
-      return { success: false, error };
-    }
-
-    return { success: true, data };
-  } catch (err) {
-    console.error('Email Send Exception:', err);
-    return { success: false, error: err };
+    console.log('Message sent: %s', info.messageId);
+    return { success: true, data: info };
+  } catch (error) {
+    console.error('Nodemailer Error:', error);
+    return { success: false, error };
   }
 }
 
 export async function sendAdminLoginEmail(email: string, code: string, role: string) {
   try {
-    const { data, error } = await resend.emails.send({
-      from: 'Design Hunt <onboarding@resend.dev>',
-      to: [email],
+    const info = await transporter.sendMail({
+      from: `"Design Hunt" <${process.env.SMTP_USER}>`,
+      to: email,
       subject: `[${role}] Login Verification Code`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
@@ -51,14 +56,10 @@ export async function sendAdminLoginEmail(email: string, code: string, role: str
       `,
     });
 
-    if (error) {
-      console.error('Resend Error:', error);
-      return { success: false, error };
-    }
-
-    return { success: true, data };
-  } catch (err) {
-    console.error('Email Send Exception:', err);
-    return { success: false, error: err };
+    console.log('Message sent: %s', info.messageId);
+    return { success: true, data: info };
+  } catch (error) {
+    console.error('Nodemailer Error:', error);
+    return { success: false, error };
   }
 }

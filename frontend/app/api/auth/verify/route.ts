@@ -40,7 +40,11 @@ export async function POST(req: Request) {
       .setExpirationTime('24h')
       .sign(JWT_SECRET);
 
-    const response = NextResponse.json({ success: true, redirect: '/onboarding' });
+    const response = NextResponse.json({ 
+        success: true, 
+        user: { name: user.name, email: user.email, role: user.role },
+        redirect: '/onboarding' 
+    });
 
     response.cookies.set('token', token, {
       httpOnly: true,

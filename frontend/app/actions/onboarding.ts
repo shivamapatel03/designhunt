@@ -66,3 +66,40 @@ export async function updateSkills(skills: string[]) {
     return { error: "Failed to update skills" };
   }
 }
+
+export async function updateOnboardingData(data: Record<string, any>) {
+  try {
+    const token = (await cookies()).get("token")?.value;
+    if (!token) return { error: "Unauthorized" };
+
+    const { payload } = await jwtVerify(token, JWT_SECRET);
+    const userId = payload.userId as string;
+    if (!userId) return { error: "Invalid token" };
+
+    const allowedFields = ['goal', 'skill_level', 'topics_to_learn', 'daily_dedication', 'onboarding_completed', 'avatar'];
+    const fieldsToUpdate = Object.keys(data).filter(f => allowedFields.includes(f));
+
+    if (fieldsToUpdate.length === 0) return { error: "No valid fields to update" };
+
+    const setClause = fieldsToUpdate.map(f => `${f} = ?`).join(', ');
+    const values = fieldsToUpdate.map(f => {
+        const val = data[f];
+        if (val === undefined) return null;
+        if (typeof val === 'boolean') return val ? 1 : 0;
+        return typeof val === 'object' ? JSON.stringify(val) : val;
+    });
+
+    const stmt = db.prepare(`UPDATE users SET ${setClause} WHERE id = ?`);
+    stmt.run(...values, userId);
+
+    // Revalidate to reflect changes in dashboard/navbar
+    revalidatePath("/");
+    revalidatePath("/profile");
+
+    return { success: true };
+  } catch (error) {
+    console.error("CRITICAL Onboarding Action Error:", error);
+    return { error: error instanceof Error ? error.message : "Failed to update progress" };
+  }
+}
+
