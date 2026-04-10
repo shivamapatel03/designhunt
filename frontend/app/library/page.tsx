@@ -36,7 +36,7 @@ export default function LibraryPage() {
                 </div>
             </Link>
 
-            <Link href="/library/typography" className="group bg-white p-8 rounded-3xl border border-gray-200 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all relative overflow-hidden">
+            <Link href="/theory/typography" className="group bg-white p-8 rounded-3xl border border-gray-200 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-32 bg-accent-yellow/5 rounded-full blur-3xl -mr-16 -mt-16 transition-colors group-hover:bg-accent-yellow/10" />
                 <div className="relative z-10">
                     <div className="w-14 h-14 bg-accent-yellow text-black rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-black/10">

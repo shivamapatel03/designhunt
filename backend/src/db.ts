@@ -51,6 +51,34 @@ try {
 
   try {
     db.prepare(
+      "ALTER TABLE users ADD COLUMN total_xp INTEGER DEFAULT 0",
+    ).run();
+    console.log("Migration: Added total_xp column to users");
+  } catch (e) {}
+
+  try {
+    db.prepare(
+      "ALTER TABLE users ADD COLUMN current_streak INTEGER DEFAULT 0",
+    ).run();
+    console.log("Migration: Added current_streak column to users");
+  } catch (e) {}
+
+  try {
+    db.prepare(
+      "ALTER TABLE users ADD COLUMN badges_json TEXT DEFAULT '[]'",
+    ).run();
+    console.log("Migration: Added badges_json column to users");
+  } catch (e) {}
+
+  try {
+    db.prepare(
+      "ALTER TABLE users ADD COLUMN last_active_date DATE",
+    ).run();
+    console.log("Migration: Added last_active_date column to users");
+  } catch (e) {}
+
+  try {
+    db.prepare(
       "ALTER TABLE transactions ADD COLUMN razorpay_order_id TEXT",
     ).run();
   } catch (e) {}
@@ -376,6 +404,81 @@ try {
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (idea_id) REFERENCES ideas(id) ON DELETE CASCADE,
     UNIQUE(idea_id, user_id)
+  );
+
+  -- Learning System Tables
+  CREATE TABLE IF NOT EXISTS learning_topics (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    slug TEXT UNIQUE NOT NULL,
+    description TEXT,
+    icon TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS learning_levels (
+    id TEXT PRIMARY KEY,
+    topic_id TEXT NOT NULL,
+    level_number INTEGER NOT NULL,
+    difficulty TEXT NOT NULL, -- NORMAL, MEDIUM, HARD
+    [order] INTEGER NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (topic_id) REFERENCES learning_topics(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS learning_sections (
+    id TEXT PRIMARY KEY,
+    level_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    content_json TEXT, -- JSON array of content blocks (text, image, interactive)
+    duration_mins INTEGER DEFAULT 5,
+    type TEXT DEFAULT 'READ', -- READ, TEST
+    [order] INTEGER NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (level_id) REFERENCES learning_levels(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS learning_quizzes (
+    id TEXT PRIMARY KEY,
+    section_id TEXT NOT NULL,
+    question TEXT NOT NULL,
+    options_json TEXT NOT NULL, -- JSON array of strings
+    correct_answer INTEGER NOT NULL, -- Index of correct option
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (section_id) REFERENCES learning_sections(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS learning_progress (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    section_id TEXT NOT NULL,
+    status TEXT DEFAULT 'COMPLETED',
+    score INTEGER DEFAULT 0,
+    xp_earned INTEGER DEFAULT 0,
+    completed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (section_id) REFERENCES learning_sections(id),
+    UNIQUE(user_id, section_id)
+  );
+
+  CREATE TABLE IF NOT EXISTS learning_saves (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    level_id TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (level_id) REFERENCES learning_levels(id),
+    UNIQUE(user_id, level_id)
+  );
+
+  CREATE TABLE IF NOT EXISTS learning_bookmarks (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    section_id TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (section_id) REFERENCES learning_sections(id),
+    UNIQUE(user_id, section_id)
   );
   `);
 

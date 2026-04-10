@@ -30,11 +30,7 @@ export function CourseSidebar({ modules, currentLessonId, courseId }: CourseSide
         <div className="w-full lg:w-80 bg-white border-2 border-black rounded-2xl shadow-[4px_4px_0px_0px_#000] overflow-hidden h-fit sticky top-24 md:top-28">
              <div className="p-4 bg-black text-white border-b-2 border-black">
                 <h3 className="font-bold text-lg">Course Content</h3>
-                <p className="text-xs text-gray-400 mt-1">12% Completed</p>
-                {/* Progress Bar */}
-                <div className="w-full h-1.5 bg-gray-800 rounded-full mt-2 overflow-hidden">
-                    <div className="h-full bg-accent-yellow w-[12%]"></div>
-                </div>
+                <p className="text-xs text-gray-400 mt-1 italic uppercase tracking-widest">Master Theory & Practice</p>
              </div>
 
              <div className="overflow-y-auto max-h-[70vh]">

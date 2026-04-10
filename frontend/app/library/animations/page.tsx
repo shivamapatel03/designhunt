@@ -183,7 +183,7 @@ export default function AnimationsPage() {
     <div className="min-h-screen bg-gray-50 pt-14 md:pt-16 pb-12">
       <div className="container mx-auto px-4 md:px-8">
         <div className="max-w-4xl mx-auto mb-16 text-center">
-            <Link href="/library" className="inline-flex items-center gap-2 text-gray-400 hover:text-black font-bold mb-8 transition-colors">
+            <Link href="/library" className="inline-flex items-center gap-2 text-gray-400 hover:text-black font-bold mb-10 transition-colors">
                 <ArrowLeft className="w-4 h-4" /> Back to Library
             </Link>
             

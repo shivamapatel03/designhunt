@@ -76,7 +76,7 @@ export async function updateOnboardingData(data: Record<string, any>) {
     const userId = payload.userId as string;
     if (!userId) return { error: "Invalid token" };
 
-    const allowedFields = ['goal', 'skill_level', 'topics_to_learn', 'daily_dedication', 'onboarding_completed', 'avatar'];
+    const allowedFields = ['goal', 'skill_level', 'topics_to_learn', 'daily_dedication', 'profession', 'onboarding_completed', 'avatar'];
     const fieldsToUpdate = Object.keys(data).filter(f => allowedFields.includes(f));
 
     if (fieldsToUpdate.length === 0) return { error: "No valid fields to update" };

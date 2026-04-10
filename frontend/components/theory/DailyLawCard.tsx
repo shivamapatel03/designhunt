@@ -29,7 +29,7 @@ export function DailyLawCard({ className }: DailyLawCardProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className={cn(
-        "relative overflow-hidden rounded-3xl border-2 border-black bg-white p-8 md:p-10 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]",
+        "relative overflow-hidden rounded-3xl border border-gray-200 bg-white p-8 md:p-10 shadow-sm",
         className
       )}
     >
@@ -39,7 +39,7 @@ export function DailyLawCard({ className }: DailyLawCardProps) {
 
       <div className="grid md:grid-cols-2 gap-12 items-center">
         <div className="space-y-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-yellow border border-black text-xs font-black uppercase tracking-wider">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-yellow text-black text-xs font-black uppercase tracking-wider shadow-sm">
             Today's Design Principle
           </div>
           
@@ -65,7 +65,7 @@ export function DailyLawCard({ className }: DailyLawCardProps) {
                   onClick={() => setSuccess(true)}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className={`relative z-10 w-16 h-16 rounded-full ${success ? 'bg-green-500' : 'bg-red-500'} border-4 border-black flex items-center justify-center transition-colors shadow-lg`}
+                  className={`relative z-10 w-16 h-16 rounded-full ${success ? 'bg-green-500' : 'bg-red-500'} flex items-center justify-center transition-colors shadow-md`}
                 >
                   <Target className={`w-8 h-8 ${success ? 'text-white' : 'text-white/80'}`} />
                   {success && (

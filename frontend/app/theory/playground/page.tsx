@@ -13,7 +13,7 @@ export default function InteractionLabPage() {
   return (
     <div className="min-h-screen bg-[#f8f7f4] pb-24">
       <div className="container mx-auto max-w-7xl px-6 pt-12">
-        <Link href="/theory" className="inline-flex items-center text-sm font-bold text-gray-500 hover:text-black mb-8 transition-colors">
+        <Link href="/theory" className="inline-flex items-center text-sm font-bold text-gray-500 hover:text-black mb-10 transition-colors">
           <ArrowLeft className="w-4 h-4 mr-2" /> Back to Theory Hub
         </Link>
         

@@ -19,7 +19,8 @@ import {
     Calendar,
     Zap,
     BookOpen,
-    Loader2
+    Loader2,
+    Globe
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -176,7 +177,6 @@ export default function PremiumTutorDashboard() {
                     label="Total Students" 
                     value={stats?.totalStudents || 0} 
                     icon={Users} 
-                    trend="+12%" 
                     color="text-indigo-600"
                     bg="bg-indigo-50"
                   />
@@ -184,7 +184,6 @@ export default function PremiumTutorDashboard() {
                     label="Revenue" 
                     value={stats?.totalEarnings || "$0.00"} 
                     icon={DollarSign} 
-                    trend="+8.5%" 
                     color="text-emerald-600"
                     bg="bg-emerald-50"
                   />
@@ -192,7 +191,6 @@ export default function PremiumTutorDashboard() {
                     label="Avg. Session" 
                     value="42m" 
                     icon={Zap} 
-                    trend="+5%" 
                     color="text-amber-600"
                     bg="bg-amber-50"
                   />
@@ -200,7 +198,6 @@ export default function PremiumTutorDashboard() {
                     label="Course Views" 
                     value={stats?.courseViews || "0"} 
                     icon={TrendingUp} 
-                    trend="+24%" 
                     color="text-rose-600"
                     bg="bg-rose-50"
                   />
@@ -344,7 +341,7 @@ function SidebarItem({ icon: Icon, label, active, onClick }: any) {
     )
 }
 
-function PremiumStatCard({ label, value, icon: Icon, trend, color, bg }: any) {
+function PremiumStatCard({ label, value, icon: Icon, color, bg }: any) {
     return (
         <motion.div 
             whileHover={{ y: -5 }}
@@ -353,9 +350,6 @@ function PremiumStatCard({ label, value, icon: Icon, trend, color, bg }: any) {
             <div className="flex justify-between items-start mb-4">
                 <div className={`p-3 rounded-2xl ${bg}`}>
                     <Icon className={`w-6 h-6 ${color}`} />
-                </div>
-                <div className="flex items-center gap-1 text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
-                    <ArrowUpRight className="w-3 h-3" /> {trend}
                 </div>
             </div>
             <div>

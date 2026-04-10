@@ -4,7 +4,7 @@ import Link from "next/link";
 export default function UXLawsPage() {
   return (
     <div className="container mx-auto px-4 pt-14 md:pt-16 pb-12">
-        <Link href="/theory" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-black mb-2">
+        <Link href="/theory" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-black mb-10">
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to Theory Hub
         </Link>
         <header className="max-w-3xl mb-6">

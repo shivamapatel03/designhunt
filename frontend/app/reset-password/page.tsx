@@ -2,9 +2,9 @@
 
 import { useState, Suspense } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, ShieldCheck, Key } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
+import { ArrowLeft, ArrowRight, Loader2, Key, ShieldCheck, CheckCircle2 } from "lucide-react";
 
 function ResetPasswordForm() {
   const router = useRouter();
@@ -57,113 +57,127 @@ function ResetPasswordForm() {
   };
 
   return (
-    <motion.div 
-      initial={{ scale: 0.98, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      className="bg-white border-[3px] border-black rounded-[32px] shadow-[8px_8px_0px_0px_#000] p-6 md:p-10 relative overflow-hidden"
-    >
-      <div className="mb-8 text-center sm:text-left">
-        <div className="inline-flex items-center justify-center w-12 h-12 bg-accent-blue border-2 border-black rounded-xl mb-4 shadow-[4px_4px_0px_0px_#000]">
-          <Key className="w-6 h-6 text-white" />
-        </div>
-        <h1 className="text-3xl font-black italic tracking-tighter uppercase mb-1">
-          Set New <span className="text-accent-yellow text-shadow-black">Passkey</span>
-        </h1>
-        <p className="text-sm font-bold text-gray-400 italic">Inject a new security layer into your account.</p>
-      </div>
-
-      {message ? (
-        <div className="space-y-6 text-center">
-          <div className="p-8 bg-green-50 border-[3px] border-black rounded-[32px] border-dashed">
-            <ShieldCheck className="w-16 h-16 text-green-600 mx-auto mb-4" />
-            <h3 className="text-xl font-black uppercase italic mb-2">Access Restored</h3>
-            <p className="text-sm font-bold text-gray-500">{message}</p>
-          </div>
-          <p className="text-xs font-black uppercase italic text-gray-400 animate-pulse">Redirecting to login terminal...</p>
-        </div>
-      ) : (
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-[10px] font-black uppercase tracking-widest mb-1 shadow-sm" htmlFor="email">Email</label>
-              <input 
-                type="email" 
-                required
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-4 py-3 bg-white border-[3px] border-black rounded-2xl font-black text-xs outline-none focus:bg-accent-yellow shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] focus:shadow-[2px_2px_0px_0px_#000] focus:translate-x-1 focus:translate-y-1 transition-all"
-                placeholder="NAME@URL.COM"
-              />
+    <div className="w-full">
+      <AnimatePresence mode="wait">
+        {!message ? (
+          <motion.div 
+            key="reset-form"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6"
+          >
+            <div className="text-center mb-8">
+               <h1 className="text-xl font-bold tracking-tight text-black">
+                  New Password
+               </h1>
+               <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">
+                  Secure access recovery
+               </p>
             </div>
-            <div>
-              <label className="block text-[10px] font-black uppercase tracking-widest mb-1 shadow-sm" htmlFor="token">Recovery Hash</label>
-              <input 
-                type="text" 
-                required
-                value={formData.token}
-                onChange={(e) => setFormData({ ...formData, token: e.target.value })}
-                className="w-full px-4 py-3 bg-white border-[3px] border-black rounded-2xl font-black text-xs outline-none focus:bg-accent-yellow shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] focus:shadow-[2px_2px_0px_0px_#000] focus:translate-x-1 focus:translate-y-1 transition-all"
-                placeholder="000000"
-                maxLength={6}
-              />
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                  <div className="p-2 bg-red-50 text-red-500 rounded-xl text-[9px] font-bold text-center border border-red-100 italic">
+                      {error}
+                  </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-gray-700 uppercase tracking-widest" htmlFor="email">Email</label>
+                  <input 
+                    type="email" 
+                    required
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-gray-100 border-none rounded-xl font-medium text-xs focus:outline-none focus:ring-2 focus:ring-black/5 transition-all text-black"
+                    placeholder="name@email.com"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-gray-700 uppercase tracking-widest" htmlFor="token">Code</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={formData.token}
+                    onChange={(e) => setFormData({ ...formData, token: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-gray-100 border-none rounded-xl font-bold text-xs focus:outline-none focus:ring-2 focus:ring-black/5 transition-all text-black text-center tracking-[0.2em]"
+                    placeholder="000000"
+                    maxLength={6}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-[10px] font-bold text-gray-700 uppercase tracking-widest" htmlFor="password">New Password</label>
+                <input 
+                  type="password" 
+                  required
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-gray-100 border-none rounded-xl font-medium text-sm focus:outline-none focus:ring-2 focus:ring-black/5 transition-all text-black"
+                  placeholder="••••••••"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-[10px] font-bold text-gray-700 uppercase tracking-widest" htmlFor="confirmPassword">Confirm Password</label>
+                <input 
+                  type="password" 
+                  required
+                  value={formData.confirmPassword}
+                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-gray-100 border-none rounded-xl font-medium text-sm focus:outline-none focus:ring-2 focus:ring-black/5 transition-all text-black"
+                  placeholder="••••••••"
+                />
+              </div>
+
+              <button disabled={loading} className="w-full py-3 bg-black text-white font-bold text-sm rounded-xl hover:bg-gray-900 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 active:scale-[0.98]">
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Set New Password'} <ArrowRight className="w-4 h-4" />
+              </button>
+            </form>
+
+            <div className="text-center">
+                <Link href="/login" className="inline-flex items-center gap-1.5 text-[10px] font-bold text-gray-400 hover:text-black transition-colors uppercase tracking-widest">
+                   <ArrowLeft className="w-3 h-3" /> Back to Login
+                </Link>
             </div>
-          </div>
-
-          <div>
-            <label className="block text-[10px] font-black uppercase tracking-widest mb-1 shadow-sm" htmlFor="password">New Passkey</label>
-            <input 
-              type="password" 
-              required
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="w-full px-4 py-3 bg-white border-[3px] border-black rounded-2xl font-black text-base outline-none focus:bg-accent-blue focus:text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] focus:shadow-[2px_2px_0px_0px_#000] focus:translate-x-1 focus:translate-y-1 transition-all"
-              placeholder="••••••••"
-            />
-          </div>
-
-          <div>
-            <label className="block text-[10px] font-black uppercase tracking-widest mb-1 shadow-sm" htmlFor="confirmPassword">Confirm Passkey</label>
-            <input 
-              type="password" 
-              required
-              value={formData.confirmPassword}
-              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-              className="w-full px-4 py-3 bg-white border-[3px] border-black rounded-2xl font-black text-base outline-none focus:bg-accent-blue focus:text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] focus:shadow-[2px_2px_0px_0px_#000] focus:translate-x-1 focus:translate-y-1 transition-all"
-              placeholder="••••••••"
-            />
-          </div>
-
-          {error && <p className="p-3 bg-red-50 border-2 border-black rounded-xl font-black text-xs text-center italic">{error}</p>}
-
-          <button disabled={loading} className="w-full py-4 bg-black text-white font-black text-xl rounded-[24px] shadow-[6px_6px_0px_0px_#ffd700] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all flex items-center justify-center gap-3 italic uppercase">
-            {loading ? 'REWRITING...' : 'Update Passkey'} <ArrowRight className="w-6 h-6" />
-          </button>
-        </form>
-      )}
-    </motion.div>
+          </motion.div>
+        ) : (
+          <motion.div 
+            key="success-message"
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white p-8 rounded-[32px] border border-black/5 shadow-xl flex flex-col items-center text-center space-y-4"
+          >
+            <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center mb-2">
+                <CheckCircle2 className="w-6 h-6 text-green-500" />
+            </div>
+            <div className="space-y-2">
+                <h2 className="text-lg font-bold text-black">Reset Successful</h2>
+                <p className="text-xs text-gray-500 font-medium">Your password has been updated. You'll be redirected to login shortly.</p>
+            </div>
+            <Link href="/login" className="w-full py-3 bg-[#6366F1] text-white font-bold text-xs rounded-xl hover:bg-[#4F46E5] transition-colors flex items-center justify-center">
+                Go to Login
+            </Link>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 
+import { AnimatePresence } from "framer-motion";
+
 export default function ResetPasswordPage() {
   return (
-    <div className="min-h-screen bg-[#fafafa] flex flex-col font-sans selection:bg-accent-yellow selection:text-black">
-      {/* Brutalist Background Grid */}
-      <div className="fixed inset-0 pointer-events-none opacity-5">
-        <div className="h-full w-full bg-[linear-gradient(to_right,#000_1px,transparent_1px),linear-gradient(to_bottom,#000_1px,transparent_1px)] bg-[length:40px_40px]" />
-      </div>
+    <div className="min-h-screen bg-[#fafafa] flex flex-col font-sans selection:bg-black selection:text-white overflow-hidden">
 
-      <div className="p-4 md:p-8 relative z-10">
-        <Link href="/login" className="inline-flex items-center text-xs font-black uppercase tracking-widest hover:translate-x-[-2px] transition-transform">
-          <ArrowLeft className="w-4 h-4 mr-2" /> Abort Mission
-        </Link>
-      </div>
 
-      <div className="flex-1 flex items-center justify-center p-4 relative z-10">
-        <div className="w-full max-w-lg">
-          <Suspense fallback={<div className="text-center font-black animate-pulse uppercase tracking-widest">Loading Recovery Interface...</div>}>
-            <ResetPasswordForm />
-          </Suspense>
-        </div>
+      <div className="flex-1 flex flex-col items-center justify-center p-4 max-w-[400px] mx-auto w-full relative z-10">
+        <Suspense fallback={<div className="text-[10px] font-bold text-gray-400 animate-pulse uppercase tracking-widest">Waking Up Session...</div>}>
+          <ResetPasswordForm />
+        </Suspense>
       </div>
     </div>
   );

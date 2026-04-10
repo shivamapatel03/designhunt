@@ -1,4 +1,5 @@
 import express from "express";
+import path from "path";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
@@ -16,6 +17,7 @@ import ideasRoutes from "./routes/ideas";
 import profileRoutes from "./routes/profile";
 import labsRoutes from "./routes/labs";
 import paymentRoutes from "./routes/payments";
+import learningRoutes from "./routes/learning";
 import db from "./db";
 
 dotenv.config();
@@ -32,6 +34,7 @@ app.use(
 );
 app.use(express.json({ limit: "50mb" }));
 app.use(cookieParser());
+app.use("/uploads", express.static(path.join(__dirname, "../public/uploads")));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
@@ -44,6 +47,7 @@ app.use("/api/ideas", ideasRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/labs", labsRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/learning", learningRoutes);
 
 // Basic health check
 app.get("/", (req, res) => {

@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Upload, Sparkles, Check, Globe, ChevronDown, CheckCircle2, Loader2, X } from "lucide-react";
+import { ArrowRight, Upload, Sparkles, Check, Globe, ChevronDown, CheckCircle2, Loader2, X, Search, User } from "lucide-react";
+import Link from "next/link";
 import { updateAvatar, updateOnboardingData } from "@/app/actions/onboarding";
 import { useAuth } from "@/components/providers/auth-provider";
 
@@ -28,37 +29,24 @@ const STATIC_CHARACTERS = [
 
 // --- Components moved outside to prevent re-animation on state change ---
 
-const Header = ({ progress }: { progress: number }) => (
-    <>
-      <div className="w-full h-1 bg-gray-100 fixed top-0 left-0 z-50 overflow-hidden">
-        <motion.div 
-          initial={{ width: 0 }}
-          animate={{ width: `${progress}%` }}
-          transition={{ duration: 0.5, ease: "circOut" }}
-          className="h-full bg-black"
-        />
-      </div>
-      <div className="w-full p-6 md:p-8 flex justify-between items-center fixed top-1 left-0 z-40 pointer-events-none">
-        <div className="flex items-center pointer-events-auto">
-          <div className="text-xl font-black tracking-tight text-black">
-            Designhunt.
-          </div>
-        </div>
-      </div>
-    </>
+const AaLabel = ({ text, className = "" }: { text: string, className?: string }) => (
+  <div className={`flex items-center ${className}`}>
+    <span className="text-[10px] font-bold text-gray-400 tracking-wide">{text}</span>
+  </div>
 );
+
 
 const SkipButton = ({ next }: { next: () => void }) => (
     <button 
         onClick={next} 
-        className="mt-4 text-[10px] font-bold text-gray-400 hover:text-black hover:underline underline-offset-4 uppercase tracking-widest transition-colors"
+        className="mt-4 hover:text-black group transition-colors"
     >
-        Skip for now
+        <span className="text-[10px] font-bold text-gray-400 group-hover:text-black tracking-wide underline underline-offset-4 decoration-transparent group-hover:decoration-black">Skip for now</span>
     </button>
 );
 
 const Step0Welcome = ({ userName, next }: { userName: string, next: () => void }) => (
-    <div className="flex-1 flex flex-col items-center justify-center p-4 max-w-4xl mx-auto w-full relative z-10 text-center">
+    <div className="flex-1 flex flex-col items-center justify-center p-4 max-w-4xl mx-auto w-full relative z-10 text-center" suppressHydrationWarning>
       <div className="mb-6">
         <h1 className="text-3xl md:text-4xl font-black mb-2">
           <span className="text-gray-300">Welcome <Sparkles className="inline w-6 h-6 text-yellow-400 mb-1" /></span> {userName}
@@ -110,8 +98,8 @@ const Step1Goal = ({ data, setData, next }: { data: any, setData: any, next: () 
                     exit={{ opacity: 0, scale: 0.98 }}
                     className="flex flex-col items-center w-full"
                 >
-                    <div className="mb-6">
-                        <p className="text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-wide">This helps us personalize your journey</p>
+                    <div className="mb-6 flex flex-col items-center">
+                        <AaLabel text="This helps us personalize your journey" className="mb-1.5" />
                         <h1 className="text-2xl md:text-3xl font-black text-black tracking-tight">What’s your goal with design?</h1>
                     </div>
                     <div className="grid grid-cols-2 gap-2.5 w-full max-w-[360px]">
@@ -180,8 +168,8 @@ const Step2Skill = ({ data, setData, next }: { data: any, setData: any, next: ()
     const levels = [{ name: "Beginner", icon: "📏" }, { name: "Intermediate", icon: "🌓" }, { name: "Advanced", icon: "🌑" }];
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-4 max-w-4xl mx-auto w-full relative z-10 text-center">
-        <div className="mb-6">
-          <p className="text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-wide">Tell us about your background</p>
+        <div className="mb-6 flex flex-col items-center">
+          <AaLabel text="Tell us about your background" className="mb-1.5" />
           <h1 className="text-2xl md:text-3xl font-black text-black tracking-tight">What’s your current skill level?</h1>
         </div>
         <div className="flex flex-wrap justify-center gap-2.5 w-full max-w-[460px]">
@@ -218,8 +206,8 @@ const Step3Topics = ({ data, setData, next }: { data: any, setData: any, next: (
     };
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-4 max-w-4xl mx-auto w-full relative z-10 text-center">
-        <div className="mb-6">
-          <p className="text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-wide">Select your primary interests</p>
+        <div className="mb-6 flex flex-col items-center">
+          <AaLabel text="Select your primary interests" className="mb-1.5" />
           <h1 className="text-2xl md:text-3xl font-black text-black tracking-tight">What do you want to learn?</h1>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 w-full max-w-[560px]">
@@ -245,27 +233,30 @@ const Step3Topics = ({ data, setData, next }: { data: any, setData: any, next: (
     );
 };
 
-const Step4Dedication = ({ data, setData, next }: { data: any, setData: any, next: () => void }) => {
-    const times = ["10 minutes", "30 minutes", "1 hour"];
+const Step4Profession = ({ data, setData, next }: { data: any, setData: any, next: () => void }) => {
+    const professions = ["Designer", "Developer", "Product Manager", "Freelancer", "Other"];
+    
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-4 max-w-4xl mx-auto w-full relative z-10 text-center">
-        <div className="mb-6">
-          <p className="text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-wide">Set your learning tempo</p>
-          <h1 className="text-2xl md:text-3xl font-black text-black tracking-tight">How much time can you dedicate daily?</h1>
+        <div className="mb-6 flex flex-col items-center">
+          <AaLabel text="Personalize your experience" className="mb-1.5" />
+          <h1 className="text-2xl md:text-3xl font-black text-black tracking-tight">What is your profession?</h1>
+          
+          <div className="flex flex-wrap justify-center gap-2.5 mt-6 w-full max-w-[500px]">
+            {professions.map(prof => (
+              <button key={prof} 
+                  onClick={() => setData({ ...data, profession: prof })}
+                  className={`px-6 py-3.5 rounded-xl font-bold text-[11px] transition-all border-2 ${data.profession === prof ? 'border-[#6366F1] bg-[#6366F1] text-white' : 'border-transparent bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+              >
+                {prof}
+              </button>
+            ))}
+          </div>
         </div>
-        <div className="flex flex-wrap justify-center gap-2.5 w-full max-w-[460px]">
-          {times.map(time => (
-            <button key={time} 
-                onClick={() => setData({ ...data, daily_dedication: time })}
-                className={`px-7 py-3.5 rounded-xl font-bold text-[11px] transition-all border-2 ${data.daily_dedication === time ? 'border-[#6366F1] bg-[#6366F1] text-white' : 'border-transparent bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
-            >
-              {time}
-            </button>
-          ))}
-        </div>
+
         <button 
           onClick={next} 
-          disabled={!data.daily_dedication}
+          disabled={!data.profession}
           className="mt-8 w-full max-w-[140px] py-3 bg-black text-white font-bold text-[11px] rounded-full transition-all active:scale-98 disabled:opacity-50"
         >
           Next
@@ -286,9 +277,9 @@ const Step5Avatar = ({ selectedChar, setSelectedChar, customAvatar, setCustomAva
     };
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-4 max-w-4xl mx-auto w-full relative z-10">
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 flex flex-col items-center">
+            <AaLabel text="Almost at the finish line" className="mb-1.5" />
             <h1 className="text-2xl md:text-3xl font-black mb-1">Pick an avatar</h1>
-            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Almost at the finish line</p>
         </div>
         
         <div className="grid md:grid-cols-[2fr_1fr] gap-6 w-full max-w-[700px]">
@@ -339,7 +330,7 @@ export default function OnboardingPage() {
     goal: "",
     skill_level: "",
     topics_to_learn: [] as string[],
-    daily_dedication: "",
+    profession: "",
     avatar: ""
   });
 
@@ -382,8 +373,18 @@ export default function OnboardingPage() {
   const progressPercentage = ((currentStep) / 6) * 100;
 
   return (
-    <div className="min-h-screen bg-[#fafafa] flex flex-col font-sans selection:bg-black selection:text-white transition-all duration-500 overflow-hidden">
-      <Header progress={progressPercentage} />
+    <div className="min-h-screen bg-[#fafafa] flex flex-col font-sans selection:bg-black selection:text-white transition-all duration-500 overflow-hidden pt-16" suppressHydrationWarning>
+      {/* Global Navbar shows automatically via ClientLayout */}
+      
+      {/* Onboarding Progress Bar - Positioned fixed below Navbar */}
+      <div className="fixed top-16 left-0 w-full h-[3px] bg-black/5 z-40 overflow-hidden">
+        <motion.div 
+          initial={{ width: 0 }}
+          animate={{ width: `${progressPercentage}%` }}
+          transition={{ duration: 0.5, ease: "circOut" }}
+          className="h-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"
+        />
+      </div>
       <AnimatePresence mode="wait">
         <motion.div
             key={currentStep}
@@ -397,15 +398,15 @@ export default function OnboardingPage() {
             {currentStep === 1 && <Step1Goal data={onboardingData} setData={setOnboardingData} next={nextStep} />}
             {currentStep === 2 && <Step2Skill data={onboardingData} setData={setOnboardingData} next={nextStep} />}
             {currentStep === 3 && <Step3Topics data={onboardingData} setData={setOnboardingData} next={nextStep} />}
-            {currentStep === 4 && <Step4Dedication data={onboardingData} setData={setOnboardingData} next={nextStep} />}
+            {currentStep === 4 && <Step4Profession data={onboardingData} setData={setOnboardingData} next={nextStep} />}
             {currentStep === 5 && <Step5Avatar selectedChar={selectedChar} setSelectedChar={setSelectedChar} customAvatar={customAvatar} setCustomAvatar={setCustomAvatar} activeTab={activeTab} setActiveTab={setActiveTab} next={nextStep} />}
             {currentStep === 6 && (
                 <div className="flex-1 flex flex-col items-center justify-center p-4 text-center">
                     <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mb-6">
                         <CheckCircle2 className="w-8 h-8 text-green-500 animate-pulse" />
                     </div>
+                    <AaLabel text="Tailoring your creative journey..." className="mb-2" />
                     <h1 className="text-2xl font-black text-black mb-1">Finalizing Your Content</h1>
-                    <p className="text-gray-400 font-bold text-[10px] max-w-[240px] uppercase tracking-widest">Tailoring your creative journey...</p>
                     <Loader2 className="w-5 h-5 text-black animate-spin mt-8" />
                 </div>
             )}

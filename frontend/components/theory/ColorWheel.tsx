@@ -67,7 +67,7 @@ export function ColorWheel() {
         </div>
 
         {/* Visualizer */}
-        <div className="flex-1 w-full grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="flex-1 w-full grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4">
             {getHarmonies().map((h, i) => {
                 const hex = hslToHex(h, saturation, lightness);
                 return (

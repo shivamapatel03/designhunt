@@ -57,12 +57,12 @@ ${steps.map(s => `  --text-${s.label}: ${s.rem}rem; /* ${s.size}px */`).join('\n
   return (
     <div className={`bg-white border-2 border-black rounded-3xl p-6 md:p-8 shadow-[8px_8px_0px_0px_#000] ${font}`}>
       
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6">
            <div>
-               <h3 className="text-3xl font-black flex items-center gap-3">
-                 <Type className="w-8 h-8" /> Type Scale Engine
+               <h3 className="text-2xl md:text-3xl font-black flex items-center gap-3">
+                 <Type className="w-6 h-6 md:w-8 md:h-8" /> Type Scale Engine
                </h3>
-               <p className="text-gray-500 font-medium">Generate harmonious typography systems.</p>
+               <p className="text-[10px] md:text-sm text-gray-500 font-bold uppercase tracking-widest mt-1">Generate harmonious typography systems.</p>
            </div>
            
            <div className="flex gap-2">
@@ -122,10 +122,10 @@ ${steps.map(s => `  --text-${s.label}: ${s.rem}rem; /* ${s.size}px */`).join('\n
 
       {/* Preview Area */}
       <div className="border-2 border-black rounded-2xl overflow-hidden mb-8">
-        <div className="bg-white p-8 md:p-12 min-h-[400px]">
+        <div className="bg-white p-5 md:p-12 min-h-[300px] md:min-h-[400px]">
           {mode === 'visual' ? (
-             <article className="max-w-2xl mx-auto space-y-6">
-                <h1 style={{ fontSize: `${steps.find(s => s.label === 'h1')?.size}px`, lineHeight: 1.1 }} className="font-black">
+             <article className="max-w-2xl mx-auto space-y-6 break-words">
+                <h1 style={{ fontSize: `${Math.min(steps.find(s => s.label === 'h1')?.size || 48, 64)}px`, lineHeight: 1.1 }} className="font-black break-words leading-tight">
                    The Visual Hierarchy of Design
                 </h1>
                 <p style={{ fontSize: `${steps.find(s => s.label === 'h4')?.size}px`, color: '#666' }} className="font-medium">
@@ -152,14 +152,14 @@ ${steps.map(s => `  --text-${s.label}: ${s.rem}rem; /* ${s.size}px */`).join('\n
                 </p>
              </article>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-4">
                {steps.map((step) => (
-                  <div key={step.label} className="flex items-baseline gap-8 border-b border-gray-100 pb-4">
-                     <div className="w-24 shrink-0">
-                        <div className="font-black uppercase text-gray-400 text-xs tracking-widest mb-1">{step.label}</div>
-                        <div className="font-mono text-xs text-accent-blue">{step.size}px / {step.rem}rem</div>
+                  <div key={step.label} className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-8 border-b border-gray-100 pb-4">
+                     <div className="w-full sm:w-24 shrink-0">
+                        <div className="font-black uppercase text-gray-400 text-[9px] tracking-widest mb-0.5">{step.label}</div>
+                        <div className="font-mono text-[10px] text-accent-blue font-bold">{step.size}px / {step.rem}rem</div>
                      </div>
-                     <div style={{ fontSize: `${step.size}px` }} className="font-bold truncate">
+                     <div style={{ fontSize: `${step.size}px` }} className="font-bold truncate leading-tight">
                         The quick brown fox
                      </div>
                   </div>

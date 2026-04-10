@@ -1,4 +1,6 @@
 import express from "express";
+import multer from "multer";
+import path from "path";
 import jwt from "jsonwebtoken";
 import db from "../db";
 
@@ -43,6 +45,27 @@ router.get("/", authenticate, (req: any, res: any) => {
       .prepare("SELECT status FROM tutor_requests WHERE user_id = ?")
       .get(userId) as any;
 
+    // Fetch real typography progress
+    const typographyTopic = db.prepare("SELECT id FROM learning_topics WHERE slug = 'typography'").get() as any;
+    let typographyStats = { completed: 0, total: 30 }; // Fallback
+    
+    if (typographyTopic) {
+        const totalLevels = db.prepare("SELECT COUNT(*) as count FROM learning_levels WHERE topic_id = ?").get(typographyTopic.id) as any;
+        // A level is "completed" if at least one of its sections is completed by the user
+        const completedLevels = db.prepare(`
+            SELECT COUNT(DISTINCT l.id) as count 
+            FROM learning_levels l
+            JOIN learning_sections s ON l.id = s.level_id
+            JOIN learning_progress p ON s.id = p.section_id
+            WHERE l.topic_id = ? AND p.user_id = ?
+        `).get(typographyTopic.id, userId) as any;
+        
+        typographyStats = {
+            completed: completedLevels?.count || 0,
+            total: totalLevels?.count || 0
+        };
+    }
+
     const userProfile = {
       user: {
         id: user.id,
@@ -56,13 +79,17 @@ router.get("/", authenticate, (req: any, res: any) => {
         avatar:
           user.avatar ||
           "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200",
-        level: 1,
-        xp: 0,
-        nextLevelXp: 1000,
+        profession: user.profession || "Designer",
+        level: 2,
+        current_course: "Typography",
+        streak: user.current_streak || 0,
+        xp: user.total_xp || 0,
+        xp_percentile: user.total_xp > 1000 ? "Top 1%" : user.total_xp > 500 ? "Top 5%" : "Top 12%",
+        typography_progress: typographyStats,
         stats: {
-          challenges_completed: 0,
-          sprints_won: 0,
-          theory_mastered: 0,
+          lessons_completed: typographyStats.completed,
+          badges_earned: (user.badges_json ? JSON.parse(user.badges_json).length : 0) || 0,
+          total_xp: user.total_xp || 0,
         },
         bio: user.bio || "Design enthusiast.",
         skills: user.skills ? JSON.parse(user.skills) : [],
@@ -71,13 +98,77 @@ router.get("/", authenticate, (req: any, res: any) => {
       },
       history: [],
       enrollments: enrollments,
-      badges: [],
+      badges: user.badges_json ? JSON.parse(user.badges_json) : [],
     };
 
     res.json(userProfile);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to fetch profile" });
+  }
+});
+
+router.patch("/update", authenticate, (req: any, res: any) => {
+  try {
+    const userId = req.userId;
+    const { name, username, bio, avatar } = req.body;
+
+    // Check if username is already taken by another user
+    if (username) {
+      const existingUser = db.prepare("SELECT id FROM users WHERE username = ? AND id != ?").get(username, userId);
+      if (existingUser) {
+        return res.status(400).json({ error: "Username already taken" });
+      }
+    }
+
+    db.prepare(`
+      UPDATE users 
+      SET name = COALESCE(?, name),
+          username = COALESCE(?, username),
+          bio = COALESCE(?, bio),
+          avatar = COALESCE(?, avatar)
+      WHERE id = ?
+    `).run(name, username, bio, avatar, userId);
+
+    res.json({ success: true, message: "Profile updated successfully" });
+  } catch (error) {
+    console.error("Update profile error:", error);
+    res.status(500).json({ error: "Failed to update profile" });
+  }
+});
+ 
+// Configure Multer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, "../../public/uploads"));
+  },
+  filename: (req: any, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, `avatar-${req.userId}-${uniqueSuffix}${path.extname(file.originalname)}`);
+  },
+});
+ 
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: (req, file, cb) => {
+    const filetypes = /jpeg|jpg|png|webp/;
+    const mimetype = filetypes.test(file.mimetype);
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    if (mimetype && extname) return cb(null, true);
+    cb(new Error("Only images are allowed (jpeg, jpg, png, webp)"));
+  },
+});
+ 
+router.post("/upload-avatar", authenticate, upload.single("avatar"), (req: any, res: any) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+ 
+    const fileUrl = `http://localhost:5000/uploads/${req.file.filename}`;
+    res.json({ success: true, url: fileUrl });
+  } catch (error: any) {
+    console.error("Upload error:", error);
+    res.status(500).json({ error: error.message || "Failed to upload image" });
   }
 });
 

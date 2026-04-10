@@ -109,13 +109,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fafafa] flex flex-col font-sans selection:bg-black selection:text-white overflow-hidden">
-      {/* Header - Top Icons */}
-      <div className="w-full p-8 md:p-12 flex justify-start items-center absolute top-0 left-0 z-20">
-        <Link href="/" className="transition-all hover:scale-105 active:scale-95">
-           <Image src="/logo/gloom.png" alt="logo" width={40} height={40} />
-        </Link>
-      </div>
+    <div className="min-h-screen bg-[#fafafa] flex flex-col font-sans selection:bg-black selection:text-white overflow-hidden pt-20">
 
       <div className="flex-1 flex flex-col items-center justify-center p-4 max-w-[340px] mx-auto w-full relative z-10">
         <motion.div 
@@ -185,8 +179,8 @@ export default function LoginPage() {
                                 </button>
                             </div>
                             <div className="flex justify-end pt-0.5">
-                                <Link href="/forgot-password" title="Forgot Password" className="text-[9px] font-black text-gray-400 hover:text-black uppercase tracking-widest transition-colors">
-                                    Forgot Password?
+                                <Link href="/forgot-password" title="Forgot Password" className="text-[10px] font-bold text-gray-400 hover:text-black transition-colors">
+                                    Forgot password?
                                 </Link>
                             </div>
                         </div>

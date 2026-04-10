@@ -89,25 +89,25 @@ export function ContrastChecker() {
       </div>
 
       {/* Results */}
-      <div className="bg-gray-100 rounded-xl p-6 flex flex-col md:flex-row items-center justify-between gap-6">
-         <div className="text-center md:text-left">
-            <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">Contrast Ratio</span>
-            <div className="text-5xl font-black">{ratio}:1</div>
+      <div className="bg-gray-100 rounded-xl p-4 sm:p-6 flex flex-col lg:flex-row items-center justify-between gap-6">
+         <div className="text-center lg:text-left shrink-0">
+            <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Contrast Ratio</span>
+            <div className="text-4xl sm:text-5xl font-black leading-none mt-1">{ratio}:1</div>
          </div>
 
-         <div className="flex gap-4">
-             <div className={`p-4 rounded-lg flex items-center gap-3 border-2 ${level.aa ? 'bg-green-100 border-green-500 text-green-800' : 'bg-red-100 border-red-500 text-red-800'}`}>
-                {level.aa ? <Check className="w-6 h-6" /> : <X className="w-6 h-6" />}
+         <div className="flex flex-col w-full lg:w-auto gap-3">
+             <div className={`p-4 rounded-xl flex items-center justify-center sm:justify-start gap-3 border-2 flex-1 ${level.aa ? 'bg-green-100 border-green-500 text-green-800' : 'bg-red-100 border-red-500 text-red-800'}`}>
+                {level.aa ? <Check className="w-5 h-5 shrink-0" /> : <X className="w-5 h-5 shrink-0" />}
                 <div>
-                    <div className="font-bold">WCAG AA</div>
-                    <div className="text-xs opacity-80">Normal Text</div>
+                    <div className="font-bold text-sm">WCAG AA</div>
+                    <div className="text-[10px] uppercase font-bold opacity-70">Pass</div>
                 </div>
              </div>
-              <div className={`p-4 rounded-lg flex items-center gap-3 border-2 ${level.aaa ? 'bg-green-100 border-green-500 text-green-800' : 'bg-red-100 border-red-500 text-red-800'}`}>
-                {level.aaa ? <Check className="w-6 h-6" /> : <X className="w-6 h-6" />}
+              <div className={`p-4 rounded-xl flex items-center justify-center sm:justify-start gap-3 border-2 flex-1 ${level.aaa ? 'bg-green-100 border-green-500 text-green-800' : 'bg-red-100 border-red-500 text-red-800'}`}>
+                {level.aaa ? <Check className="w-5 h-5 shrink-0" /> : <X className="w-5 h-5 shrink-0" />}
                  <div>
-                    <div className="font-bold">WCAG AAA</div>
-                    <div className="text-xs opacity-80">High Standard</div>
+                    <div className="font-bold text-sm">WCAG AAA</div>
+                    <div className="text-[10px] uppercase font-bold opacity-70">Pass</div>
                 </div>
              </div>
          </div>

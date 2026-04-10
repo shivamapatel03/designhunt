@@ -58,7 +58,7 @@ export default function ToolsPage() {
   }, [searchQuery, selectedCategory, tools]);
 
   return (
-    <div className="container mx-auto px-6 pt-14 md:pt-16 pb-12 md:px-16 lg:px-24 min-h-screen">
+    <div className="container mx-auto px-6 pt-24 md:pt-28 pb-12 md:px-16 lg:px-24 min-h-screen">
        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-6">
          <div>
             <div className="flex items-center gap-3 mb-4">

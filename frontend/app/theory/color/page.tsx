@@ -6,21 +6,21 @@ import Link from "next/link";
 
 export default function ColorTheoryPage() {
   return (
-    <div className="container mx-auto px-4 pt-14 md:pt-16 pb-12">
-        <Link href="/theory" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-black mb-2">
+    <div className="container mx-auto px-4 sm:px-6 pt-14 md:pt-16 pb-12 overflow-hidden">
+        <Link href="/theory" className="inline-flex items-center text-xs sm:text-sm font-medium text-muted-foreground hover:text-black mb-10 transition-colors">
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to Theory Hub
         </Link>
-        <header className="max-w-3xl mb-6">
-            <h1 className="text-4xl md:text-5xl font-extrabold mb-4">Color Theory</h1>
-            <p className="text-xl text-muted-foreground leading-relaxed">
+        <header className="max-w-3xl mb-10">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 leading-tight text-balance">Color Theory</h1>
+            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
                 Color evokes emotion, directs attention, and ensures accessibility. Master the art and science of color.
             </p>
         </header>
 
-         <div className="grid lg:grid-cols-[1fr_350px] gap-12">
-            <div className="space-y-16">
+         <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-8 md:gap-12">
+            <div className="space-y-12 md:space-y-16">
                  <section>
-                    <div className="text-2xl font-bold mb-6">1. <VisualGlossary term="Contrast" /> & Accessibility</div>
+                    <div className="text-2xl font-bold mb-6">1. Contrast & Accessibility</div>
                     <div className="text-lg text-gray-700 mb-6 font-medium">
                         The most critical aspect of color in UI/UX is <VisualGlossary term="Contrast" />. Text must be legible against its background. 
                         Aim for a ratio of at least <strong className="bg-yellow-200 px-1">4.5:1</strong> for normal text.

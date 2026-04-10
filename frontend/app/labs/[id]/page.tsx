@@ -57,7 +57,7 @@ export default function LabRoomPage() {
 
   const fetchLab = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/labs/${id}`);
+      const res = await fetch(`/api/labs/${id}`);
       const data = await res.json();
       setLab(data);
       if (data.canvas_state && data.canvas_state.elements) {
@@ -70,7 +70,7 @@ export default function LabRoomPage() {
 
   const saveCanvas = async (newElements: Element[]) => {
     try {
-      await fetch(`http://localhost:5000/api/labs/${id}/canvas`, {
+      await fetch(`/api/labs/${id}/canvas`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ canvas_state: { elements: newElements } }),

@@ -42,13 +42,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fafafa] flex flex-col font-sans selection:bg-black selection:text-white overflow-hidden">
-      {/* Header - Top Icons */}
-      <div className="w-full p-8 md:p-12 flex justify-start items-center absolute top-0 left-0 z-20">
-        <Link href="/" className="transition-all hover:scale-105 active:scale-95">
-           <Image src="/logo/gloom.png" alt="logo" width={40} height={40} />
-        </Link>
-      </div>
+    <div className="min-h-screen bg-[#fafafa] flex flex-col font-sans selection:bg-black selection:text-white overflow-hidden pt-20">
 
       <div className="flex-1 flex flex-col items-center justify-center p-4 max-w-[340px] mx-auto w-full relative z-10">
         {/* Main Logo Branding */}

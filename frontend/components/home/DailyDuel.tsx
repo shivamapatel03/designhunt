@@ -121,11 +121,11 @@ export function DailyDuel() {
   const percentB = duel.votes.total === 0 ? 50 : Math.round((duel.votes.b / duel.votes.total) * 100);
 
   return (
-    <div className="bg-white rounded-3xl border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-6 md:p-8 relative overflow-hidden h-full flex flex-col">
+    <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-6 md:p-8 relative overflow-hidden h-full flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-                 <div className="bg-yellow-400 p-2 border-2 border-black rounded-lg">
+                 <div className="bg-yellow-400 p-2 rounded-lg shadow-sm">
                     <Trophy className="w-6 h-6 text-black" />
                  </div>
                  <div>
@@ -197,17 +197,17 @@ function DuelOption({
 }) {
     return (
         <motion.button 
-            whileHover={!disabled ? { y: -4, boxShadow: "4px 4px 0px 0px rgba(0,0,0,1)" } : {}}
-            whileTap={!disabled ? { y: 0, boxShadow: "0px 0px 0px 0px rgba(0,0,0,1)" } : {}}
+            whileHover={!disabled ? { y: -4, boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)" } : {}}
+            whileTap={!disabled ? { y: 0, boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)" } : {}}
             onClick={onClick}
             disabled={disabled}
             className={cn(
-                "group relative rounded-2xl border-2 border-black overflow-hidden transition-all h-full flex flex-col text-left",
+                "group relative rounded-2xl border border-gray-200 overflow-hidden transition-all h-full flex flex-col text-left",
                 selected && "ring-4 ring-yellow-400 ring-offset-2"
             )}
         >
             {/* Image Area */}
-            <div className="relative h-32 w-full bg-gray-100 border-b-2 border-black">
+            <div className="relative h-32 w-full bg-gray-100 border-b border-gray-200">
                 <img src={image} alt={label} className="w-full h-full object-cover" />
                 
                 {/* Overlay Result */}
@@ -229,8 +229,8 @@ function DuelOption({
             <div className="p-3 bg-white flex-1 w-full flex items-center justify-between">
                 <span className="font-bold text-sm text-left">{label}</span>
                 <span className={cn(
-                    "w-6 h-6 rounded-full border-2 border-black flex items-center justify-center text-xs font-black",
-                    selected ? "bg-black text-white" : "bg-gray-100"
+                    "w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center text-xs font-black",
+                    selected ? "bg-black text-white" : "bg-gray-100 text-gray-500"
                 )}>
                     {choice}
                 </span>

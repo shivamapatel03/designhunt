@@ -11,7 +11,8 @@ import {
   ChevronRight,
   Star,
   ArrowLeft,
-  Globe
+  Globe,
+  DollarSign
 } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -69,7 +70,7 @@ export default function TutorDashboard() {
           <StatCard label="Total Students" value={stats.totalStudents.toString()} icon={<Users className="w-6 h-6" />} color="bg-accent-blue" />
           <StatCard label="Active Courses" value={stats.activeCourses.toString()} icon={<BookOpen className="w-6 h-6" />} color="bg-accent-yellow" />
           <StatCard label="Course Rating" value={stats.rating.toString()} icon={<Star className="w-6 h-6" />} color="bg-accent-pink" />
-          <StatCard label="Total Revenue" value={stats.revenue} icon={<TrendingUp className="w-6 h-6" />} color="bg-green-100" />
+          <StatCard label="Total Revenue" value={stats.revenue} icon={<DollarSign className="w-6 h-6" />} color="bg-green-100" />
         </div>
 
         {/* Recent Activity & Courses */}

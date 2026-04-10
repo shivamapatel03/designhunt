@@ -39,7 +39,7 @@ export default function LabsPage() {
 
   const fetchLabs = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/labs");
+      const res = await fetch("/api/labs");
       const data = await res.json();
       setLabs(data);
     } catch (error) {
@@ -53,7 +53,7 @@ export default function LabsPage() {
     const userId = "user_" + Math.random().toString(36).substr(2, 9); 
     
     try {
-      const res = await fetch("http://localhost:5000/api/labs", {
+      const res = await fetch("/api/labs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

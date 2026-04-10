@@ -376,7 +376,7 @@ router.get("/me", async (req, res) => {
     const userId = payload.userId || payload.id;
     const user = db
       .prepare(
-        "SELECT id, name, email, role, avatar, username, is_pro, scan_balance FROM users WHERE id = ?",
+        "SELECT id, name, email, role, avatar, username, is_pro, scan_balance, total_xp, current_streak, badges_json FROM users WHERE id = ?",
       )
       .get(userId) as any;
 
@@ -385,11 +385,31 @@ router.get("/me", async (req, res) => {
       return;
     }
 
+    // Fetch typography progress for stats
+    const typographyTopic = db.prepare("SELECT id FROM learning_topics WHERE slug = 'typography'").get() as any;
+    let completedCount = 0;
+    if (typographyTopic) {
+      const completed = db.prepare(`
+        SELECT COUNT(DISTINCT l.id) as count 
+        FROM learning_levels l
+        JOIN learning_sections s ON l.id = s.level_id
+        JOIN learning_progress p ON s.id = p.section_id
+        WHERE l.topic_id = ? AND p.user_id = ?
+      `).get(typographyTopic.id, userId) as any;
+      completedCount = completed?.count || 0;
+    }
+
     const userData = {
       ...user,
       handle: user.username
         ? `@${user.username}`
         : `@${user.name.toLowerCase().replace(/\s+/g, "")}`,
+      xp_percentile: user.total_xp > 1000 ? "Top 1%" : user.total_xp > 500 ? "Top 5%" : "Top 12%",
+      stats: {
+        lessons_completed: completedCount,
+        badges_earned: user.badges_json ? JSON.parse(user.badges_json).length : 0,
+        total_xp: user.total_xp || 0
+      }
     };
 
     res.json({ user: userData });

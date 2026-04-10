@@ -9,13 +9,13 @@ import {
   User, Menu, X, Sparkles, CircleUser, ChevronDown, 
   Smile, Type, LayoutDashboard, Palette, PenTool, 
   PlaySquare, MonitorSmartphone, Layers,
-  Accessibility, Brain, Component, Eye, Loader2, Search, ChevronRight, Globe
+  Accessibility, Brain, Component, Eye, Loader2, Search, ChevronRight,
+  BarChart3, LifeBuoy, Moon, LogOut
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/providers/auth-provider";
 import { searchEverything, SearchResult } from "@/app/actions/search";
-import { BookOpen, Lightbulb, Users } from "lucide-react";
-import { SearchModal } from "@/components/ui/SearchModal";
+import { BookOpen, Lightbulb, Users, Globe } from "lucide-react";
 
 const navItems = [
   { name: "Library", href: "/library", hasDropdown: true },
@@ -25,13 +25,7 @@ const navItems = [
   // { name: "Community", href: "/ideas" },
 ];
 
-const SEARCH_PHRASES = [
-  "Typography...", 
-  "Color Theory...", 
-  "Layouts...", 
-  "UX Laws...", 
-  "UI Kits..."
-];
+
 
 const LANGUAGES = [
   { code: 'en', name: 'English', country: 'us' },
@@ -78,7 +72,7 @@ function LanguageSelector() {
         className="flex items-center gap-1.5 p-2 text-gray-600 hover:text-black transition-all hover:bg-black/5 rounded-lg active:scale-95"
       >
         <img src={`https://flagcdn.com/w40/${currentLang.country}.png`} alt={currentLang.name} className="w-5 h-[14px] object-cover rounded-[2px] shadow-sm shrink-0" />
-        <span className="text-sm font-medium hidden lg:inline-block">{currentLang.name}</span>
+        <span className="text-sm font-semibold font-plus-jakarta hidden lg:inline-block">{currentLang.name}</span>
       </button>
 
       <AnimatePresence>
@@ -125,38 +119,23 @@ export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { user, loading } = useAuth();
-
-  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
-  const [placeholderText, setPlaceholderText] = useState("");
+  const { user, loading, logout } = useAuth();
+  
+  // Search state
   const [searchQuery, setSearchQuery] = useState("");
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [suggestions, setSuggestions] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [phraseIndex, setPhraseIndex] = useState(0);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      // Don't open if mobile
-      if (window.innerWidth < 768) return;
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        setIsSearchModalOpen((open) => !open);
-      }
-    };
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
-  }, []);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(async () => {
       if (searchQuery.trim().length >= 2) {
         setIsSearching(true);
         const results = await searchEverything(searchQuery.trim());
-        setSuggestions(results.slice(0, 6));
+        setSuggestions(results.slice(0, 5));
         setIsSearching(false);
         setShowSuggestions(true);
       } else {
@@ -168,43 +147,14 @@ export function Navbar() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const handleSearch = (e?: React.FormEvent) => {
+  const handleSearchSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
     if (searchQuery.trim().length >= 2) {
       router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setIsMobileMenuOpen(false);
+      setShowSuggestions(false);
       setIsMobileSearchOpen(false);
     }
   };
-
-  const handleKeyDownMobile = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSearch();
-    }
-  };
-
-  useEffect(() => {
-    const currentPhrase = SEARCH_PHRASES[phraseIndex];
-    let timeout: NodeJS.Timeout;
-
-    if (!isDeleting && placeholderText === currentPhrase) {
-      timeout = setTimeout(() => setIsDeleting(true), 2500);
-    } else if (isDeleting && placeholderText === "") {
-      setIsDeleting(false);
-      setPhraseIndex((prev) => (prev + 1) % SEARCH_PHRASES.length);
-    } else {
-      timeout = setTimeout(() => {
-        setPlaceholderText(
-          isDeleting 
-            ? currentPhrase.substring(0, placeholderText.length - 1)
-            : currentPhrase.substring(0, placeholderText.length + 1)
-        );
-      }, isDeleting ? 40 : 80);
-    }
-
-    return () => clearTimeout(timeout);
-  }, [placeholderText, isDeleting, phraseIndex]);
-
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
@@ -223,124 +173,91 @@ export function Navbar() {
 
   return (
     <>
-      <header className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out bg-white",
+      <header 
+        translate="no"
+        className={cn(
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out bg-white font-plus-jakarta",
         scrolled ? "shadow-sm border-b border-black/5" : ""
       )}>
         <div className={cn(
-          "container mx-auto px-6 md:px-12 lg:px-20 transition-all duration-300",
+          "max-w-[1920px] mx-auto px-2 sm:px-4 md:px-6 lg:px-8 transition-all duration-300",
           scrolled ? "py-1.5" : "py-2.5"
         )}>
           <nav className="flex items-center justify-between">
             {/* Logo - Left */}
             <div className="flex items-center gap-8">
-              <Link href="/" className="group flex items-center gap-3 shrink-0">
-                <Image
-                  src="/logo/gloom.png"
-                  alt="DesignHunt Logo"
-                  width={96}
-                  height={96}
-                  className="group-hover:rotate-6 transition-transform"
-                />
+              <Link href="/" className="flex items-center gap-1.5 sm:gap-2 group shrink-0" translate="no">
+                <div className="text-lg sm:text-xl md:text-2xl font-bold tracking-tighter text-black font-plus-jakarta transition-colors group-hover:text-blue-600" suppressHydrationWarning>
+                  Designhunt<span className="text-blue-500">.</span>
+                </div>
               </Link>
 
-              {/* Mobile Search - Icon Toggle */}
-              <div className="flex md:hidden items-center">
-                <AnimatePresence>
-                  {!isMobileSearchOpen ? (
-                    <motion.button
-                      key="search-icon"
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
-                      onClick={() => setIsMobileSearchOpen(true)}
-                      className="p-2 rounded-full bg-black/5 text-blue-500 hover:bg-black/10 transition-colors"
-                    >
-                      <Search className="w-5 h-5" />
-                    </motion.button>
-                  ) : (
-                    <motion.div
-                      key="search-overlay"
-                      initial={{ opacity: 0, y: -20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      className="fixed inset-x-0 top-0 h-[72px] bg-[#1a232c] z-[100] flex items-center px-4 gap-3 shadow-lg"
-                    >
-                      <div className="flex-1 relative">
-                        <input 
-                          autoFocus
-                          type="text" 
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          onKeyDown={handleKeyDownMobile}
-                          placeholder="Search..." 
-                          className="w-full bg-white rounded-full py-2.5 pl-5 pr-12 text-sm font-medium font-clash text-black border-none outline-none placeholder:text-gray-400 shadow-inner"
-                        />
-                        <Search className="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2 text-gray-900" />
-                      </div>
-                      <button 
-                        onClick={() => {
-                          setIsMobileSearchOpen(false);
-                          setSearchQuery("");
-                          setShowSuggestions(false);
-                        }}
-                        className="p-1 rounded-full text-blue-400 hover:bg-white/10 transition-colors"
+              {/* Mobile Search - Persistent */}
+              <div className="flex md:hidden items-center ml-2 sm:ml-4 flex-1 max-w-[120px] sm:max-w-[150px]">
+                <div className="relative w-full group">
+                  <form onSubmit={handleSearchSubmit} className="relative flex items-center">
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onFocus={() => setShowSuggestions(true)}
+                      placeholder="Search"
+                      className="w-full bg-black/5 rounded-full py-1.5 pl-8 pr-3 text-[11px] font-semibold border-none outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/10"
+                    />
+                    <Search className="w-3.5 h-3.5 absolute left-3 text-blue-500" />
+                  </form>
+                  
+                  {/* Reuse suggestions for mobile but compact */}
+                  <AnimatePresence>
+                    {showSuggestions && searchQuery.length >= 2 && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 5 }}
+                        className="absolute top-full left-[-40px] right-[-40px] mt-2 bg-white rounded-xl border border-gray-100 shadow-xl z-[60] overflow-hidden p-1.5"
                       >
-                        <X className="w-6 h-6" />
-                      </button>
-
-                      {/* Suggestions Dropdown (Mobile Full Width) */}
-                      <AnimatePresence>
-                        {showSuggestions && suggestions.length > 0 && (
-                          <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 10 }}
-                            className="absolute top-full left-0 right-0 mt-2 mx-4 bg-white border border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-2xl overflow-hidden z-[101]"
-                          >
-                            <div className="p-1.5">
-                              {suggestions.map((s) => (
-                                <Link
-                                  key={`${s.type}-${s.id}`}
-                                  href={s.url}
-                                  onClick={() => {
-                                    setShowSuggestions(false);
-                                    setIsMobileSearchOpen(false);
-                                  }}
-                                  className="flex items-center gap-3 p-3 hover:bg-black/5 rounded-xl transition-colors group"
-                                >
-                                  <div className={cn(
-                                    "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
-                                    s.type === 'theory' ? "bg-accent-blue/10 text-accent-blue" :
-                                    s.type === 'idea' ? "bg-accent-pink/10 text-accent-pink" :
-                                    s.type === 'page' ? "bg-emerald-500/10 text-emerald-500" :
-                                    "bg-accent-purple/10 text-accent-purple"
-                                  )}>
-                                    {s.type === 'theory' && <BookOpen className="w-4 h-4" />}
-                                    {s.type === 'idea' && <Lightbulb className="w-4 h-4" />}
-                                    {s.type === 'person' && <Users className="w-4 h-4" />}
-                                    {s.type === 'page' && <Globe className="w-4 h-4" />}
-                                  </div>
-                                  <div className="min-w-0">
-                                    <p className="text-sm font-medium font-clash truncate group-hover:text-accent-blue transition-colors">{s.title}</p>
-                                    <p className="text-[10px] font-normal font-clash text-gray-400 uppercase tracking-widest">{s.type}</p>
-                                  </div>
-                                </Link>
-                              ))}
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                        {suggestions.length > 0 ? (
+                          <div className="flex flex-col gap-0.5">
+                            {suggestions.map((s) => (
+                              <Link
+                                key={`m-${s.type}-${s.id}`}
+                                href={s.url}
+                                onClick={() => setShowSuggestions(false)}
+                                className="flex items-center gap-2.5 p-2 hover:bg-gray-50 rounded-lg transition-colors"
+                              >
+                                <div className={cn(
+                                  "w-6 h-6 rounded flex items-center justify-center shrink-0",
+                                  s.type === 'theory' ? "bg-blue-50 text-blue-500" :
+                                  s.type === 'idea' ? "bg-pink-50 text-pink-500" :
+                                  "bg-emerald-50 text-emerald-500"
+                                )}>
+                                  {s.type === 'theory' && <BookOpen className="w-3.5 h-3.5" />}
+                                  {s.type === 'idea' && <Lightbulb className="w-3.5 h-3.5" />}
+                                  {s.type === 'page' && <Globe className="w-3.5 h-3.5" />}
+                                </div>
+                                <span className="text-[11px] font-bold truncate text-black">{s.title}</span>
+                              </Link>
+                            ))}
+                          </div>
+                        ) : !isSearching ? (
+                          <p className="text-[10px] text-center p-2 text-gray-400">No results</p>
+                        ) : null}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
             </div>
+
+            {/* Mobile Search Overlay Input - REMOVED since it's persistent now */}
+            <AnimatePresence>
+              {/* Overlay removed */}
+            </AnimatePresence>
             {/* Desktop Menu - Center */}
             <div className="hidden md:flex items-center gap-8">
               {/* Library with Dropdown */}
               <div className="relative group py-2">
-                <Link href="/library" className={cn("text-sm font-medium transition-colors flex items-center gap-1.5", pathname === "/library" || pathname?.startsWith("/library/") ? "text-black" : "text-black hover:opacity-70")}>
+                <Link href="/library" className={cn("text-sm font-semibold transition-colors flex items-center gap-1.5", pathname === "/library" || pathname?.startsWith("/library/") ? "text-black" : "text-black hover:opacity-70")}>
                   Library <ChevronDown className="w-3.5 h-3.5 opacity-40 transition-transform group-hover:rotate-180" />
                 </Link>
                 
@@ -353,20 +270,20 @@ export function Navbar() {
                       <h3 className="text-xs font-bold tracking-wider uppercase text-gray-400 mb-1">Design Essentials</h3>
                       <Link href="/library/icons" className="flex items-center gap-3 group/item">
                         <div className="w-8 h-8 rounded-md bg-[#FF6B4A]/10 flex items-center justify-center text-[#FF6B4A] shrink-0 transition-all group-hover/item:scale-105 group-hover/item:bg-[#FF6B4A] group-hover/item:text-white"><Smile className="w-4 h-4" /></div>
-                        <span className="text-sm font-bold text-gray-700 group-hover/item:text-black transition-colors">Icons</span>
+                        <span className="text-sm font-semibold text-gray-700 group-hover/item:text-black transition-colors">Icons</span>
                       </Link>
 
                       <Link href="/library/wireframes" className="flex items-center gap-3 group/item">
                         <div className="w-8 h-8 rounded-md bg-[#FFB6C1]/10 flex items-center justify-center text-[#d6336c] shrink-0 transition-all group-hover/item:scale-105 group-hover/item:bg-[#FFB6C1] group-hover/item:text-black"><LayoutDashboard className="w-4 h-4" /></div>
-                        <span className="text-sm font-bold text-gray-700 group-hover/item:text-black transition-colors">Wireframe</span>
+                        <span className="text-sm font-semibold text-gray-700 group-hover/item:text-black transition-colors">Wireframe</span>
                       </Link>
                       <Link href="/library/colors" className="flex items-center gap-3 group/item">
                         <div className="w-8 h-8 rounded-md bg-[#B19CD9]/10 flex items-center justify-center text-[#663399] shrink-0 transition-all group-hover/item:scale-105 group-hover/item:bg-[#B19CD9] group-hover/item:text-white"><Palette className="w-4 h-4" /></div>
-                        <span className="text-sm font-bold text-gray-700 group-hover/item:text-black transition-colors">Colors</span>
+                        <span className="text-sm font-semibold text-gray-700 group-hover/item:text-black transition-colors">Colors</span>
                       </Link>
                       <Link href="/library/illustrations" className="flex items-center gap-3 group/item">
                         <div className="w-8 h-8 rounded-md bg-[#4CBB17]/10 flex items-center justify-center text-[#2e8b57] shrink-0 transition-all group-hover/item:scale-105 group-hover/item:bg-[#4CBB17] group-hover/item:text-white"><PenTool className="w-4 h-4" /></div>
-                        <span className="text-sm font-bold text-gray-700 group-hover/item:text-black transition-colors">Illustrations</span>
+                        <span className="text-sm font-semibold text-gray-700 group-hover/item:text-black transition-colors">Illustrations</span>
                       </Link>
                     </div>
 
@@ -375,19 +292,19 @@ export function Navbar() {
                       <h3 className="text-xs font-bold tracking-wider uppercase text-gray-400 mb-1">Advanced Tools</h3>
                       <Link href="/library/animations" className="flex items-center gap-3 group/item">
                         <div className="w-8 h-8 rounded-md bg-[#B19CD9]/10 flex items-center justify-center text-[#663399] shrink-0 transition-all group-hover/item:scale-105 group-hover/item:bg-[#B19CD9] group-hover/item:text-white"><PlaySquare className="w-4 h-4" /></div>
-                        <span className="text-sm font-bold text-gray-700 group-hover/item:text-black transition-colors">Animations</span>
+                        <span className="text-sm font-semibold text-gray-700 group-hover/item:text-black transition-colors">Animations</span>
                       </Link>
                       <Link href="/library/mockups" className="flex items-center gap-3 group/item">
                         <div className="w-8 h-8 rounded-md bg-[#FFD700]/10 flex items-center justify-center text-[#b8860b] shrink-0 transition-all group-hover/item:scale-105 group-hover/item:bg-[#FFD700] group-hover/item:text-black"><MonitorSmartphone className="w-4 h-4" /></div>
-                        <span className="text-sm font-bold text-gray-700 group-hover/item:text-black transition-colors">Mockups</span>
+                        <span className="text-sm font-semibold text-gray-700 group-hover/item:text-black transition-colors">Mockups</span>
                       </Link>
                       <Link href="/library/ui-kits" className="flex items-center gap-3 group/item">
                         <div className="w-8 h-8 rounded-md bg-[#00BFFF]/10 flex items-center justify-center text-[#0066cc] shrink-0 transition-all group-hover/item:scale-105 group-hover/item:bg-[#00BFFF] group-hover/item:text-white"><Layers className="w-4 h-4" /></div>
-                        <span className="text-sm font-bold text-gray-700 group-hover/item:text-black transition-colors">UI Kits</span>
+                        <span className="text-sm font-semibold text-gray-700 group-hover/item:text-black transition-colors">UI Kits</span>
                       </Link>
                       <Link href="/library/ai-toolbox" className="flex items-center gap-3 group/item">
                         <div className="w-8 h-8 rounded-md bg-[#E8F0AA]/20 flex items-center justify-center text-[#808000] shrink-0 transition-all group-hover/item:scale-105 group-hover/item:bg-[#E8F0AA] group-hover/item:text-black"><Sparkles className="w-4 h-4" /></div>
-                        <span className="text-sm font-bold text-gray-700 group-hover/item:text-black transition-colors">AI Tool Box</span>
+                        <span className="text-sm font-semibold text-gray-700 group-hover/item:text-black transition-colors">AI Tool Box</span>
                       </Link>
                     </div>
 
@@ -397,7 +314,7 @@ export function Navbar() {
 
               {/* Theory with Dropdown */}
               <div className="relative group py-2">
-                <Link href="/theory" className={cn("text-sm font-medium transition-colors flex items-center gap-1.5", pathname === "/theory" || pathname?.startsWith("/theory/") ? "text-black" : "text-black hover:opacity-70")}>
+                <Link href="/theory" className={cn("text-sm font-semibold transition-colors flex items-center gap-1.5", pathname === "/theory" || pathname?.startsWith("/theory/") ? "text-black" : "text-black hover:opacity-70")}>
                   Theory <ChevronDown className="w-3.5 h-3.5 opacity-40 transition-transform group-hover:rotate-180" />
                 </Link>
                 
@@ -410,19 +327,19 @@ export function Navbar() {
                       <h3 className="text-xs font-bold tracking-wider uppercase text-gray-400 mb-1">Foundations</h3>
                       <Link href="/theory/color" className="flex items-center gap-3 group/item">
                         <div className="w-8 h-8 rounded-md bg-[#B19CD9]/10 flex items-center justify-center text-[#663399] shrink-0 transition-all group-hover/item:scale-105 group-hover/item:bg-[#B19CD9] group-hover/item:text-white"><Palette className="w-4 h-4" /></div>
-                        <span className="text-sm font-bold text-gray-700 group-hover/item:text-black transition-colors">Colour Theory</span>
+                        <span className="text-sm font-semibold text-gray-700 group-hover/item:text-black transition-colors">Colour Theory</span>
                       </Link>
                       <Link href="/theory/typography" className="flex items-center gap-3 group/item">
                         <div className="w-8 h-8 rounded-md bg-[#89CFF0]/10 flex items-center justify-center text-[#0066cc] shrink-0 transition-all group-hover/item:scale-105 group-hover/item:bg-[#89CFF0] group-hover/item:text-black"><Type className="w-4 h-4" /></div>
-                        <span className="text-sm font-bold text-gray-700 group-hover/item:text-black transition-colors">Typography</span>
+                        <span className="text-sm font-semibold text-gray-700 group-hover/item:text-black transition-colors">Typography</span>
                       </Link>
                       <Link href="/theory/layout" className="flex items-center gap-3 group/item">
                         <div className="w-8 h-8 rounded-md bg-[#FFB6C1]/10 flex items-center justify-center text-[#d6336c] shrink-0 transition-all group-hover/item:scale-105 group-hover/item:bg-[#FFB6C1] group-hover/item:text-black"><LayoutDashboard className="w-4 h-4" /></div>
-                        <span className="text-sm font-bold text-gray-700 group-hover/item:text-black transition-colors">Layout & Grids</span>
+                        <span className="text-sm font-semibold text-gray-700 group-hover/item:text-black transition-colors">Layout & Grids</span>
                       </Link>
                       <Link href="/theory/visual-hierarchy" className="flex items-center gap-3 group/item">
                         <div className="w-8 h-8 rounded-md bg-[#FFD700]/10 flex items-center justify-center text-[#b8860b] shrink-0 transition-all group-hover/item:scale-105 group-hover/item:bg-[#FFD700] group-hover/item:text-black"><Eye className="w-4 h-4" /></div>
-                        <span className="text-sm font-bold text-gray-700 group-hover/item:text-black transition-colors">Visual Hierarchy</span>
+                        <span className="text-sm font-semibold text-gray-700 group-hover/item:text-black transition-colors">Visual Hierarchy</span>
                       </Link>
                     </div>
 
@@ -431,19 +348,19 @@ export function Navbar() {
                       <h3 className="text-xs font-bold tracking-wider uppercase text-gray-400 mb-1">Advanced Principles</h3>
                       <Link href="/theory/motion" className="flex items-center gap-3 group/item">
                         <div className="w-8 h-8 rounded-md bg-[#FF6B4A]/10 flex items-center justify-center text-[#FF6B4A] shrink-0 transition-all group-hover/item:scale-105 group-hover/item:bg-[#FF6B4A] group-hover/item:text-white"><PlaySquare className="w-4 h-4" /></div>
-                        <span className="text-sm font-bold text-gray-700 group-hover/item:text-black transition-colors">Motion & Animation</span>
+                        <span className="text-sm font-semibold text-gray-700 group-hover/item:text-black transition-colors">Motion & Animation</span>
                       </Link>
                       <Link href="/theory/ux-laws" className="flex items-center gap-3 group/item">
                         <div className="w-8 h-8 rounded-md bg-[#4CBB17]/10 flex items-center justify-center text-[#2e8b57] shrink-0 transition-all group-hover/item:scale-105 group-hover/item:bg-[#4CBB17] group-hover/item:text-white"><Brain className="w-4 h-4" /></div>
-                        <span className="text-sm font-bold text-gray-700 group-hover/item:text-black transition-colors">Laws of UX</span>
+                        <span className="text-sm font-semibold text-gray-700 group-hover/item:text-black transition-colors">Laws of UX</span>
                       </Link>
                       <Link href="/theory/accessibility" className="flex items-center gap-3 group/item">
                         <div className="w-8 h-8 rounded-md bg-[#00BFFF]/10 flex items-center justify-center text-[#0066cc] shrink-0 transition-all group-hover/item:scale-105 group-hover/item:bg-[#00BFFF] group-hover/item:text-white"><Accessibility className="w-4 h-4" /></div>
-                        <span className="text-sm font-bold text-gray-700 group-hover/item:text-black transition-colors">Accessibility</span>
+                        <span className="text-sm font-semibold text-gray-700 group-hover/item:text-black transition-colors">Accessibility</span>
                       </Link>
                       <Link href="/theory/design-systems" className="flex items-center gap-3 group/item">
                         <div className="w-8 h-8 rounded-md bg-[#E8F0AA]/20 flex items-center justify-center text-[#808000] shrink-0 transition-all group-hover/item:scale-105 group-hover/item:bg-[#E8F0AA] group-hover/item:text-black"><Component className="w-4 h-4" /></div>
-                        <span className="text-sm font-bold text-gray-700 group-hover/item:text-black transition-colors">Design System</span>
+                        <span className="text-sm font-semibold text-gray-700 group-hover/item:text-black transition-colors">Design System</span>
                       </Link>
                     </div>
 
@@ -451,50 +368,199 @@ export function Navbar() {
                 </div>
               </div>
 
-              <Link href="/critique" className={cn("text-sm font-medium transition-colors flex items-center gap-1.5", pathname === "/critique" ? "text-black" : "text-black hover:opacity-70")}>
+              <Link href="/critique" className={cn("text-sm font-semibold transition-colors flex items-center gap-1.5", pathname === "/critique" ? "text-black" : "text-black hover:opacity-70")}>
                 Critique
                 <span className="px-1.5 py-0.5 rounded-md bg-accent-blue/10 text-accent-blue text-[10px] font-black uppercase tracking-wider">AI</span>
               </Link>
-              <Link href="/tools" className={cn("text-sm font-medium transition-colors flex items-center gap-1.5", pathname === "/tools" ? "text-black" : "text-black hover:opacity-70")}>
+              <Link href="/tools" className={cn("text-sm font-semibold transition-colors flex items-center gap-1.5", pathname === "/tools" ? "text-black" : "text-black hover:opacity-70")}>
                 Tools
               </Link>
               {/* <Link href="/ideas" className={cn("text-sm font-medium transition-colors", pathname === "/ideas" ? "text-black" : "text-black hover:opacity-70")}>Community</Link> */}
             </div>
 
-            <div className="hidden md:flex items-center gap-4">
-              <div className="relative flex items-center">
-                <button
-                  type="button"
-                  onClick={() => setIsSearchModalOpen(true)}
-                  className="group flex items-center justify-between pl-4 pr-3 py-1.5 bg-black/5 hover:bg-black/10 border border-transparent rounded-full text-sm font-medium font-clash text-gray-500 transition-all w-[240px]"
-                >
-                  <span className="flex items-center gap-2">
-                    <Search className="w-4 h-4 text-blue-500" />
-                    <span className="truncate">Search {placeholderText}</span>
-                  </span>
-                  <kbd className="hidden md:inline-block px-1.5 py-0.5 text-[10px] font-sans font-bold bg-white text-gray-400 rounded-md shadow-sm border border-black/5">⌘K</kbd>
-                </button>
+            <div className="hidden md:flex items-center gap-6">
+              {/* Desktop Inline Search */}
+              <div className="relative group">
+                <form onSubmit={handleSearchSubmit} className="relative flex items-center">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onFocus={() => setShowSuggestions(true)}
+                    placeholder="Search..."
+                    className="w-[140px] lg:w-[200px] bg-black/5 hover:bg-black/10 transition-all rounded-full py-2 pl-10 pr-4 text-xs font-semibold font-plus-jakarta text-black placeholder:text-gray-400 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:shadow-sm border border-transparent focus:border-blue-500/20 outline-none"
+                  />
+                  <Search className="w-4 h-4 absolute left-4 text-blue-500" />
+                  {isSearching && <Loader2 className="w-3.5 h-3.5 absolute right-4 animate-spin text-blue-500" />}
+                </form>
+
+                {/* Inline Suggestions Dropdown */}
+                <AnimatePresence>
+                  {showSuggestions && (searchQuery.length >= 2 || suggestions.length > 0) && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setShowSuggestions(false)} />
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl border border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.15)] z-[50] overflow-hidden p-2"
+                      >
+                        {suggestions.length > 0 ? (
+                          <div className="flex flex-col gap-1">
+                            {suggestions.map((s) => (
+                              <Link
+                                key={`${s.type}-${s.id}`}
+                                href={s.url}
+                                onClick={() => setShowSuggestions(false)}
+                                className="flex items-center gap-3 p-2.5 hover:bg-black/5 rounded-xl transition-colors group"
+                              >
+                                <div className={cn(
+                                  "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
+                                  s.type === 'theory' ? "bg-blue-50 text-blue-500" :
+                                  s.type === 'idea' ? "bg-pink-50 text-pink-500" :
+                                  "bg-emerald-50 text-emerald-500"
+                                )}>
+                                  {s.type === 'theory' && <BookOpen className="w-4 h-4" />}
+                                  {s.type === 'idea' && <Lightbulb className="w-4 h-4" />}
+                                  {s.type === 'page' && <Globe className="w-4 h-4" />}
+                                  {s.type === 'person' && <Users className="w-4 h-4" />}
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-[13px] font-bold text-black truncate leading-tight group-hover:text-blue-600 transition-colors">{s.title}</p>
+                                  <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold mt-0.5">{s.type}</p>
+                                </div>
+                              </Link>
+                            ))}
+                            <button
+                              onClick={handleSearchSubmit}
+                              className="w-full text-center py-2.5 text-xs font-bold text-blue-500 hover:bg-blue-50 rounded-xl mt-1 border-t border-gray-50 flex items-center justify-center gap-2"
+                            >
+                              See all results <ChevronRight className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ) : searchQuery.length >= 2 && !isSearching ? (
+                          <div className="py-8 text-center px-4">
+                            <p className="text-xs font-semibold text-gray-400">No results found for "{searchQuery}"</p>
+                          </div>
+                        ) : null}
+                      </motion.div>
+                    </>
+                  )}
+                </AnimatePresence>
               </div>
 
               <LanguageSelector />
 
-              <Link
-                href={getDashboardHref()}
-                className="px-5 py-1.5 border border-black/10 rounded-xl text-sm font-bold flex items-center gap-2 text-black hover:border-black hover:bg-black/5 transition-all active:scale-95"
-              >
-                {loading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : user ? (
-                  user.avatar ? (
-                    <img src={user.avatar} className="w-5 h-5 rounded-full object-cover border border-black/10" alt="" />
-                  ) : (
-                    <User className="w-4 h-4" />
-                  )
-                ) : (
-                  null
-                )}
-                <span>{loading ? "..." : user ? (user.name?.split(' ')[0] || "Profile") : "Sign in"}</span>
-              </Link>
+              {loading ? (
+                <div className="w-10 h-10 flex items-center justify-center">
+                  <Loader2 className="w-4 h-4 animate-spin text-black" />
+                </div>
+              ) : user ? (
+                <div className="relative">
+                  <button
+                    onClick={() => setIsProfileOpen(!isProfileOpen)}
+                    className="w-10 h-10 border border-black/10 rounded-full flex items-center justify-center text-black hover:border-black hover:bg-black/5 transition-all active:scale-95 shrink-0 overflow-hidden"
+                    title="Profile"
+                  >
+                    {user.avatar ? (
+                      <img src={user.avatar} className="w-full h-full object-cover" alt="" />
+                    ) : (
+                      <User className="w-5 h-5" />
+                    )}
+                  </button>
+
+                  <AnimatePresence>
+                    {isProfileOpen && (
+                      <>
+                        <motion.div 
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="fixed inset-0 z-40"
+                          onClick={() => setIsProfileOpen(false)}
+                        />
+                        <motion.div
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl border border-gray-200 z-50 overflow-hidden font-plus-jakarta"
+                        >
+                          {/* User Header */}
+                          <div className="p-4 border-b border-gray-100 flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 border border-black/5">
+                              {user.avatar ? (
+                                <img src={user.avatar} className="w-full h-full object-cover" alt="" />
+                              ) : (
+                                <div className="w-full h-full bg-black/5 flex items-center justify-center text-black/40">
+                                  <User className="w-6 h-6" />
+                                </div>
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <p className="text-sm font-bold truncate text-black leading-none">{user.name || user.email?.split('@')[0]}</p>
+                                {user.is_pro && (
+                                  <span className="px-1.5 py-0.5 bg-black text-white text-[8px] font-black rounded-[4px] uppercase tracking-tighter shrink-0 leading-none">PRO</span>
+                                )}
+                              </div>
+                              <p className="text-xs text-gray-500 truncate mt-1">{user.role?.toLowerCase().replace('_', ' ') || 'Product Designer'}</p>
+                            </div>
+                          </div>
+
+                          {/* Action Items */}
+                          <div className="py-2 border-b border-gray-100">
+                            <Link
+                              href="/profile"
+                              onClick={() => setIsProfileOpen(false)}
+                              className="w-full px-4 py-2 flex items-center gap-3 text-sm font-semibold text-gray-700 hover:bg-black/5 transition-colors"
+                            >
+                              <User className="w-4 h-4 opacity-70" />
+                              View Profile
+                            </Link>
+                            <Link
+                              href="/help"
+                              onClick={() => setIsProfileOpen(false)}
+                              className="w-full px-4 py-2 flex items-center gap-3 text-sm font-semibold text-gray-700 hover:bg-black/5 transition-colors"
+                            >
+                              <LifeBuoy className="w-4 h-4 opacity-70" />
+                              Help Center
+                            </Link>
+                          </div>
+
+                          {/* Logout */}
+                          <div className="py-1">
+                            <button
+                              onClick={() => {
+                                setIsProfileOpen(false);
+                                logout();
+                              }}
+                              className="w-full px-4 py-3 flex items-center gap-3 text-sm font-bold text-black hover:bg-red-50 hover:text-red-600 transition-colors"
+                            >
+                              <LogOut className="w-4 h-4" />
+                              Log Out
+                            </button>
+                          </div>
+                        </motion.div>
+                      </>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ) : (
+                <div className="flex items-center gap-5">
+                  <Link 
+                    href="/signup" 
+                    className="text-sm font-semibold text-black hover:text-black/70 transition-colors"
+                  >
+                    Sign up
+                  </Link>
+                  <Link 
+                    href="/login" 
+                    className="px-4 py-1.5 bg-black text-white rounded-full text-[11px] font-semibold hover:bg-black/90 transition-all active:scale-95"
+                  >
+                    Log in
+                  </Link>
+                </div>
+              )}
             </div>
 
             {/* Mobile Toggle */}
@@ -531,12 +597,9 @@ export function Navbar() {
               {/* Sidebar Header */}
               <div className="p-6 flex items-center justify-between border-b border-black/5">
                 <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2">
-                  <Image
-                    src="/logo/gloom.png"
-                    alt="DesignHunt Logo"
-                    width={80}
-                    height={80}
-                  />
+                  <div className="text-xl font-bold tracking-tighter text-black font-plus-jakarta">
+                    Designhunt<span className="text-blue-500">.</span>
+                  </div>
                 </Link>
                 <button 
                   onClick={() => setIsMobileMenuOpen(false)}
@@ -560,7 +623,7 @@ export function Navbar() {
                         : "text-[#222222] hover:bg-black/5 hover:text-black"
                     )}
                   >
-                    <span className="text-base font-medium font-clash">
+                    <span className="text-base font-semibold">
                       {item.name.charAt(0).toUpperCase() + item.name.slice(1).toLowerCase()}
                     </span>
                     <ChevronRight className={cn(
@@ -574,37 +637,48 @@ export function Navbar() {
               {/* Sidebar Footer - Buttons */}
               <div className="p-6 border-t border-black/5 flex flex-col gap-3">
                 {user ? (
-                  <Link
-                    href={getDashboardHref()}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center gap-3 p-4 bg-black text-white rounded-2xl font-medium font-clash group"
-                  >
-                    {user.avatar ? (
-                      <img src={user.avatar} className="w-8 h-8 rounded-full border border-white/20" alt="" />
-                    ) : (
-                      <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center">
-                        <User className="w-5 h-5" />
+                  <div className="flex flex-col gap-2">
+                    <Link
+                      href={getDashboardHref()}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center gap-3 p-4 bg-black text-white rounded-2xl font-semibold font-plus-jakarta group"
+                    >
+                      {user.avatar ? (
+                        <img src={user.avatar} className="w-8 h-8 rounded-full border border-white/20" alt="" />
+                      ) : (
+                        <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center">
+                          <User className="w-5 h-5" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold truncate">{user.name || "My Account"}</p>
+                        <p className="text-[10px] text-white/60 uppercase tracking-widest">Dashboard</p>
                       </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold truncate">{user.name || "My Account"}</p>
-                      <p className="text-[10px] text-white/60 uppercase tracking-widest">Dashboard</p>
-                    </div>
-                    <ChevronRight className="w-4 h-4 opacity-40 group-hover:translate-x-1 transition-transform" />
-                  </Link>
+                      <ChevronRight className="w-4 h-4 opacity-40 group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                    <button
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        logout();
+                      }}
+                      className="w-full py-4 text-red-600 font-bold font-clash text-center hover:bg-red-50 rounded-2xl transition-colors border border-red-100"
+                    >
+                      Logout
+                    </button>
+                  </div>
                 ) : (
                   <>
                     <Link 
                       href="/login" 
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="w-full py-4 bg-accent-blue text-white rounded-2xl font-medium font-clash text-center hover:bg-blue-600 transition-colors"
+                      className="w-full py-4 bg-accent-blue text-white rounded-2xl font-semibold font-plus-jakarta text-center hover:bg-blue-600 transition-colors"
                     >
                       Log in
                     </Link>
                     <Link 
                       href="/login?tab=signup" 
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="w-full py-4 border-2 border-black/5 text-black rounded-2xl font-medium font-clash text-center hover:bg-black/5 transition-colors"
+                      className="w-full py-4 border-2 border-black/5 text-black rounded-2xl font-semibold font-plus-jakarta text-center hover:bg-black/5 transition-colors"
                     >
                       Sign up
                     </Link>
@@ -615,7 +689,7 @@ export function Navbar() {
           </>
         )}
       </AnimatePresence>
-      <SearchModal isOpen={isSearchModalOpen} onClose={() => setIsSearchModalOpen(false)} />
+
     </>
   );
 }

@@ -134,7 +134,7 @@ export function SearchModal({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[10vh] sm:pt-[15vh] px-4 font-clash">
+        <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[10vh] sm:pt-[15vh] px-4 font-plus-jakarta">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -165,7 +165,7 @@ export function SearchModal({
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Search resources, ideas, or users..."
-                className="flex-1 bg-transparent border-none outline-none text-xl font-medium text-black placeholder:text-gray-400"
+                className="flex-1 bg-transparent border-none outline-none text-xl font-semibold text-black placeholder:text-gray-400"
               />
               <button 
                 onClick={onClose}
@@ -193,7 +193,7 @@ export function SearchModal({
                           >
                             <div className="flex items-center gap-3 text-gray-600 group-hover:text-black">
                               <Clock className="w-4 h-4 opacity-50" />
-                              <span className="font-medium text-sm">{term}</span>
+                              <span className="font-semibold text-sm">{term}</span>
                             </div>
                             <button 
                               onClick={(e) => removeRecentSearch(e, term)}
@@ -296,7 +296,7 @@ export function SearchModal({
                       <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
                         <Search className="w-6 h-6 text-gray-300" />
                       </div>
-                      <p className="text-gray-600 font-medium tracking-wide">No results found for "{query}"</p>
+                      <p className="text-gray-600 font-semibold tracking-wide">No results found for "{query}"</p>
                       <p className="text-sm text-gray-400 mt-1">Try a different term or browse the quick links.</p>
                     </div>
                   ) : null}
@@ -305,7 +305,7 @@ export function SearchModal({
             </div>
 
             {/* Footer */}
-            <div className="bg-gray-50 border-t border-gray-100 py-3 px-6 flex items-center justify-between text-xs font-medium text-gray-400">
+            <div className="bg-gray-50 border-t border-gray-100 py-3 px-6 flex items-center justify-between text-xs font-semibold text-gray-400">
               <div className="hidden sm:flex items-center gap-4">
                 <span className="flex items-center gap-1.5"><kbd className="bg-white px-2 py-1 rounded border border-gray-200 text-gray-500 shadow-sm font-sans font-semibold">↑</kbd><kbd className="bg-white px-2 py-1 rounded border border-gray-200 text-gray-500 shadow-sm font-sans font-semibold">↓</kbd> to navigate</span>
                 <span className="flex items-center gap-1.5"><kbd className="bg-white px-2 py-1 rounded border border-gray-200 text-gray-500 shadow-sm font-sans font-semibold">Enter</kbd> to select</span>

@@ -27,41 +27,27 @@ export function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <section className="relative bg-[#0F172A] py-16 md:py-20 border-b-4 border-black text-white">
-      {/* Reduced Top SVG Wave Height */}
-      <div className="absolute top-[-2px] left-0 w-full overflow-hidden leading-[0] transform">
-        <svg 
-            viewBox="0 0 1200 120" 
-            preserveAspectRatio="none" 
-            className="relative block w-full h-[40px] md:h-[60px]"
-        >
-          <path 
-            d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" 
-            className="fill-white"
-          />
-        </svg>
-      </div>
-
-      <div className="container mx-auto px-6 mt-12 md:px-16 lg:px-24">
+    <section className="relative bg-white py-16 md:py-20 text-black">
+      <div className="container mx-auto px-6 md:px-16 lg:px-24">
         <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-10">
-             <h2 className="text-3xl md:text-4xl font-black mb-3 font-clash uppercase tracking-tight text-white">FAQs</h2>
-             <p className="text-lg text-gray-400 font-medium">Everything you need to know about our courses and community.</p>
+          <div className="text-center mb-12">
+             <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight text-gray-900">Frequently Asked Questions</h2>
+             <p className="text-lg text-gray-600">Everything you need to know about our courses and community.</p>
           </div>
 
           <div className="space-y-4">
             {FAQS.map((faq, index) => (
               <div 
                 key={index}
-                className="bg-[#1E293B] border-[3px] border-black rounded-[16px] overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
+                className="bg-white border border-gray-200 rounded-2xl overflow-hidden transition-all shadow-sm"
               >
                 <button
                   onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                  className="w-full flex items-center justify-between p-4 sm:p-6 text-left outline-none"
+                  className="w-full flex items-center justify-between p-6 text-left outline-none hover:bg-gray-50 transition-colors"
                 >
-                  <span className="text-base sm:text-lg font-black uppercase text-white pr-6">{faq.question}</span>
-                  <div className={`shrink-0 w-8 h-8 rounded-full border-2 border-black flex items-center justify-center transition-all duration-300 ${openIndex === index ? 'bg-[#FFEB3B] text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' : 'bg-white text-black'}`}>
-                    {openIndex === index ? <Minus className="w-4 h-4 font-black" /> : <Plus className="w-4 h-4 font-black" />}
+                  <span className="text-base sm:text-lg font-semibold text-gray-900 pr-6">{faq.question}</span>
+                  <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${openIndex === index ? 'bg-gray-100 text-gray-900' : 'bg-gray-50 text-gray-500'}`}>
+                    {openIndex === index ? <Minus className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
                   </div>
                 </button>
                 <AnimatePresence>
@@ -72,8 +58,8 @@ export function FAQSection() {
                       exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.3, ease: "easeInOut" }}
                     >
-                      <div className="px-4 sm:px-6 pb-6 text-gray-300 font-medium text-base border-t-2 border-black/20">
-                        <div className="pt-4">{faq.answer}</div>
+                      <div className="px-6 pb-6 text-gray-600 font-medium text-base">
+                        <div className="pt-2">{faq.answer}</div>
                       </div>
                     </motion.div>
                   )}

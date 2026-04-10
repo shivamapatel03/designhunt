@@ -4,16 +4,16 @@ import Link from "next/link";
 
 export function Footer() {
   return (
-    <footer className="bg-black text-white relative pt-20 pb-0 overflow-hidden border-t-8 border-accent-blue">
-      <div className="container mx-auto px-6 md:px-16 lg:px-24 relative z-10 pb-32">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-12">
+    <footer className="bg-black text-white relative pt-16 md:pt-20 pb-0 overflow-hidden border-t-8 border-accent-blue">
+      <div className="container mx-auto px-6 md:px-16 lg:px-24 relative z-10 pb-20 md:pb-32">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
           
-          <div className="col-span-2 md:col-span-1">
+          <div className="sm:col-span-2 lg:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-6">
-              <span className="text-xl font-black border-4 border-white px-3 py-1 bg-white text-black tracking-tighter">
+              <span className="text-xl font-black border-4 border-white px-3 py-1 bg-white text-black tracking-tighter shrink-0">
                 DH
               </span>
-              <span className="text-2xl font-black uppercase italic tracking-tighter">Design-Hunt</span>
+              <span className="text-xl sm:text-2xl font-black uppercase italic tracking-tighter truncate">Design-Hunt</span>
             </Link>
             <p className="text-sm text-gray-400 font-medium leading-relaxed max-w-xs">
               The structured learning platform for designers. Master your craft with theory, tools, and practice.
@@ -58,15 +58,15 @@ export function Footer() {
       </div>
       
       {/* Decorative Bottom Edge Shapes */}
-      <div className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none flex justify-between items-end overflow-hidden opacity-90">
+      <div className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none flex justify-between items-end overflow-hidden opacity-90 select-none">
          {/* Purple Shape */}
-         <div className="w-32 h-20 bg-[#C084FC] rounded-t-full translate-y-8 -translate-x-4 mix-blend-screen"></div>
-         {/* Pink Starburst Shape */}
-         <div className="w-24 h-24 bg-[#F472B6] rotate-45 translate-y-12 mix-blend-screen transform origin-bottom border-4 border-black"></div>
+         <div className="w-24 md:w-32 h-20 bg-[#C084FC] rounded-t-full translate-y-8 -translate-x-8 md:-translate-x-4 mix-blend-screen"></div>
+         {/* Pink Starburst Shape - Hidden on very small screens */}
+         <div className="hidden sm:block w-24 h-24 bg-[#F472B6] rotate-45 translate-y-12 mix-blend-screen transform origin-bottom border-4 border-black"></div>
          {/* Blue Abstract */}
-         <div className="w-40 h-24 bg-[#3B82F6] rounded-tl-[100px] translate-y-10 mix-blend-screen"></div>
+         <div className="w-32 md:w-40 h-24 bg-[#3B82F6] rounded-tl-[100px] translate-y-10 mix-blend-screen"></div>
          {/* Green Circle */}
-         <div className="w-28 h-28 bg-[#4ADE80] rounded-full translate-y-16 translate-x-8 mix-blend-screen"></div>
+         <div className="hidden md:block w-28 h-28 bg-[#4ADE80] rounded-full translate-y-16 translate-x-8 mix-blend-screen"></div>
       </div>
     </footer>
   );
