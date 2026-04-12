@@ -26,7 +26,7 @@ export function Hero({ userStats }: HeroProps) {
   }, []);
 
   return (
-    <section translate="no" className="relative h-[100vh] min-h-[600px] flex flex-col items-center justify-center bg-white overflow-hidden pt-20 pb-10">
+    <section className="relative h-[100vh] min-h-[600px] flex flex-col items-center justify-center bg-white overflow-hidden pt-20 pb-10">
       <div className="max-w-[1920px] w-full relative z-10 mx-auto px-4 sm:px-6 md:px-8 lg:px-10 grid md:grid-cols-2 gap-8 items-center">
         {/* Left Side - Content */}
         <div className="flex flex-col items-start text-left">
@@ -38,7 +38,7 @@ export function Hero({ userStats }: HeroProps) {
             className="text-3xl md:text-4xl lg:text-5xl font-black-han tracking-tight text-black max-w-xl leading-[1.15] md:leading-[1.2]"
           >
             Everything Great in Design Starts With{" "}
-            <span className="inline-grid overflow-hidden align-top pb-[0.1em]" translate="no">
+            <span className="inline-grid overflow-hidden align-top pb-[0.1em]">
               <AnimatePresence mode="popLayout">
                 <motion.span
                   key={words[index]}
@@ -47,7 +47,6 @@ export function Hero({ userStats }: HeroProps) {
                   exit={{ y: "-100%", opacity: 0 }}
                   transition={{ duration: 0.5, ease: "easeInOut" }}
                   className="col-start-1 row-start-1 text-left text-blue-600 font-black-han"
-                  translate="no"
                 >
                   {words[index]}
                 </motion.span>

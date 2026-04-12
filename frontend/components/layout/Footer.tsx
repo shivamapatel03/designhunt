@@ -9,11 +9,10 @@ export function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
           
           <div className="sm:col-span-2 lg:col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-6">
-              <span className="text-xl font-black border-4 border-white px-3 py-1 bg-white text-black tracking-tighter shrink-0">
-                DH
-              </span>
-              <span className="text-xl sm:text-2xl font-black uppercase italic tracking-tighter truncate">Design-Hunt</span>
+            <Link href="/" className="flex items-center gap-1.5 sm:gap-2 group shrink-0 mb-6" translate="no">
+              <div className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter text-white font-plus-jakarta transition-colors group-hover:text-blue-500">
+                Designhunt<span className="text-blue-500">.</span>
+              </div>
             </Link>
             <p className="text-sm text-gray-400 font-medium leading-relaxed max-w-xs">
               The structured learning platform for designers. Master your craft with theory, tools, and practice.
@@ -21,7 +20,7 @@ export function Footer() {
           </div>
           
           <div>
-            <h3 className="font-black uppercase tracking-widest text-gray-500 mb-6 text-sm">Explore</h3>
+            <h3 className="font-black  tracking-widest text-gray-500 mb-6 text-sm">Explore</h3>
             <ul className="space-y-4 text-sm font-bold">
               <li><Link href="/theory" className="hover:text-accent-blue transition-colors">Theory Library</Link></li>
               <li><Link href="/tools" className="hover:text-accent-pink transition-colors">Tool Mastery</Link></li>
@@ -29,7 +28,7 @@ export function Footer() {
           </div>
           
           <div>
-            <h3 className="font-black uppercase tracking-widest text-gray-500 mb-6 text-sm">Resources</h3>
+            <h3 className="font-black tracking-widest text-gray-500 mb-6 text-sm">Resources</h3>
             <ul className="space-y-4 text-sm font-bold">
               <li><Link href="/theory/color" className="hover:text-[#FFD700] transition-colors">Color Wheel</Link></li>
               <li><Link href="/theory/typography" className="hover:text-accent-blue transition-colors">Type Scale</Link></li>
@@ -39,17 +38,16 @@ export function Footer() {
           </div>
           
           <div>
-            <h3 className="font-black uppercase tracking-widest text-gray-500 mb-6 text-sm">Company</h3>
+            <h3 className="font-black tracking-widest text-gray-500 mb-6 text-sm">Company</h3>
             <ul className="space-y-4 text-sm font-bold">
-              <li><Link href="/about" className="hover:text-white transition-colors">About Story</Link></li>
               <li><Link href="/critique" className="hover:text-[#FFD700] transition-colors">Execution Lab</Link></li>
               <li><Link href="/theory" className="hover:text-white transition-colors">Feedback</Link></li>
             </ul>
           </div>
         </div>
 
-        <div className="mt-16 pt-8 border-t-2 border-white/10 text-center md:text-left text-xs font-bold text-gray-500 uppercase flex flex-col md:flex-row justify-between items-center gap-4">
-          <p>&copy; {new Date().getFullYear()} DESIGN-HUNT. ALL RIGHTS RESERVED.</p>
+        <div className="mt-16 pt-8 border-t-2 border-white/10 text-center md:text-left text-xs font-bold text-gray-500 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p>&copy; {new Date().getFullYear()} Designhunt. All Rights Reserved.</p>
           <div className="flex gap-4">
               <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
               <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
