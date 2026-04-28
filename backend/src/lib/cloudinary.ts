@@ -1,6 +1,6 @@
-import { v2 as cloudinary } from 'cloudinary';
-import { CloudinaryStorage } from 'multer-storage-cloudinary';
-import dotenv from 'dotenv';
+import { v2 as cloudinary } from "cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import dotenv from "dotenv";
 
 dotenv.config();
 
@@ -14,10 +14,10 @@ export const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: async (req, file) => {
     return {
-      folder: 'designhunt/avatars',
-      format: 'png', // or 'jpeg', 'webp', etc.
-      public_id: `avatar-${(req as any).userId || 'unknown'}-${Date.now()}`,
-      transformation: [{ width: 500, height: 500, crop: 'limit' }]
+      folder: "designhunt/avatars",
+      format: "png", // or 'jpeg', 'webp', etc.
+      public_id: `avatar-${(req as any).userId || "unknown"}-${Date.now()}`,
+      transformation: [{ width: 500, height: 500, crop: "limit" }],
     };
   },
 });
