@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Trash2, XCircle, Image as ImageIcon } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { 
+  Add01Icon, 
+  Delete02Icon, 
+  CancelCircleIcon, 
+  Image01Icon 
+} from "@hugeicons/core-free-icons";
 
 export function ExpertReviewsManager({ isAdmin = false }: { isAdmin?: boolean }) {
   const [reviews, setReviews] = useState<any[]>([]);
@@ -90,47 +96,47 @@ export function ExpertReviewsManager({ isAdmin = false }: { isAdmin?: boolean })
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-black uppercase italic">Expert Reviews</h2>
+        <h2 className="text-2xl font-bold">Expert Reviews</h2>
         <button
           onClick={() => setShowAddForm(true)}
-          className="flex items-center gap-2 px-6 py-3 bg-accent-blue text-white rounded-xl border-2 border-black font-black uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+          className="flex items-center gap-2 px-6 py-3 bg-accent-blue text-white rounded-xl border border-gray-100 font-bold shadow-sm active:scale-95 transition-all"
         >
-          <Plus className="w-5 h-5" />
+          <HugeiconsIcon icon={Add01Icon} className="w-5 h-5" />
           Add Review
         </button>
       </div>
 
       {showAddForm && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white border-4 border-black rounded-[32px] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white border border-gray-100 rounded-2xl shadow-sm max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 sm:p-8">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-black uppercase italic">New Review</h3>
+                <h3 className="text-2xl font-bold">New Review</h3>
                 <button onClick={() => setShowAddForm(false)} className="hover:bg-gray-100 p-2 rounded-full">
-                  <XCircle className="w-6 h-6" />
+                  <HugeiconsIcon icon={CancelCircleIcon} className="w-6 h-6" />
                 </button>
               </div>
 
               <form onSubmit={handleCreate} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold uppercase mb-2">Author Name *</label>
+                    <label className="block text-xs font-bold mb-2">Author Name *</label>
                     <input
                       type="text"
                       required
                       value={newReview.author_name}
                       onChange={e => setNewReview({ ...newReview, author_name: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl border-2 border-black focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all font-medium"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-100 focus:outline-none focus:shadow-sm transition-all font-medium"
                       placeholder="e.g. Shivam Patel"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold uppercase mb-2">Author Title / Role</label>
+                    <label className="block text-xs font-bold mb-2">Author Title / Role</label>
                     <input
                       type="text"
                       value={newReview.author_title}
                       onChange={e => setNewReview({ ...newReview, author_title: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl border-2 border-black focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all font-medium"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-100 focus:outline-none focus:shadow-sm transition-all font-medium"
                       placeholder="e.g. Learner, Design Lead"
                     />
                   </div>
@@ -138,7 +144,7 @@ export function ExpertReviewsManager({ isAdmin = false }: { isAdmin?: boolean })
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
                   <div>
-                    <label className="block text-xs font-bold uppercase mb-2">Rating (1-5)</label>
+                    <label className="block text-xs font-bold mb-2">Rating (1-5)</label>
                     <input
                       type="number"
                       required
@@ -147,39 +153,39 @@ export function ExpertReviewsManager({ isAdmin = false }: { isAdmin?: boolean })
                       step="0.1"
                       value={newReview.rating}
                       onChange={e => setNewReview({ ...newReview, rating: parseFloat(e.target.value) })}
-                      className="w-full px-4 py-3 rounded-xl border-2 border-black focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all font-medium"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-100 focus:outline-none focus:shadow-sm transition-all font-medium"
                     />
                   </div>
                   <div>
-                     <label className="block text-xs font-bold uppercase mb-2">Profile Photo</label>
-                     <div className="flex items-center gap-4">
-                        {newReview.author_image ? (
-                           <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-black shrink-0">
-                               <img src={newReview.author_image} alt="Preview" className="w-full h-full object-cover" />
-                           </div>
-                        ) : (
-                           <div className="w-12 h-12 rounded-full bg-gray-100 border-2 border-black flex items-center justify-center shrink-0">
-                               <ImageIcon className="w-5 h-5 text-gray-400" />
-                           </div>
-                        )}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageUpload}
-                          className="w-full text-sm font-medium text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-2 file:border-black file:text-sm file:font-black file:uppercase file:bg-accent-yellow file:text-black hover:file:bg-yellow-400 file:cursor-pointer transition-all"
-                        />
-                     </div>
+                    <label className="block text-xs font-bold mb-2">Profile Photo</label>
+                    <div className="flex items-center gap-4">
+                      {newReview.author_image ? (
+                        <div className="w-12 h-12 rounded-full overflow-hidden border border-gray-100 shrink-0">
+                          <img src={newReview.author_image} alt="Preview" className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-gray-100 border border-gray-100 flex items-center justify-center shrink-0">
+                          <HugeiconsIcon icon={Image01Icon} className="w-5 h-5 text-gray-400" />
+                        </div>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="w-full text-sm font-medium text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-2 file:border-black file:text-sm file:font-bold file: file:bg-accent-yellow file:text-black hover:file:bg-yellow-400 file:cursor-pointer transition-all"
+                      />
+                    </div>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase mb-2">Review Content *</label>
+                  <label className="block text-xs font-bold mb-2">Review Content *</label>
                   <textarea
                     required
                     value={newReview.content}
                     onChange={e => setNewReview({ ...newReview, content: e.target.value })}
                     rows={4}
-                    className="w-full px-4 py-3 rounded-xl border-2 border-black focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all font-medium"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-100 focus:outline-none focus:shadow-sm transition-all font-medium"
                     placeholder="This course helped me understand..."
                   />
                 </div>
@@ -188,14 +194,14 @@ export function ExpertReviewsManager({ isAdmin = false }: { isAdmin?: boolean })
                   <button
                     type="button"
                     onClick={() => setShowAddForm(false)}
-                    className="flex-1 px-6 py-3 rounded-xl border-2 border-black font-bold uppercase hover:bg-gray-100 transition-all"
+                    className="flex-1 px-6 py-3 rounded-xl border border-gray-100 font-bold hover:bg-gray-100 transition-all"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="flex-1 px-6 py-3 bg-black text-white rounded-xl border-2 border-black font-black uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50"
+                    className="flex-1 px-6 py-3 bg-black text-white rounded-xl border border-gray-100 font-bold shadow-sm active:scale-95 transition-all disabled:opacity-50"
                   >
                     {isSubmitting ? "Saving..." : "Save Review"}
                   </button>
@@ -207,13 +213,13 @@ export function ExpertReviewsManager({ isAdmin = false }: { isAdmin?: boolean })
       )}
 
       {/* Reviews Table */}
-      <div className="bg-white border-4 border-black rounded-[32px] overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+      <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
         <table className="w-full">
           <thead className="bg-black text-white">
             <tr>
-              <th className="py-4 px-6 text-left font-black uppercase text-xs tracking-wider">Author</th>
-              <th className="py-4 px-6 text-left font-black uppercase text-xs tracking-wider">Rating & Text</th>
-              <th className="py-4 px-6 text-right font-black uppercase text-xs tracking-wider">Actions</th>
+              <th className="py-4 px-6 text-left font-bold text-xs tracking-wider">Author</th>
+              <th className="py-4 px-6 text-left font-bold text-xs tracking-wider">Rating & Text</th>
+              <th className="py-4 px-6 text-right font-bold text-xs tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -221,23 +227,23 @@ export function ExpertReviewsManager({ isAdmin = false }: { isAdmin?: boolean })
               <tr key={review.id} className="hover:bg-gray-50 transition-colors">
                 <td className="py-4 px-6">
                   <div className="flex items-center gap-3">
-                     <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-black bg-gray-100 shrink-0">
-                         {review.author_image ? (
-                             <img src={review.author_image} alt={review.author_name} className="w-full h-full object-cover" />
-                         ) : (
-                             <div className="w-full h-full flex items-center justify-center font-bold text-gray-500 text-lg">
-                                 {review.author_name.charAt(0).toUpperCase()}
-                             </div>
-                         )}
-                     </div>
-                     <div>
-                         <div className="font-bold text-sm block">{review.author_name}</div>
-                         <div className="text-xs text-gray-500 italic block">{review.author_title || "No title"}</div>
-                     </div>
+                    <div className="w-12 h-12 rounded-full overflow-hidden border border-gray-100 bg-gray-100 shrink-0">
+                      {review.author_image ? (
+                        <img src={review.author_image} alt={review.author_name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center font-bold text-gray-500 text-lg">
+                          {review.author_name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <div className="font-bold text-sm block">{review.author_name}</div>
+                      <div className="text-xs text-gray-500 block">{review.author_title || "No title"}</div>
+                    </div>
                   </div>
                 </td>
                 <td className="py-4 px-6">
-                  <div className="font-black text-xs text-accent-yellow mb-1">⭐ {review.rating} / 5.0</div>
+                  <div className="font-bold text-xs text-accent-yellow mb-1">⭐ {review.rating} / 5.0</div>
                   <div className="text-sm line-clamp-2 max-w-md">{review.content}</div>
                 </td>
                 <td className="py-4 px-6 text-right">
@@ -246,14 +252,14 @@ export function ExpertReviewsManager({ isAdmin = false }: { isAdmin?: boolean })
                     className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors border-2 border-transparent hover:border-red-200"
                     title="Delete Review"
                   >
-                    <Trash2 className="w-5 h-5" />
+                    <HugeiconsIcon icon={Delete02Icon} className="w-5 h-5" />
                   </button>
                 </td>
               </tr>
             ))}
             {reviews.length === 0 && (
               <tr>
-                <td colSpan={3} className="py-8 text-center text-gray-400 font-medium italic">
+                <td colSpan={3} className="py-8 text-center text-gray-400 font-medium">
                   No expert reviews added yet.
                 </td>
               </tr>

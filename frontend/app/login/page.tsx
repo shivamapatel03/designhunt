@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Globe, ChevronDown, CheckCircle2, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { Globe, ChevronDown, CheckCircle2, ArrowRight, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useAuth } from "@/components/providers/auth-provider";
 
-export default function LoginPage() {
+function LoginForm() {
   const { user, loading: authLoading, login } = useAuth();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [otp, setOtp] = useState("");
@@ -22,6 +22,8 @@ export default function LoginPage() {
   const [resendMessage, setResendMessage] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectPath = searchParams.get("redirect");
 
   // Redundancy Fix
   useEffect(() => {
@@ -31,9 +33,9 @@ export default function LoginPage() {
         : user.role === 'TUTOR' ? '/tutor-dashboard' 
         : '/profile';
       
-      router.replace(target);
+      router.replace(redirectPath || target);
     }
-  }, [user, router]);
+  }, [user, router, redirectPath]);
 
   useEffect(() => {
     if (showOtp && timeLeft > 0) {
@@ -96,7 +98,7 @@ export default function LoginPage() {
           setMessage(data.message);
         } else {
           login(data.user);
-          router.push(data.redirect || "/");
+          router.push(redirectPath || data.redirect || "/");
         }
       } else {
         setError(data.error || "Login failed");
@@ -113,10 +115,16 @@ export default function LoginPage() {
 
       <div className="flex-1 flex flex-col items-center justify-center p-4 max-w-[340px] mx-auto w-full relative z-10">
         <motion.div 
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, filter: "blur(8px)", y: 10 }}
+            animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-col items-center mb-6"
         >
+             <Link href="/" className="mb-4">
+               <div className="text-2xl font-bold tracking-tighter text-black font-plus-jakarta">
+                  Designhunt<span className="text-blue-500">.</span>
+               </div>
+             </Link>
              <h1 className="text-xl font-bold tracking-tight text-black">
                 {showOtp ? "Verification" : "Welcome Back"}
              </h1>
@@ -132,9 +140,10 @@ export default function LoginPage() {
           {!showOtp ? (
             <motion.div 
                 key="login-form"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
+                initial={{ opacity: 0, filter: "blur(8px)", y: 10 }}
+                animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
+                exit={{ opacity: 0, filter: "blur(8px)", y: -10 }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
                 className="w-full space-y-6"
             >
                 <form onSubmit={handleSubmit} className="space-y-3">
@@ -214,7 +223,7 @@ export default function LoginPage() {
                 {/* Google Signup */}
                 <button 
                   onClick={() => window.location.href = '/api/auth/google'}
-                  className="w-full flex items-center justify-center py-2 bg-white border border-gray-200 rounded-xl font-bold text-sm hover:bg-gray-50 transition-all group"
+                  className="w-full flex items-center justify-center py-2 bg-white border border-gray-200 border-b-2 border-b-gray-300 rounded-xl font-bold text-sm hover:bg-gray-50 active:border-b-0 active:translate-y-[2px] transition-all group"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -258,7 +267,7 @@ export default function LoginPage() {
                 <div className="space-y-3">
                     <button 
                         disabled={loading || otp.length !== 6} 
-                        className="w-full py-3 bg-black text-white font-bold text-sm rounded-xl shadow-sm hover:bg-gray-900 transition-all flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50"
+                        className="w-full py-3 bg-black text-white font-bold text-sm rounded-xl shadow-sm hover:bg-gray-900 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                         {loading ? 'Verifying...' : 'Verify Code'} <ArrowRight className="w-4 h-4" />
                     </button>
@@ -293,5 +302,13 @@ export default function LoginPage() {
         </AnimatePresence>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#fafafa]"><Loader2 className="w-6 h-6 animate-spin text-black" /></div>}>
+      <LoginForm />
+    </Suspense>
   );
 }

@@ -114,21 +114,7 @@ export default function AIToolboxPage() {
           ))}
         </div>
 
-        {/* Bottom Banner */}
-        <div className="mt-24 p-12 bg-white border-4 border-black rounded-[50px] shadow-[20px_20px_0px_0px_#ffd700] flex flex-col md:flex-row items-center justify-between gap-12 group">
-            <div className="flex-1 space-y-6">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-accent-yellow/20 text-yellow-800 rounded-full text-xs font-black uppercase tracking-widest">
-                    <Lightbulb className="w-3.5 h-3.5" /> Coming Next
-                </div>
-                <h2 className="text-4xl md:text-5xl font-clash font-black tracking-tighter italic">AI Prompt Engineering <br/><span className="text-accent-yellow bg-black px-4 py-1 rounded-xl shadow-lg not-italic">Masterclass</span></h2>
-                <p className="text-lg text-gray-500 font-medium font-medium">
-                    Learn how to talk to machines. Our comprehensive guide on prompt crafting for Midjourney and DALL-E is currently in high-fidelity production.
-                </p>
-            </div>
-            <div className="w-32 h-32 bg-accent-yellow border-4 border-black rounded-full flex items-center justify-center animate-spin-slow shadow-xl">
-                <Sparkles className="w-16 h-16 text-black" />
-            </div>
-        </div>
+
       </div>
 
       {/* Background Decor */}

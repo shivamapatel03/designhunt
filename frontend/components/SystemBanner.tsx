@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AlertCircle } from "lucide-react";
+import { Sparkles, X } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function SystemBanner() {
   const [banner, setBanner] = useState({ show: false, message: "" });
+  const [isVisible, setIsVisible] = useState(true);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -25,16 +27,36 @@ export default function SystemBanner() {
     };
 
     fetchSettings();
-  }, [pathname]); // Re-fetch on navigation checks
+  }, [pathname]);
 
-  if (!banner.show || !banner.message) return null;
+  if (!banner.show || !banner.message || !isVisible) return null;
 
   return (
-    <div className="bg-gradient-to-r from-accent-blue/10 to-accent-purple/10 border-b border-black/5 p-3 text-center relative z-50">
-        <div className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider">
-            <AlertCircle className="w-4 h-4 text-accent-blue" />
-            <span>{banner.message}</span>
+    <AnimatePresence>
+      <motion.div 
+        initial={{ height: 0, opacity: 0 }}
+        animate={{ height: "auto", opacity: 1 }}
+        exit={{ height: 0, opacity: 0 }}
+        className="relative z-[100] w-full overflow-hidden"
+      >
+        <div className="bg-black text-white py-2.5 px-4 relative overflow-hidden">
+          {/* Animated Background Gradient */}
+          <div className="absolute inset-0 bg-[linear-gradient(45deg,#000,#222,#000)] bg-[length:300%_300%] animate-gradient opacity-60" />
+          
+          <div className="container mx-auto relative z-10 flex items-center justify-center gap-3">
+            <p className="text-[10px] md:text-xs font-black uppercase tracking-[0.25em] text-center">
+              {banner.message}
+            </p>
+            
+            <button 
+              onClick={() => setIsVisible(false)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-white/10 rounded-full transition-colors"
+            >
+              <X className="w-3 h-3 text-white/40 hover:text-white" />
+            </button>
+          </div>
         </div>
-    </div>
+      </motion.div>
+    </AnimatePresence>
   );
 }

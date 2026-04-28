@@ -27,7 +27,11 @@ import {
   Hammer,
   RefreshCw,
   Lightbulb,
-  Bell
+  Bell,
+  LogOut,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Menu
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getCourses, updateCoursePrice, Course } from "@/app/actions/courses";
@@ -36,6 +40,7 @@ import { DuelsManager } from "@/components/admin/DuelsManager";
 import { ToolsManager } from "@/components/admin/ToolsManager"; 
 import { IdeasManager } from "@/components/super-admin/IdeasManager";
 import { ExpertReviewsManager } from "@/components/super-admin/ExpertReviewsManager";
+import NewsletterAdmin from "@/app/superadmin/newsletter/page";
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState("courses");
@@ -48,6 +53,7 @@ export default function AdminPage() {
   const [editingPrice, setEditingPrice] = useState<string | null>(null);
   const [tempPrice, setTempPrice] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   /* 
      Shared Helper Functions 
@@ -111,92 +117,134 @@ export default function AdminPage() {
   }, [activeTab, contentType]);
 
   return (
-    <div className="container mx-auto px-4 pt-6 pb-12 relative">
+    <div className="min-h-screen bg-[#F8FAFC] pb-12 relative font-plus-jakarta">
+      {/* Top Header */}
+      <header className="bg-white border-b border-gray-100 px-6 py-4 mb-8 sticky top-0 z-30">
+        <div className="container mx-auto flex justify-between items-center">
+            <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center">
+                    <Layout className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                    <h2 className="text-lg font-black tracking-tight leading-none uppercase">Designhunt.</h2>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Admin Control Center</p>
+                </div>
+            </div>
+            
+            <div className="flex items-center gap-4">
+                <div className="hidden md:block text-right">
+                    <p className="text-sm font-black uppercase tracking-tighter">System Status</p>
+                    <p className="text-[10px] font-bold text-green-500 uppercase flex items-center justify-end gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" /> Operational
+                    </p>
+                </div>
+            </div>
+        </div>
+      </header>
 
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div className="container mx-auto px-4 md:px-6">
+
+      <div className={cn(
+        "grid transition-all duration-300 gap-10",
+        isSidebarCollapsed ? "lg:grid-cols-[80px_1fr]" : "lg:grid-cols-[280px_1fr]"
+      )}>
         
         {/* Sidebar */}
-        <aside className="lg:w-64 space-y-2">
+        <aside className="space-y-1 sticky top-24 self-start h-[calc(100vh-120px)] overflow-y-auto pr-2 scrollbar-hide">
+           <div className={cn("px-4 mb-6 flex items-center justify-between", isSidebarCollapsed && "px-2 justify-center")}>
+                {!isSidebarCollapsed && <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Management</p>}
+                <button 
+                  onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                  className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 transition-colors"
+                  title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+                >
+                  {isSidebarCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+                </button>
+           </div>
+
            <AdminSidebarItem 
-            icon={Layout} 
-            label="Dashboard" 
+            icon={BarChart} 
+            label="Overview" 
             active={activeTab === "dash"} 
+            collapsed={isSidebarCollapsed}
             onClick={() => setActiveTab("dash")} 
           />
-          {/* <AdminSidebarItem 
-            icon={Video} 
-            label="Course Queue" 
-            active={activeTab === "courses"} 
-            onClick={() => setActiveTab("courses")} 
-          />
-          <AdminSidebarItem 
-            icon={DollarSign} 
-            label="Pricing" 
-            active={activeTab === "pricing"} 
-            onClick={() => setActiveTab("pricing")} 
-          />
-          <AdminSidebarItem 
-            icon={Settings} 
-            label="Library" 
-            active={activeTab === "content"} 
-            onClick={() => setActiveTab("content")} 
-          /> */}
           <AdminSidebarItem 
             icon={Trophy} 
             label="Daily Duels" 
             active={activeTab === "duels"} 
+            collapsed={isSidebarCollapsed}
             onClick={() => setActiveTab("duels")} 
           />
           <AdminSidebarItem 
             icon={Hammer} 
-            label="Tools" 
+            label="Tools Manager" 
             active={activeTab === "tools"} 
+            collapsed={isSidebarCollapsed}
             onClick={() => setActiveTab("tools")} 
           />
           <AdminSidebarItem 
-            icon={Bell} 
+            icon={Lightbulb} 
             label="Inquiries" 
             active={activeTab === "ideas"} 
+            collapsed={isSidebarCollapsed}
             onClick={() => setActiveTab("ideas")} 
           />
           <AdminSidebarItem 
             icon={Edit2} 
-            label="Reviews" 
+            label="Expert Reviews" 
             active={activeTab === "reviews"} 
+            collapsed={isSidebarCollapsed}
             onClick={() => setActiveTab("reviews")} 
           />
-          <div className="pt-8 border-t border-gray-100 mt-auto">
+          <AdminSidebarItem 
+            icon={Globe} 
+            label="Newsletter" 
+            active={activeTab === "newsletter"} 
+            collapsed={isSidebarCollapsed}
+            onClick={() => setActiveTab("newsletter")} 
+          />
+
+          <div className="pt-8 px-4 mt-8 border-t border-gray-100">
+            {!isSidebarCollapsed && <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-4">System</p>}
             <button 
                 onClick={() => window.location.href = '/api/auth/logout'}
-                className="w-full flex items-center gap-3 px-6 py-4 rounded-2xl font-black uppercase text-sm transition-all text-left text-red-500 hover:bg-red-50"
+                className={cn(
+                  "w-full flex items-center gap-3 py-3 rounded-xl font-bold text-sm transition-all text-left text-red-500 hover:bg-red-50",
+                  isSidebarCollapsed ? "px-0 justify-center" : "px-4"
+                )}
+                title="Sign Out"
             >
-                <Trash2 className="w-5 h-5" />
-                Logout
+                <LogOut className="w-4 h-4" />
+                {!isSidebarCollapsed && <span>Sign Out</span>}
             </button>
           </div>
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex-1">
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-4xl font-black uppercase tracking-tighter">
-                {activeTab === 'dash' ? 'Admin Hub' : 
-                 activeTab === 'courses' ? 'Review Queue' : 
-                 activeTab === 'pricing' ? 'Pricing Control' : 
-                 activeTab === 'duels' ? 'Duel Arena' : 
-                 activeTab === 'tools' ? 'Tools Manager' : 
-                 activeTab === 'reviews' ? 'Expert Reviews' : 'Library'}
+        <main className="min-w-0">
+          <header className="mb-10">
+            <h1 className="text-4xl font-black uppercase tracking-tight italic">
+                {activeTab === 'dash' ? 'Overview' : 
+                 activeTab === 'duels' ? 'Daily Duels' : 
+                 activeTab === 'tools' ? 'Tools' : 
+                 activeTab === 'ideas' ? 'Inquiries' : 
+                 activeTab === 'reviews' ? 'Reviews' : 
+                 activeTab === 'newsletter' ? 'Newsletter' : 'Manage'}
             </h1>
-          </div>
+            <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mt-2">
+                {activeTab === 'dash' ? 'Real-time platform metrics and status' : 'Manage your platform content and users'}
+            </p>
+          </header>
 
           {activeTab === 'dash' && stats && (
-              <div className="grid grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-                  <StatCard label="Total Users" value={stats.totalUsers} icon={Monitor} color="bg-accent-blue" />
-                  <StatCard label="Trainers" value={stats.totalTrainers} icon={Video} color="bg-accent-pink" />
-                  <StatCard label="Pending Review" value={stats.pendingVerifications} icon={Clock} color="bg-accent-yellow" />
-                  <StatCard label="New Ideas" value={stats.ideaCount || 0} icon={Lightbulb} color="bg-accent-yellow" onClick={() => setActiveTab('ideas')} />
-                  <StatCard label="Status" value="OK" icon={CheckCircle} color="bg-green-400" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                  <StatCard label="Platform Users" value={stats.totalUsers} icon={Monitor} color="bg-blue-500" />
               </div>
+          )}
+
+          {activeTab === 'newsletter' && (
+              <NewsletterAdmin />
           )}
 
           {activeTab === 'duels' && (
@@ -212,7 +260,7 @@ export default function AdminPage() {
           )}
 
           {activeTab === 'reviews' && (
-              <div className="bg-white p-8 rounded-[32px] border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+              <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm">
                 <ExpertReviewsManager isAdmin={true} />
               </div>
           )}
@@ -354,32 +402,53 @@ export default function AdminPage() {
 
       </div>
     </div>
+    </div>
   );
 }
 
-function AdminSidebarItem({ icon: Icon, label, active, onClick }: any) {
+function AdminSidebarItem({ icon: Icon, label, active, onClick, collapsed }: any) {
     return (
         <button 
             onClick={onClick}
+            title={collapsed ? label : undefined}
             className={cn(
-                "w-full flex items-center gap-3 px-6 py-4 rounded-2xl font-black uppercase text-sm transition-all text-left border-2 border-transparent",
-                active ? "bg-black text-white border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" : "hover:bg-gray-100 text-gray-500"
+                "w-full flex items-center gap-3 py-3 rounded-xl font-bold transition-all text-left group relative",
+                active ? "bg-black text-white" : "hover:bg-white text-gray-400 hover:text-black",
+                collapsed ? "px-0 justify-center" : "px-4"
             )}
         >
-            <Icon className="w-5 h-5" />
-            {label}
+            <Icon className={cn("w-5 h-5 transition-transform group-hover:scale-110 flex-shrink-0", active ? "text-white" : "text-gray-400 group-hover:text-black")} />
+            {!collapsed && <span className="text-sm tracking-tight truncate">{label}</span>}
+            {active && (
+                <motion.div 
+                    layoutId="active-pill"
+                    className="absolute left-0 w-1 h-6 bg-blue-500 rounded-r-full"
+                />
+            )}
         </button>
     );
 }
 
-function StatCard({ label, value, icon: Icon, color }: any) {
+function StatCard({ label, value, icon: Icon, color, onClick }: any) {
     return (
-        <div className="group p-6 bg-white border-3 border-black rounded-[24px] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-200 flex flex-col items-center text-center justify-center h-full min-h-[180px]">
-            <div className={`w-14 h-14 ${color} rounded-2xl border-2 border-black flex items-center justify-center mb-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]`}>
-                <Icon className="w-7 h-7 text-black" />
+        <motion.div 
+            whileHover={{ y: -4 }}
+            onClick={onClick}
+            className={cn(
+                "p-6 bg-white border border-gray-100 rounded-[28px] shadow-sm flex flex-col gap-4 relative overflow-hidden group",
+                onClick && "cursor-pointer"
+            )}
+        >
+            <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center transition-transform group-hover:rotate-6", color)}>
+                <Icon className="w-6 h-6 text-white" />
             </div>
-            <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 font-mono">{label}</h4>
-            <div className="text-4xl font-black tracking-tighter text-black">{value}</div>
-        </div>
+            
+            <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-1">{label}</p>
+                <h4 className="text-3xl font-black tracking-tight">{value}</h4>
+            </div>
+
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gray-50 rounded-full -translate-y-1/2 translate-x-1/2 -z-10 group-hover:scale-110 transition-transform" />
+        </motion.div>
     );
 }

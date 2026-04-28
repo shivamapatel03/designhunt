@@ -8,7 +8,7 @@ const router = express.Router();
 // Apply to be a Tutor
 router.post("/apply", authenticateToken, (req: any, res) => {
   const { bio, experience, portfolio, expertise } = req.body;
-  const userId = req.user.id;
+  const userId = req.user.userId;
 
   try {
     // Check if request already exists
@@ -54,7 +54,7 @@ router.post("/apply", authenticateToken, (req: any, res) => {
 
 // Get My Application Status
 router.get("/status", authenticateToken, (req: any, res) => {
-  const userId = req.user.id;
+  const userId = req.user.userId;
   try {
     const request = db
       .prepare(

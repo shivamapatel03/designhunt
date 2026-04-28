@@ -66,6 +66,33 @@ router.get("/", authenticate, (req: any, res: any) => {
         };
     }
 
+    const topicsToLearnRaw = user.topics_to_learn ? JSON.parse(user.topics_to_learn) : [];
+    const topicsWithProgress = topicsToLearnRaw.map((topicName: string) => {
+        const slug = topicName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        const topic = db.prepare("SELECT id FROM learning_topics WHERE slug = ? OR title = ?").get(slug, topicName) as any;
+        
+        let percentage = 0;
+        if (topic) {
+            const totalRes = db.prepare("SELECT COUNT(*) as count FROM learning_levels WHERE topic_id = ?").get(topic.id) as any;
+            const completedRes = db.prepare(`
+                SELECT COUNT(DISTINCT l.id) as count 
+                FROM learning_levels l
+                JOIN learning_sections s ON l.id = s.level_id
+                JOIN learning_progress p ON s.id = p.section_id
+                WHERE l.topic_id = ? AND p.user_id = ?
+            `).get(topic.id, userId) as any;
+            
+            const total = totalRes?.count || 1;
+            const completed = completedRes?.count || 0;
+            percentage = Math.round((completed / total) * 100);
+        }
+        
+        return {
+            title: topicName,
+            percentage
+        };
+    });
+
     const userProfile = {
       user: {
         id: user.id,
@@ -84,7 +111,16 @@ router.get("/", authenticate, (req: any, res: any) => {
         current_course: "Typography",
         streak: user.current_streak || 0,
         xp: user.total_xp || 0,
-        xp_percentile: user.total_xp > 1000 ? "Top 1%" : user.total_xp > 500 ? "Top 5%" : "Top 12%",
+        current_streak: user.current_streak || 0,
+        total_xp: user.total_xp || 0,
+        xp_percentile: (() => {
+            const totalUsersRes = db.prepare("SELECT COUNT(*) as count FROM users").get() as any;
+            const usersAheadRes = db.prepare("SELECT COUNT(*) as count FROM users WHERE total_xp > ?").get(user.total_xp || 0) as any;
+            const totalUsers = totalUsersRes?.count || 1;
+            const usersAhead = usersAheadRes?.count || 0;
+            const topPercent = Math.max(1, Math.round((usersAhead / totalUsers) * 100));
+            return `Top ${topPercent}%`;
+        })(),
         typography_progress: typographyStats,
         stats: {
           lessons_completed: typographyStats.completed,
@@ -93,6 +129,7 @@ router.get("/", authenticate, (req: any, res: any) => {
         },
         bio: user.bio || "Design enthusiast.",
         skills: user.skills ? JSON.parse(user.skills) : [],
+        topics_to_learn: topicsWithProgress,
         portfolio_items: user.portfolio_items ? JSON.parse(user.portfolio_items) : [],
         looking_for_work: !!user.looking_for_work,
       },

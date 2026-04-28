@@ -77,11 +77,15 @@ export async function getSystemStats() {
         const totalTrainers = db.prepare('SELECT COUNT(*) as count FROM users WHERE role = ?').get('TUTOR') as any;
         const pendingVerifications = db.prepare('SELECT COUNT(*) as count FROM tutor_requests WHERE status = ?').get('PENDING') as any;
 
+        const totalAdmins = db.prepare('SELECT COUNT(*) as count FROM users WHERE role IN (?, ?)').get('ADMIN', 'SUPER_ADMIN') as any;
+
         return {
             totalUsers: totalUsers?.count || 0,
-            activeUsers: totalUsers?.count || 0, // Placeholder
+            activeUsers: totalUsers?.count || 0,
             totalTrainers: totalTrainers?.count || 0,
-            pendingVerifications: pendingVerifications?.count || 0
+            pendingVerifications: pendingVerifications?.count || 0,
+            totalAdmins: totalAdmins?.count || 0,
+            activeAdmins: totalAdmins?.count || 0
         };
     } catch (error) {
         return { totalUsers: 0, activeUsers: 0, totalTrainers: 0, pendingVerifications: 0 };

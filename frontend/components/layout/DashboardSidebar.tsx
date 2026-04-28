@@ -15,7 +15,6 @@ import { cn } from "@/lib/utils";
 const menuItems = [
   { icon: Layout, label: "Dashboard", href: "/profile" },
   { icon: BookOpen, label: "My Lessons", href: "/profile/lessons" },
-  { icon: Award, label: "Badges", href: "/profile/badges" },
   { icon: Briefcase, label: "Portfolio", href: "/profile/portfolio" },
   { icon: Activity, label: "Activity", href: "/profile/activity" },
 ];

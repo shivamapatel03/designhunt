@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import redis from '@/lib/redis';
 import { SignJWT } from 'jose';
+import { sendWelcomeEmail } from '@/lib/email';
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'default-secret-key-change-me');
 
@@ -33,6 +34,9 @@ export async function POST(req: Request) {
     // Mark as verified and remove OTP from Redis
     await redis.del(`otp:${email}`);
     db.prepare('UPDATE users SET email_verified = 1, otp_code = NULL, otp_expires_at = NULL WHERE id = ?').run(user.id);
+
+    // Send Welcome Email asynchronously since they are now fully registered
+    sendWelcomeEmail(user.email, user.name).catch(console.error);
 
     // Create Session
     const token = await new SignJWT({ userId: user.id, email: user.email, role: user.role })

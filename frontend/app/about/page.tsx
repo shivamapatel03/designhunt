@@ -83,7 +83,7 @@ export default function AboutPage() {
             </motion.h1>
             
             <motion.p variants={itemVariants} className="text-lg md:text-xl lg:text-2xl font-bold text-gray-500 max-w-2xl leading-relaxed mb-12">
-              Design Hunt started as a simple repo and grew into a specialized ecosystem for modern visual creators. We bridge the gap between creative messy energy and structured professional mastery.
+              Designhunt. started as a simple repo and grew into a specialized ecosystem for modern visual creators. We bridge the gap between creative messy energy and structured professional mastery.
             </motion.p>
           </motion.div>
         </div>
@@ -111,10 +111,10 @@ export default function AboutPage() {
             transition={{ duration: 0.8 }}
             className="space-y-8"
           >
-            <h2 className="text-4xl md:text-5xl font-black uppercase italic tracking-tighter">The Design Hunt <br />Story</h2>
+            <h2 className="text-4xl md:text-5xl font-black uppercase italic tracking-tighter">The Designhunt. <br />Story</h2>
             <div className="space-y-6 text-base md:text-lg font-bold text-gray-400 leading-relaxed">
               <p>In a world overflowing with generic "UI Kits" and low-quality assets, we realized the real challenge wasn't finding resources—it was finding the <span className="text-black italic underline decoration-4 decoration-accent-blue underline-offset-4">right</span> ones.</p>
-              <p>We built Design Hunt to be the filter. A place where color theory, typography systems, and prototyping tools are organized for execution, not just inspiration.</p>
+              <p>We built Designhunt. to be the filter. A place where color theory, typography systems, and prototyping tools are organized for execution, not just inspiration.</p>
               <p>Today, we're a community-driven hub that empowers thousands of designers to build premium interfaces with speed and accuracy.</p>
             </div>
             

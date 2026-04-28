@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { SignJWT } from 'jose';
-import { sendAdminLoginEmail } from '@/lib/email';
+import { sendAdminLoginEmail, sendWelcomeBackEmail } from '@/lib/email';
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'default-secret-key-change-me');
 
@@ -100,6 +100,9 @@ export async function POST(req: Request) {
     // Update last login
     db.prepare('UPDATE users SET last_login = ? WHERE id = ?')
       .run(new Date().toISOString(), user.id);
+    
+    // Send Welcome Back Email asynchronously
+    sendWelcomeBackEmail(user.email, user.name).catch(console.error);
     
     const response = NextResponse.json({ 
         success: true, 

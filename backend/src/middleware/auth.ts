@@ -43,10 +43,11 @@ export const requireSuperAdmin = (
   res: Response,
   next: NextFunction,
 ) => {
+  const ALLOWED_EMAILS = ["shivampatel2330@gmail.com", "shivamsenton@gmail.com"];
   if (
     req.user && 
     req.user.role === "SUPER_ADMIN" && 
-    req.user.email === "shivampatel2330@gmail.com"
+    ALLOWED_EMAILS.includes(req.user.email)
   ) {
     next();
   } else {

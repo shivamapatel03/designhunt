@@ -45,21 +45,21 @@ export function BezierPlayground() {
             </div>
 
             <div className="space-y-4">
-                 <div className="flex items-center justify-between">
+                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <label className="text-sm font-bold">X1: {p1}</label>
-                    <input type="range" min="0" max="1" step="0.01" value={p1} onChange={e => setP1(Number(e.target.value))} className="w-40 accent-black" />
+                    <input type="range" min="0" max="1" step="0.01" value={p1} onChange={e => setP1(Number(e.target.value))} className="w-full sm:w-40 accent-black" />
                  </div>
-                 <div className="flex items-center justify-between">
+                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <label className="text-sm font-bold">Y1: {p2}</label>
-                    <input type="range" min="-1" max="2" step="0.1" value={p2} onChange={e => setP2(Number(e.target.value))} className="w-40 accent-black" />
+                    <input type="range" min="-1" max="2" step="0.1" value={p2} onChange={e => setP2(Number(e.target.value))} className="w-full sm:w-40 accent-black" />
                  </div>
-                 <div className="flex items-center justify-between">
+                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <label className="text-sm font-bold">X2: {p3}</label>
-                    <input type="range" min="0" max="1" step="0.01" value={p3} onChange={e => setP3(Number(e.target.value))} className="w-40 accent-black" />
+                    <input type="range" min="0" max="1" step="0.01" value={p3} onChange={e => setP3(Number(e.target.value))} className="w-full sm:w-40 accent-black" />
                  </div>
-                 <div className="flex items-center justify-between">
+                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <label className="text-sm font-bold">Y2: {p4}</label>
-                    <input type="range" min="-1" max="2" step="0.1" value={p4} onChange={e => setP4(Number(e.target.value))} className="w-40 accent-black" />
+                    <input type="range" min="-1" max="2" step="0.1" value={p4} onChange={e => setP4(Number(e.target.value))} className="w-full sm:w-40 accent-black" />
                  </div>
             </div>
 

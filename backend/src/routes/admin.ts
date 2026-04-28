@@ -2,7 +2,7 @@ import express from "express";
 import db from "../db";
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
-import { sendCodeRotationEmail, sendIdeaFeedbackEmail } from "../lib/email";
+import { sendCodeRotationEmail, sendIdeaFeedbackEmail, sendNewsletterEmail } from "../lib/email";
 import { logAction, getAuditLogs } from "../lib/audit";
 import { getAllSettings, updateSetting } from "../lib/settings";
 import { getFinancialStats } from "../lib/finance";
@@ -37,7 +37,7 @@ router.post(
         "INSERT INTO users (id, email, password, name, role, status, email_verified, avatar) VALUES (?, ?, ?, ?, 'ADMIN', 'APPROVED', 1, ?)",
       ).run(id, email, hashedPassword, name || "Admin", avatar || null);
 
-      logAction(req.user.id, "CREATE_ADMIN", id, { email, name });
+      logAction(req.user.userId, "CREATE_ADMIN", id, { email, name });
 
       console.log(`[CREATE ADMIN] Request for: ${email}`);
       res.json({ success: true, password }); // Return password to Super Admin
@@ -72,7 +72,7 @@ router.post(
 
       const success = updateSetting(key, String(value));
       if (success) {
-        logAction(req.user.id, "UPDATE_SETTING", key, { value });
+        logAction(req.user.userId, "UPDATE_SETTING", key, { value });
         res.json({ success: true });
       } else {
         res.status(500).json({ error: "Failed to update setting" });
@@ -126,7 +126,7 @@ router.post(
       const { id } = req.body;
       db.prepare("DELETE FROM users WHERE id = ?").run(id);
 
-      logAction(req.user.id, "DELETE_USER", id, {});
+      logAction(req.user.userId, "DELETE_USER", id, {});
 
       res.json({ success: true });
     } catch (error) {
@@ -144,7 +144,7 @@ router.post(
   (req: any, res) => {
     try {
       db.prepare("DELETE FROM users WHERE role != 'SUPER_ADMIN'").run();
-      logAction(req.user.id, "DELETE_ALL_USERS", "", {});
+      logAction(req.user.userId, "DELETE_ALL_USERS", "", {});
       res.json({ success: true });
     } catch (error) {
       console.error(error);
@@ -168,7 +168,7 @@ router.post("/rotate-access-code", async (req, res) => {
     ).run(newCode);
 
     // Notify Admin via Email
-    const adminEmail = process.env.ADMIN_EMAIL || "shivampatel2330@gmail.com";
+    const adminEmail = process.env.ADMIN_EMAIL || "shivamsenton@gmail.com";
     await sendCodeRotationEmail(adminEmail, newCode);
 
     res.json({ success: true, code: newCode });
@@ -188,7 +188,7 @@ router.post("/reset-access-code", async (req, res) => {
     ).run(defaultCode);
 
     // Notify Admin via Email
-    const adminEmail = process.env.ADMIN_EMAIL || "shivampatel2330@gmail.com";
+    const adminEmail = process.env.ADMIN_EMAIL || "shivamsenton@gmail.com";
     await sendCodeRotationEmail(adminEmail, defaultCode);
 
     res.json({ success: true, code: defaultCode });
@@ -219,7 +219,7 @@ router.post(
 
       fs.copyFileSync(dbPath, backupPath);
 
-      logAction(req.user.id, "BACKUP_DATABASE", "SYSTEM", { path: backupPath });
+      logAction(req.user.userId, "BACKUP_DATABASE", "SYSTEM", { path: backupPath });
 
       res.json({ success: true, filename: `designhunt_v2_${timestamp}.db` });
     } catch (err: any) {
@@ -250,7 +250,7 @@ router.post(
       );
 
       if (result.success) {
-        logAction(req.user.id, "SEND_IDEA_FEEDBACK", email, { ideaText });
+        logAction(req.user.userId, "SEND_IDEA_FEEDBACK", email, { ideaText });
         res.json({ success: true });
       } else {
         res.status(500).json({ error: "Failed to send email" });
@@ -286,7 +286,7 @@ router.post("/expert-reviews", authenticateToken, (req: any, res) => {
       "INSERT INTO expert_reviews (id, author_name, author_title, rating, content, author_image) VALUES (?, ?, ?, ?, ?, ?)"
     ).run(id, author_name, author_title || null, rating || 5.0, content, author_image || null);
 
-    logAction(req.user.id, "CREATE_EXPERT_REVIEW", id, { author_name });
+    logAction(req.user.userId, "CREATE_EXPERT_REVIEW", id, { author_name });
     res.json({ success: true, id });
   } catch (err) {
     res.status(500).json({ error: "Failed to create review" });
@@ -299,11 +299,193 @@ router.delete("/expert-reviews/:id", authenticateToken, (req: any, res) => {
     const { id } = req.params;
     db.prepare("DELETE FROM expert_reviews WHERE id = ?").run(id);
     
-    logAction(req.user.id, "DELETE_EXPERT_REVIEW", id, {});
+    logAction(req.user.userId, "DELETE_EXPERT_REVIEW", id, {});
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: "Failed to delete review" });
   }
 });
+
+// Send Newsletter to all active subscribers
+router.post(
+  "/newsletter/send",
+  authenticateToken,
+  requireSuperAdmin,
+  async (req: any, res) => {
+    try {
+      const { subject, headerImageUrl, bodyText, ctaText, ctaLink } = req.body;
+
+      if (!subject || !bodyText) {
+        return res.status(400).json({ error: "Subject and Body text are required" });
+      }
+
+      // Fetch all subscribed emails
+      const subscribers = db.prepare("SELECT email FROM newsletter_subscribers WHERE status = 'SUBSCRIBED'").all() as { email: string }[];
+
+      if (subscribers.length === 0) {
+        return res.status(400).json({ error: "No active subscribers found" });
+      }
+
+      let successCount = 0;
+      let failCount = 0;
+
+      // Send to all subscribers asynchronously
+      for (const sub of subscribers) {
+        const result = await sendNewsletterEmail(sub.email, subject, headerImageUrl, bodyText, ctaText, ctaLink);
+        if (result.success) {
+          successCount++;
+        } else {
+          failCount++;
+        }
+      }
+
+      if ((req as any).user) {
+        logAction((req as any).user.userId, "SEND_NEWSLETTER", "BULK", { subject, successCount, failCount });
+      }
+
+      res.json({ 
+        success: true, 
+        message: `Newsletter sent to ${successCount} subscribers. Failed: ${failCount}` 
+      });
+    } catch (error: any) {
+      console.error("Newsletter Bulk Send Error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// Get subscriber list and count
+router.get(
+  "/newsletter/subscribers",
+  authenticateToken,
+  requireSuperAdmin,
+  (req, res) => {
+    try {
+      const subscribers = db.prepare("SELECT * FROM newsletter_subscribers ORDER BY created_at DESC").all();
+      res.json({ success: true, subscribers });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch subscribers" });
+    }
+  }
+);
+
+// Delete a subscriber
+router.delete(
+  "/newsletter/subscribers/:id",
+  authenticateToken,
+  requireSuperAdmin,
+  (req, res) => {
+    try {
+      const { id } = req.params;
+      db.prepare("DELETE FROM newsletter_subscribers WHERE id = ?").run(id);
+      if ((req as any).user) {
+        logAction((req as any).user.userId, "DELETE_SUBSCRIBER", id as string, {});
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete subscriber" });
+    }
+  }
+);
+
+// List all admins for Super Admin
+router.get(
+  "/admins",
+  authenticateToken,
+  requireSuperAdmin,
+  (req, res) => {
+    try {
+      const admins = db.prepare("SELECT id, name, email, role, status, created_at FROM users WHERE role IN (?, ?)").all('ADMIN', 'SUPER_ADMIN');
+      res.json({ success: true, admins });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch admins" });
+    }
+  }
+);
+
+// Invite a new admin (creates user with generated password)
+router.post(
+  "/invite-admin",
+  authenticateToken,
+  requireSuperAdmin,
+  async (req: any, res) => {
+    try {
+      const { name, email } = req.body;
+      const { randomUUID, randomBytes } = require('crypto');
+      const bcrypt = require('bcryptjs');
+      const { sendAdminOnboardingEmail } = require('../lib/email');
+      
+      const existing = db.prepare("SELECT id, role, name FROM users WHERE email = ?").get(email) as any;
+      
+      // Generate a secure random password (12 chars)
+      const generatedPassword = randomBytes(6).toString('hex');
+      const hashedPassword = await bcrypt.hash(generatedPassword, 10);
+
+      let userId: string;
+      let userName = name;
+
+      if (existing) {
+        if (existing.role === 'ADMIN' || existing.role === 'SUPER_ADMIN') {
+          return res.status(400).json({ error: "This user is already an administrator." });
+        }
+        userId = existing.id;
+        userName = existing.name || name;
+        db.prepare("UPDATE users SET role = 'ADMIN', password = ?, status = 'APPROVED' WHERE id = ?").run(hashedPassword, userId);
+      } else {
+        userId = randomUUID();
+        db.prepare("INSERT INTO users (id, name, email, password, role, status, email_verified) VALUES (?, ?, ?, ?, 'ADMIN', 'APPROVED', 1)").run(userId, name, email, hashedPassword);
+      }
+
+      // Send Email with Password
+      const emailRes = await sendAdminOnboardingEmail(email, generatedPassword, userName);
+      
+      if (req.user) {
+        logAction(req.user.userId, "INVITE_ADMIN", userId, { email, autoEmailSent: emailRes.success });
+      }
+
+      if (!emailRes.success) {
+        console.warn(`[INVITE FALLBACK] Email failed for ${email}. Password: ${generatedPassword}`);
+        return res.json({ 
+          success: true, 
+          userId, 
+          message: "Admin created but email failed. You can manually give them the password from console.",
+          passwordFallback: generatedPassword 
+        });
+      }
+
+      res.json({ success: true, userId, message: "Invitation sent with password!" });
+    } catch (error) {
+      console.error("Invite Admin Error:", error);
+      res.status(500).json({ error: "Failed to invite admin" });
+    }
+  }
+);
+
+// Delete an admin
+router.delete(
+  "/admins/:id",
+  authenticateToken,
+  requireSuperAdmin,
+  (req: any, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Prevent deleting self
+      if (id === req.user?.userId) {
+        return res.status(400).json({ error: "You cannot delete yourself" });
+      }
+
+      db.prepare("DELETE FROM users WHERE id = ?").run(id);
+      
+      if (req.user) {
+        logAction(req.user.userId, "DELETE_ADMIN", id as string, {});
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete admin" });
+    }
+  }
+);
 
 export default router;

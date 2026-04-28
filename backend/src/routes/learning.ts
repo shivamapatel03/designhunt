@@ -299,4 +299,69 @@ router.delete("/activity/bookmark/:id", authenticate, (req: any, res: any) => {
   res.json({ success: true });
 });
 
+/**
+ * GET /api/learning/topic/:topic_slug/report
+ */
+router.get("/topic/:topic_slug/report", authenticate, (req: any, res: any) => {
+  try {
+    const { topic_slug } = req.params;
+    const userId = req.userId;
+
+    const topic = db.prepare("SELECT * FROM learning_topics WHERE slug = ?").get(topic_slug) as any;
+    if (!topic) return res.status(404).json({ error: "Topic not found" });
+
+    const levels = db.prepare(`
+        SELECT l.id, l.level_number, l.difficulty,
+               (SELECT COUNT(*) FROM learning_sections s WHERE s.level_id = l.id) as section_count,
+               (SELECT COUNT(*) FROM learning_progress p 
+                JOIN learning_sections s ON p.section_id = s.id 
+                WHERE s.level_id = l.id AND p.user_id = ?) as completed_count
+        FROM learning_levels l
+        WHERE l.topic_id = ?
+        ORDER BY l.[order] ASC
+    `).all(userId, topic.id) as any[];
+
+    // Calculate accuracy only from TEST sections
+    const quizStats = db.prepare(`
+        SELECT AVG(p.score) as avg_score
+        FROM learning_progress p
+        JOIN learning_sections s ON p.section_id = s.id
+        JOIN learning_levels l ON s.level_id = l.id
+        WHERE l.topic_id = ? AND p.user_id = ? AND s.type = 'TEST'
+    `).get(topic.id, userId) as any;
+
+    const totalXp = db.prepare(`
+        SELECT SUM(p.xp_earned) as total_xp
+        FROM learning_progress p
+        JOIN learning_sections s ON p.section_id = s.id
+        JOIN learning_levels l ON s.level_id = l.id
+        WHERE l.topic_id = ? AND p.user_id = ?
+    `).get(topic.id, userId) as any;
+
+    const timeSpent = db.prepare(`
+        SELECT SUM(s.duration_mins) as total_mins
+        FROM learning_progress p
+        JOIN learning_sections s ON p.section_id = s.id
+        JOIN learning_levels l ON s.level_id = l.id
+        WHERE l.topic_id = ? AND p.user_id = ?
+    `).get(topic.id, userId) as any;
+
+    res.json({
+        topic_title: topic.title,
+        accuracy: Math.round(quizStats.avg_score || 0),
+        total_xp: totalXp.total_xp || 0,
+        time_spent_mins: timeSpent.total_mins || 0,
+        levels: levels.map(l => ({
+            level_number: l.level_number,
+            difficulty: l.difficulty,
+            status: l.completed_count === l.section_count ? 'COMPLETED' : 'IN_PROGRESS'
+        }))
+    });
+  } catch (error) {
+    console.error("Error generating report:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 export default router;
+

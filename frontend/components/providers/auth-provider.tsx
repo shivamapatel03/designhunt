@@ -11,6 +11,9 @@ interface User {
   avatar?: string;
   handle?: string;
   xp?: number;
+  total_xp?: number;
+  current_streak?: number;
+  xp_percentile?: string;
   is_pro?: number | boolean;
   scan_balance?: number;
 }

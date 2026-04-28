@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export default function MicroInteractionsPage() {
   return (
-    <div className="container mx-auto px-4 pt-32 pb-12">
+    <div className="container mx-auto px-4 pt-16 sm:pt-20 pb-12">
         <Link href="/theory" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-black mb-10">
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to Theory Hub
         </Link>
@@ -15,7 +15,7 @@ export default function MicroInteractionsPage() {
             </p>
         </header>
 
-         <div className="grid lg:grid-cols-[1fr_300px] gap-12">
+         <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-12 items-start">
             <div className="space-y-16">
                  <section>
                     <h2 className="text-2xl font-bold mb-6">Interaction Lab</h2>
@@ -36,14 +36,36 @@ export default function MicroInteractionsPage() {
                 </section>
             </div>
 
-             <aside className="space-y-6">
-                <div className="p-6 border-2 border-dashed border-gray-300 rounded-xl">
+             <aside className="space-y-6 lg:sticky lg:top-24">
+                <div className="p-6 border-2 border-black rounded-xl bg-white shadow-[4px_4px_0px_0px_#000]">
+                    <h3 className="font-black text-xs uppercase tracking-widest text-gray-400 mb-4 border-b border-gray-100 pb-2">Key Terms</h3>
+                    <ul className="space-y-3">
+                        <li className="text-[13px] leading-tight">
+                            <strong className="block text-black">Trigger</strong> 
+                            <span className="text-gray-500">The user or system event that initiates the interaction.</span>
+                        </li>
+                        <li className="text-[13px] leading-tight">
+                            <strong className="block text-black">Rules</strong> 
+                            <span className="text-gray-500">The logic that determines what happens during an interaction.</span>
+                        </li>
+                        <li className="text-[13px] leading-tight">
+                            <strong className="block text-black">Feedback</strong> 
+                            <span className="text-gray-500">The physical or visual reaction the system provides to the user.</span>
+                        </li>
+                        <li className="text-[13px] leading-tight">
+                            <strong className="block text-black">Loops & Modes</strong> 
+                            <span className="text-gray-500">Determining the meta-rules, duration, and if the interaction repeats.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div className="p-6 border-2 border-black rounded-xl bg-white shadow-[4px_4px_0px_0px_#000]">
                     <h3 className="font-bold mb-4">Examples</h3>
                     <ul className="space-y-3 text-sm text-gray-600">
-                        <li>• "Like" button animation</li>
-                        <li>• Pull to refresh</li>
-                        <li>• Password strength meter</li>
-                        <li>• Typing indicator</li>
+                        <li className="flex items-center gap-2"><span>•</span> "Like" button animation</li>
+                        <li className="flex items-center gap-2"><span>•</span> Pull to refresh</li>
+                        <li className="flex items-center gap-2"><span>•</span> Password strength meter</li>
+                        <li className="flex items-center gap-2"><span>•</span> Typing indicator</li>
                     </ul>
                 </div>
             </aside>

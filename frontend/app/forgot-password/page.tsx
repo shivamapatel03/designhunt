@@ -102,7 +102,7 @@ export default function ForgotPasswordPage() {
                 key="success-message"
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="w-full bg-white p-8 rounded-[32px] border border-black/5 shadow-xl flex flex-col items-center text-center space-y-4"
+                className="w-full bg-white p-8 rounded-[32px] border-2 border-black flex flex-col items-center text-center space-y-4"
             >
                 <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center mb-2">
                     <CheckCircle2 className="w-6 h-6 text-green-500" />
@@ -114,7 +114,7 @@ export default function ForgotPasswordPage() {
                     </p>
                 </div>
                 <div className="pt-4 flex flex-col gap-3 w-full">
-                    <Link href="/reset-password" title="Go to Reset Password" className="w-full py-3 bg-[#6366F1] text-white font-bold text-xs rounded-xl hover:bg-[#4F46E5] transition-colors flex items-center justify-center gap-2">
+                    <Link href={`/reset-password?email=${encodeURIComponent(email)}`} title="Go to Reset Password" className="w-full py-3 bg-black text-white font-bold text-xs rounded-xl hover:bg-gray-900 transition-colors flex items-center justify-center gap-2 shadow-[4px_4px_0_0_#333]">
                         Enter Reset Code <ArrowRight className="w-4 h-4" />
                     </Link>
                     <button onClick={() => setMessage("")} className="text-[10px] font-bold text-gray-400 hover:text-black transition-colors uppercase tracking-widest">

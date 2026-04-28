@@ -1,70 +1,180 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
+import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Instagram, 
+  Linkedin,
+  Loader2,
+  CheckCircle2
+} from "lucide-react";
 
 export function Footer() {
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return toast.error("Please enter an email address");
+
+    try {
+      setLoading(true);
+      const res = await fetch("http://localhost:5000/api/newsletter/subscribe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Successfully subscribed to Design Hunt news!");
+        setIsSuccess(true);
+        setEmail("");
+        // Reset after 5 seconds
+        setTimeout(() => setIsSuccess(false), 5000);
+      } else {
+        toast.error(data.error || "Failed to subscribe");
+      }
+    } catch (err) {
+      toast.error("An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
-    <footer className="bg-black text-white relative pt-16 md:pt-20 pb-0 overflow-hidden border-t-8 border-accent-blue">
-      <div className="container mx-auto px-6 md:px-16 lg:px-24 relative z-10 pb-20 md:pb-32">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
+    <footer className="bg-white text-black py-16 md:py-24 border-t border-gray-100 font-plus-jakarta">
+      <div className="container mx-auto px-6 md:px-16 lg:px-24">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8">
           
-          <div className="sm:col-span-2 lg:col-span-1">
-            <Link href="/" className="flex items-center gap-1.5 sm:gap-2 group shrink-0 mb-6" translate="no">
-              <div className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter text-white font-plus-jakarta transition-colors group-hover:text-blue-500">
+          {/* Brand & Newsletter Section */}
+          <div className="lg:col-span-5 flex flex-col gap-8">
+            <Link href="/" className="flex items-center gap-2 group shrink-0" translate="no">
+              <div className="text-3xl md:text-4xl font-bold tracking-tighter text-black transition-colors group-hover:text-blue-600">
                 Designhunt<span className="text-blue-500">.</span>
               </div>
             </Link>
-            <p className="text-sm text-gray-400 font-medium leading-relaxed max-w-xs">
-              The structured learning platform for designers. Master your craft with theory, tools, and practice.
-            </p>
+            
+            <div className="max-w-md">
+              <h3 className="text-lg md:text-xl font-semibold mb-6 leading-snug">
+                Get design insights delivered straight to your inbox.
+              </h3>
+              <div className="relative min-h-[52px]">
+                <AnimatePresence mode="wait">
+                  {!isSuccess ? (
+                    <motion.form 
+                      key="form"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="flex flex-col sm:flex-row gap-3" 
+                      onSubmit={handleSubscribe}
+                    >
+                      <input 
+                        type="email" 
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="Email" 
+                        disabled={loading}
+                        className="flex-1 px-4 py-3 rounded-lg border border-gray-200 outline-none focus:border-black transition-colors text-sm font-medium disabled:opacity-50"
+                        required
+                      />
+                      <button 
+                        type="submit" 
+                        disabled={loading}
+                        className="blob-btn disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+                      >
+                        {loading ? <Loader2 className="w-5 h-5 animate-spin relative z-10" /> : <span className="relative z-10">Subscribe</span>}
+                        <span className="blob-btn__inner">
+                          <span className="blob-btn__blobs">
+                            <span className="blob-btn__blob"></span>
+                            <span className="blob-btn__blob"></span>
+                            <span className="blob-btn__blob"></span>
+                            <span className="blob-btn__blob"></span>
+                          </span>
+                        </span>
+                      </button>
+                    </motion.form>
+                  ) : (
+                    <motion.div 
+                      key="success"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="absolute inset-0 flex items-center gap-3 px-4 py-3 bg-green-50 border border-green-200 rounded-lg text-green-700"
+                    >
+                      <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
+                      <span className="text-sm font-bold">You're on the list! Check your inbox.</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+              <p className="mt-4 text-[11px] text-gray-400 leading-relaxed max-w-[340px]">
+                By subscribing you agree to our <Link href="/privacy" className="underline hover:text-black transition-colors">Privacy Policy</Link> and consent to receive updates.
+              </p>
+            </div>
           </div>
-          
-          <div>
-            <h3 className="font-black  tracking-widest text-gray-500 mb-6 text-sm">Explore</h3>
-            <ul className="space-y-4 text-sm font-bold">
-              <li><Link href="/theory" className="hover:text-accent-blue transition-colors">Theory Library</Link></li>
-              <li><Link href="/tools" className="hover:text-accent-pink transition-colors">Tool Mastery</Link></li>
-            </ul>
-          </div>
-          
-          <div>
-            <h3 className="font-black tracking-widest text-gray-500 mb-6 text-sm">Resources</h3>
-            <ul className="space-y-4 text-sm font-bold">
-              <li><Link href="/theory/color" className="hover:text-[#FFD700] transition-colors">Color Wheel</Link></li>
-              <li><Link href="/theory/typography" className="hover:text-accent-blue transition-colors">Type Scale</Link></li>
-              <li><Link href="/library/illustrations" className="hover:text-accent-pink transition-colors">Illustrations</Link></li>
-              <li><Link href="/theory/layout" className="hover:text-[#FFD700] transition-colors">Grid Generator</Link></li>
-            </ul>
-          </div>
-          
-          <div>
-            <h3 className="font-black tracking-widest text-gray-500 mb-6 text-sm">Company</h3>
-            <ul className="space-y-4 text-sm font-bold">
-              <li><Link href="/critique" className="hover:text-[#FFD700] transition-colors">Execution Lab</Link></li>
-              <li><Link href="/theory" className="hover:text-white transition-colors">Feedback</Link></li>
-            </ul>
+
+          {/* Navigation Links Columns */}
+          <div className="lg:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-8">
+            {/* Theory Section */}
+            <div className="flex flex-col gap-6">
+              <h4 className="text-sm font-black text-gray-400">Theory</h4>
+              <ul className="flex flex-col gap-4">
+                <li><Link href="/theory/color" className="text-sm font-semibold hover:text-blue-500 transition-colors">Colour Theory</Link></li>
+                <li><Link href="/theory/typography" className="text-sm font-semibold hover:text-blue-500 transition-colors">Typography</Link></li>
+                <li><Link href="/theory/layout" className="text-sm font-semibold hover:text-blue-500 transition-colors">Layout & Grids</Link></li>
+                <li><Link href="/theory/visual-hierarchy" className="text-sm font-semibold hover:text-blue-500 transition-colors">Visual Hierarchy</Link></li>
+                <li><Link href="/theory/motion" className="text-sm font-semibold hover:text-blue-500 transition-colors">Motion & Animation</Link></li>
+                <li><Link href="/theory/ux-laws" className="text-sm font-semibold hover:text-blue-500 transition-colors">Laws of UX</Link></li>
+              </ul>
+            </div>
+
+            {/* Library Section */}
+            <div className="flex flex-col gap-6">
+              <h4 className="text-sm font-black text-gray-400">Library</h4>
+              <ul className="flex flex-col gap-4">
+                <li><Link href="/library/icons" className="text-sm font-semibold hover:text-blue-500 transition-colors">Icons</Link></li>
+                <li><Link href="/library/wireframes" className="text-sm font-semibold hover:text-blue-500 transition-colors">Wireframe</Link></li>
+                <li><Link href="/library/colors" className="text-sm font-semibold hover:text-blue-500 transition-colors">Colors</Link></li>
+                <li><Link href="/library/illustrations" className="text-sm font-semibold hover:text-blue-500 transition-colors">Illustrations</Link></li>
+                <li><Link href="/library/animations" className="text-sm font-semibold hover:text-blue-500 transition-colors">Animations</Link></li>
+                <li><Link href="/library/ui-kits" className="text-sm font-semibold hover:text-blue-500 transition-colors">UI Kits</Link></li>
+              </ul>
+            </div>
+
+            {/* Follow Us */}
+            <div className="flex flex-col gap-6 col-span-2 md:col-span-1">
+              <h4 className="text-sm font-black text-gray-400">Follow us</h4>
+              <ul className="flex flex-col gap-4">
+                <li className="flex items-center gap-3 group">
+                  <Instagram className="w-5 h-5 opacity-60 group-hover:opacity-100 transition-opacity" />
+                  <Link href="#" className="text-sm font-semibold group-hover:text-pink-600 transition-colors">Instagram</Link>
+                </li>
+                <li className="flex items-center gap-3 group">
+                  <Linkedin className="w-5 h-5 opacity-60 group-hover:opacity-100 transition-opacity" />
+                  <Link href="#" className="text-sm font-semibold group-hover:text-blue-700 transition-colors">LinkedIn</Link>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
 
-        <div className="mt-16 pt-8 border-t-2 border-white/10 text-center md:text-left text-xs font-bold text-gray-500 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p>&copy; {new Date().getFullYear()} Designhunt. All Rights Reserved.</p>
-          <div className="flex gap-4">
-              <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
-              <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
+        {/* Bottom Legal Bar */}
+        <div className="mt-20 pt-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6">
+          <p className="text-xs font-semibold text-gray-400">
+            © {new Date().getFullYear()} Designhunt. All rights reserved.
+          </p>
+          <div className="flex items-center gap-6 text-xs font-bold text-gray-500">
+            <Link href="/privacy" className="hover:text-black transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-black transition-colors">Terms of Service</Link>
+            <Link href="/cookies" className="hover:text-black transition-colors">Cookies Settings</Link>
           </div>
         </div>
-      </div>
-      
-      {/* Decorative Bottom Edge Shapes */}
-      <div className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none flex justify-between items-end overflow-hidden opacity-90 select-none">
-         {/* Purple Shape */}
-         <div className="w-24 md:w-32 h-20 bg-[#C084FC] rounded-t-full translate-y-8 -translate-x-8 md:-translate-x-4 mix-blend-screen"></div>
-         {/* Pink Starburst Shape - Hidden on very small screens */}
-         <div className="hidden sm:block w-24 h-24 bg-[#F472B6] rotate-45 translate-y-12 mix-blend-screen transform origin-bottom border-4 border-black"></div>
-         {/* Blue Abstract */}
-         <div className="w-32 md:w-40 h-24 bg-[#3B82F6] rounded-tl-[100px] translate-y-10 mix-blend-screen"></div>
-         {/* Green Circle */}
-         <div className="hidden md:block w-28 h-28 bg-[#4ADE80] rounded-full translate-y-16 translate-x-8 mix-blend-screen"></div>
       </div>
     </footer>
   );

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Edu_SA_Beginner, Inter, Black_Han_Sans, Plus_Jakarta_Sans } from "next/font/google";
+import { Geist, Geist_Mono, Edu_SA_Beginner, Inter, Black_Han_Sans, Plus_Jakarta_Sans, Figtree, Bungee } from "next/font/google";
 import { ClientLayout } from "@/components/layout/ClientLayout";
 
 import { AuthProvider } from "@/components/providers/auth-provider";
@@ -39,8 +39,19 @@ const blackHanSans = Black_Han_Sans({
   subsets: ["latin"],
 });
 
+const figtree = Figtree({
+  variable: "--font-figtree",
+  subsets: ["latin"],
+});
+
+const bungee = Bungee({
+  weight: "400",
+  variable: "--font-bungee",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
-  title: "Design-Hunt | Master UI/UX Design",
+  title: "Designhunt. - Design learning platform",
   description: "Interactive learning platform for modern designers. Master theory, tools, and challenges with AI feedback.",
 };
 
@@ -54,12 +65,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-          className={`${geistSans.variable} ${geistMono.variable} ${eduSA.variable} ${inter.variable} ${blackHanSans.variable} ${plusJakartaSans.variable} antialiased min-h-screen flex flex-col bg-background text-foreground`}
+          className={`${geistSans.variable} ${geistMono.variable} ${eduSA.variable} ${inter.variable} ${blackHanSans.variable} ${plusJakartaSans.variable} ${figtree.variable} ${bungee.variable} antialiased min-h-screen flex flex-col bg-background text-foreground`}
         >
         <AuthProvider>
           <GoogleTranslate />
           <SystemGuard>
-            <SystemBanner />
             <ClientLayout>
               {children}
             </ClientLayout>

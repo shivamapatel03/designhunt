@@ -27,10 +27,36 @@ export function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <section className="relative bg-white py-16 md:py-20 text-black">
-      <div className="container mx-auto px-6 md:px-16 lg:px-24">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-12">
+    <section className="relative bg-white py-16 md:py-20 text-black overflow-hidden">
+      <div className="container mx-auto px-6 md:px-16 lg:px-24 relative">
+        <div className="max-w-3xl mx-auto relative">
+          {/* Decorative Side Shapes - Static */}
+          <img 
+            src="/bg/e1.png" 
+            alt="" 
+            className="absolute -left-12 md:-left-24 top-0 w-12 h-12 md:w-16 md:h-16 opacity-20 pointer-events-none"
+          />
+          <img 
+            src="/bg/e2.png" 
+            alt="" 
+            className="absolute -right-12 md:-right-24 top-20 w-10 h-10 md:w-14 md:h-14 opacity-15 pointer-events-none"
+          />
+          <img 
+            src="/bg/e3.png" 
+            alt="" 
+            className="absolute -left-16 md:-left-32 bottom-20 w-14 h-14 md:w-20 md:h-20 opacity-20 pointer-events-none"
+          />
+          <img 
+            src="/bg/e1.png" 
+            alt="" 
+            className="absolute -right-16 md:-right-28 bottom-0 w-12 h-12 md:w-16 md:h-16 opacity-15 pointer-events-none"
+          />
+
+          <div className="text-center mb-12 relative">
+             {/* Small shapes around heading */}
+             <img src="/bg/e2.png" alt="" className="absolute -top-6 left-1/4 w-6 h-6 opacity-20" />
+             <img src="/bg/e3.png" alt="" className="absolute -bottom-4 right-1/4 w-5 h-5 opacity-20" />
+             
              <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight text-gray-900">Frequently Asked Questions</h2>
              <p className="text-lg text-gray-600">Everything you need to know about our platform and theoretical knowledge.</p>
           </div>
@@ -39,7 +65,7 @@ export function FAQSection() {
             {FAQS.map((faq, index) => (
               <div 
                 key={index}
-                className="bg-white border border-gray-200 rounded-2xl overflow-hidden transition-all shadow-sm"
+                className="bg-white border border-gray-200 rounded-2xl overflow-hidden transition-all shadow-sm hover:shadow-md hover:border-gray-300"
               >
                 <button
                   onClick={() => setOpenIndex(openIndex === index ? null : index)}
@@ -70,5 +96,6 @@ export function FAQSection() {
         </div>
       </div>
     </section>
+
   );
 }

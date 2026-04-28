@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import db from '@/lib/db';
 import { SignJWT } from 'jose';
+import { sendWelcomeEmail, sendWelcomeBackEmail } from '@/lib/email';
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'default-secret-key-change-me');
 
@@ -52,6 +53,12 @@ export async function GET(req: NextRequest) {
       const insert = db.prepare('INSERT INTO users (id, email, name, role) VALUES (?, ?, ?, ?)');
       insert.run(userId, googleUser.email, googleUser.name, 'USER');
       user = { id: userId, email: googleUser.email, role: 'USER', name: googleUser.name };
+      
+      // Send Welcome email asynchronously
+      sendWelcomeEmail(user.email, user.name).catch(console.error);
+    } else {
+      // Send Welcome Back email asynchronously
+      sendWelcomeBackEmail(user.email, user.name).catch(console.error);
     }
 
     // Create session

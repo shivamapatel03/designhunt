@@ -79,6 +79,34 @@ try {
 
   try {
     db.prepare(
+      "ALTER TABLE users ADD COLUMN topics_to_learn TEXT DEFAULT '[]'",
+    ).run();
+    console.log("Migration: Added topics_to_learn column to users");
+  } catch (e) {}
+
+  try {
+    db.prepare(
+      "ALTER TABLE users ADD COLUMN skill_level TEXT",
+    ).run();
+    console.log("Migration: Added skill_level column to users");
+  } catch (e) {}
+
+  try {
+    db.prepare(
+      "ALTER TABLE users ADD COLUMN daily_goal TEXT",
+    ).run();
+    console.log("Migration: Added daily_goal column to users");
+  } catch (e) {}
+
+  try {
+    db.prepare(
+      "ALTER TABLE users ADD COLUMN motivation TEXT",
+    ).run();
+    console.log("Migration: Added motivation column to users");
+  } catch (e) {}
+
+  try {
+    db.prepare(
       "ALTER TABLE transactions ADD COLUMN razorpay_order_id TEXT",
     ).run();
   } catch (e) {}
@@ -479,6 +507,13 @@ try {
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (section_id) REFERENCES learning_sections(id),
     UNIQUE(user_id, section_id)
+  );
+
+  CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+    id TEXT PRIMARY KEY,
+    email TEXT UNIQUE NOT NULL,
+    status TEXT DEFAULT 'SUBSCRIBED', -- SUBSCRIBED, UNSUBSCRIBED
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
   `);
 

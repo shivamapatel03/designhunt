@@ -29,7 +29,11 @@ client.on("ready", () => {
 
 client.on("error", (err) => {
   isRedisConnected = false;
-  console.error("Redis Client Error:", err.message);
+  if (err.code === 'ECONNREFUSED') {
+    // Only log once or keep it minimal
+  } else {
+    console.warn("Redis Notice:", err.message);
+  }
 });
 
 client.on("end", () => {

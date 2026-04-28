@@ -2,37 +2,36 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { 
-  ShieldCheck, 
-  UserCheck, 
-  XCircle, 
-  ExternalLink, 
-  Mail, 
-  Briefcase,
-  Search,
-  Check,
-  MoreVertical,
-  Globe,
-  Monitor,
-  CheckCircle2,
-  Users,
-  Shield,
-  Trash2,
-  BarChart,
-  Video,
-  DollarSign,
-  Settings,
-  Plus,
-  Play,
-  Save,
-  Edit2,
-  RefreshCw,
-  ShieldAlert,
-  Copy,
-  Trophy,
-  Lightbulb,
-  Bell
-} from "lucide-react";
+  SecurityCheckIcon, 
+  UserCheck01Icon, 
+  CancelCircleIcon, 
+  Link01Icon, 
+  Mail01Icon, 
+  Briefcase01Icon,
+  Search01Icon,
+  Tick01Icon,
+  MoreVerticalCircle01Icon,
+  ComputerIcon,
+  CheckmarkCircle01Icon,
+  UserGroupIcon,
+  SecurityIcon,
+  Delete02Icon,
+  Analytics01Icon,
+  Dollar01Icon,
+  Settings01Icon,
+  Add01Icon,
+  PlayIcon,
+  SaveIcon,
+  Edit01Icon,
+  Refresh01Icon,
+  SecurityWarningIcon,
+  Copy01Icon,
+  Award01Icon,
+  Idea01Icon,
+  Notification01Icon
+} from "@hugeicons/core-free-icons";
 import { IdeasManager } from "@/components/super-admin/IdeasManager";
 import { ExpertReviewsManager } from "@/components/super-admin/ExpertReviewsManager";
 
@@ -53,20 +52,22 @@ import { ChallengesManager } from "@/components/super-admin/ChallengesManager";
 import { useAuth } from "@/components/providers/auth-provider";
 import Link from "next/link";
 
-const ALLOWED_EMAIL = "shivampatel2330@gmail.com";
+const ALLOWED_EMAILS = ["shivampatel2330@gmail.com", "shivamsenton@gmail.com"];
 
 export default function SuperAdminPage() {
   const { user, loading } = useAuth();
-  const [activeTab, setActiveTab] = useState<'stats' | 'audit' | 'settings' | 'financials' | 'challenges' | 'ideas' | 'reviews'>('stats');
+  const [activeTab, setActiveTab] = useState<'stats' | 'audit' | 'settings' | 'financials' | 'challenges' | 'ideas' | 'reviews' | 'admins'>('stats');
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [admins, setAdmins] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [financials, setFinancials] = useState<any>({ totalRevenue: 0, mrr: 0, activeSubscriptions: 0, recentTransactions: [] });
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
       activeUsers: 0,
-      totalTrainers: 0,
+      activeAdmins: 0,
       pendingVerifications: 0,
-      ideaCount: 0
+      totalAdmins: 0
   });
 
   const handleBackup = async () => {
@@ -98,8 +99,16 @@ export default function SuperAdminPage() {
   const [showCreateAdmin, setShowCreateAdmin] = useState(false);
 
   useEffect(() => {
-    fetchInitialData();
-  }, [activeTab]);
+    if (!loading && (!user || user.role !== 'SUPER_ADMIN' || !ALLOWED_EMAILS.includes(user.email || ''))) {
+      window.location.href = '/';
+    }
+  }, [user, loading]);
+
+  useEffect(() => {
+    if (user && ALLOWED_EMAILS.includes(user.email || '')) {
+      fetchInitialData();
+    }
+  }, [activeTab, user]);
 
   const fetchInitialData = async () => {
     setIsLoading(true);
@@ -117,6 +126,10 @@ export default function SuperAdminPage() {
             const res = await fetch("/api/admin/settings");
             const data = await res.json();
             setSettings(data);
+        } else if (activeTab === 'admins') {
+            const res = await fetch("/api/admin/admins");
+            const data = await res.json();
+            setAdmins(data.admins || []);
         } 
         /* else if (activeTab === 'financials') {
             const res = await fetch("/api/admin/financials");
@@ -125,7 +138,7 @@ export default function SuperAdminPage() {
         } */
         
         const systemStats = await getSystemStats();
-        setStats({ ...systemStats, ideaCount: count });
+        setStats({ ...systemStats });
     } catch (err) {
         console.error(err);
     } finally {
@@ -152,21 +165,20 @@ export default function SuperAdminPage() {
 
 
 
-  const handleCreateAdmin = async (e: React.FormEvent) => {
+  const handleInviteAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-        const res = await fetch("/api/admin/create-admin", {
+        const res = await fetch("/api/admin/invite-admin", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(newAdmin),
         });
         const data = await res.json();
         if (res.ok) {
-            setCreatedAdminPass(data.password);
             setNewAdmin({ email: "", name: "" });
             setShowCreateAdmin(false);
-            alert(`Admin Created! Temporary Password: ${data.password}`);
-            fetchInitialData(); // Refresh list
+            fetchInitialData();
+            alert(`Admin record created! Now use the 'Send Activation' button to send them the OTP.`);
         } else {
             alert(data.error || "Failed to create admin");
         }
@@ -175,39 +187,73 @@ export default function SuperAdminPage() {
     }
   };
 
+  const handleDeleteAdmin = async (id: string) => {
+      if (!confirm("Are you sure you want to delete this admin account? This action cannot be undone.")) return;
+      try {
+          const res = await fetch(`/api/admin/admins/${id}`, { method: 'DELETE' });
+          if (res.ok) {
+              fetchInitialData();
+          } else {
+              const data = await res.json();
+              alert(data.error || "Failed to delete admin");
+          }
+      } catch (err) {
+          alert("Error deleting admin");
+      }
+  };
+
+  const handleSendActivation = async (email: string) => {
+      try {
+          const res = await fetch("/api/auth/resend-otp", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email, type: 'admin' }),
+          });
+          if (res.ok) {
+              alert("Activation OTP sent to admin email!");
+          } else {
+              const data = await res.json();
+              alert(data.error || "Failed to send OTP");
+          }
+      } catch (err) {
+          alert("Error sending activation");
+      }
+  };
+
   return (
-    <div className="container mx-auto px-4 pt-6 pb-12">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-[#fafafa] font-sans selection:bg-black selection:text-white pt-8 pb-12">
+      <div className="max-w-5xl mx-auto px-4">
         
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
           <div>
-            <div className="flex items-center gap-2 mb-2">
-                <ShieldCheck className="w-8 h-8 text-accent-blue" />
-                <h1 className="text-4xl font-black uppercase tracking-tighter">Master Hub</h1>
+            <div className="flex items-center gap-2 mb-1">
+                <HugeiconsIcon icon={SecurityCheckIcon} className="w-5 h-5 text-black" />
+                <h1 className="text-xl font-bold tracking-tight text-black">Master Hub</h1>
             </div>
-            <p className="text-gray-500 font-bold uppercase text-sm tracking-widest italic">Global Platform Administrator</p>
+            <p className="text-[11px] font-bold text-gray-400">Global Platform Administrator</p>
           </div>
 
           <div className="flex flex-wrap items-center gap-4">
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5 p-1 bg-gray-100 rounded-xl">
             {[
-                // { id: 'financials', label: 'Financials', icon: DollarSign },
-                { id: 'audit', label: 'Audit Logs', icon: Copy },
-                { id: 'settings', label: 'Settings', icon: Settings },
-                { id: 'ideas', label: 'Notifications', icon: Bell },
-                { id: 'challenges', label: 'Challenges', icon: Trophy },
-                { id: 'reviews', label: 'Reviews', icon: Edit2 },
-                { id: 'stats', label: 'System', icon: BarChart }
+                // { id: 'financials', label: 'Financials', icon: Dollar01Icon },
+                { id: 'audit', label: 'Audit Logs', icon: Copy01Icon },
+                { id: 'settings', label: 'Settings', icon: Settings01Icon },
+                { id: 'ideas', label: 'Notifications', icon: Notification01Icon },
+                { id: 'challenges', label: 'Challenges', icon: Award01Icon },
+                { id: 'reviews', label: 'Reviews', icon: Edit01Icon },
+                { id: 'admins', label: 'Admins', icon: UserGroupIcon },
+                { id: 'stats', label: 'System', icon: Analytics01Icon }
             ].map((tab) => (
                 <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`flex items-center gap-2 px-6 py-2 rounded-xl font-black text-xs uppercase transition-all border-2 border-black ${
-                        activeTab === tab.id ? 'bg-black text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]' : 'bg-white text-black hover:bg-gray-50'
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-[11px] transition-all ${
+                        activeTab === tab.id ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-black hover:bg-white/50'
                     }`}
                 >
-                    <tab.icon className="w-4 h-4" />
+                    <HugeiconsIcon icon={tab.icon} className="w-3.5 h-3.5" />
                     {tab.label}
                 </button>
             ))}
@@ -215,9 +261,9 @@ export default function SuperAdminPage() {
             
             <button
                 onClick={() => window.location.href = '/api/auth/logout'}
-                className="flex items-center gap-2 px-6 py-2 rounded-xl font-black text-xs uppercase transition-all bg-red-50 text-red-600 hover:bg-red-100 border-2 border-transparent hover:border-red-200 ml-2"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-[11px] transition-all bg-red-50 text-red-600 hover:bg-red-100"
             >
-                <XCircle className="w-4 h-4" />
+                <HugeiconsIcon icon={CancelCircleIcon} className="w-4 h-4" />
                 Logout
             </button>
           </div>
@@ -225,17 +271,17 @@ export default function SuperAdminPage() {
 
         {/* Create Admin Modal/Section */}
         {showCreateAdmin && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                <div className="bg-white p-8 rounded-3xl border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-w-md w-full">
-                    <h2 className="text-2xl font-black uppercase mb-6">Create New Admin</h2>
-                    <form onSubmit={handleCreateAdmin} className="space-y-4">
+            <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                <div className="bg-white p-6 rounded-2xl shadow-xl max-w-md w-full border border-gray-100">
+                    <h2 className="text-lg font-bold mb-4">Invite New Admin</h2>
+                    <form onSubmit={handleInviteAdmin} className="space-y-4">
                         <div>
                             <label className="block text-xs font-bold uppercase mb-2">Full Name</label>
                             <input 
                                 type="text"
                                 value={newAdmin.name}
                                 onChange={e => setNewAdmin({...newAdmin, name: e.target.value})}
-                                className="w-full px-4 py-3 rounded-xl border-2 border-black font-medium text-sm focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
+                                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl font-medium text-sm focus:outline-none focus:border-gray-300 focus:bg-white transition-all text-black placeholder:text-gray-400"
                                 placeholder="e.g. John Doe"
                                 required
                             />
@@ -246,16 +292,16 @@ export default function SuperAdminPage() {
                                 type="email"
                                 value={newAdmin.email}
                                 onChange={e => setNewAdmin({...newAdmin, email: e.target.value})}
-                                className="w-full px-4 py-3 rounded-xl border-2 border-black font-medium text-sm focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
+                                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl font-medium text-sm focus:outline-none focus:border-gray-300 focus:bg-white transition-all text-black placeholder:text-gray-400"
                                 placeholder="name@company.com"
                                 required
                             />
                         </div>
                         <div className="flex gap-4 pt-4">
-                            <button type="button" onClick={() => setShowCreateAdmin(false)} className="flex-1 px-6 py-3 rounded-xl border-2 border-black font-bold uppercase hover:bg-gray-100 transition-all">
+                            <button type="button" onClick={() => setShowCreateAdmin(false)} className="flex-1 py-2.5 rounded-xl border border-gray-200 font-bold text-sm text-gray-600 hover:bg-gray-50 transition-all">
                                 Cancel
                             </button>
-                            <button type="submit" className="flex-1 px-6 py-3 rounded-xl bg-black text-white border-2 border-black font-bold uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all">
+                            <button type="submit" className="flex-1 py-2.5 rounded-xl bg-black text-white font-bold text-sm hover:bg-gray-900 transition-all">
                                 Create
                             </button>
                         </div>
@@ -266,13 +312,13 @@ export default function SuperAdminPage() {
 
         {/* Created Admin Success */}
         {createdAdminPass && (
-             <div className="mb-8 bg-green-100 border-2 border-green-500 text-green-800 p-6 rounded-2xl flex items-center justify-between">
+             <div className="mb-8 bg-green-50 border border-green-100 text-green-800 p-4 rounded-2xl flex items-center justify-between">
                 <div>
-                    <h3 className="font-black uppercase mb-1">Admin Created Successfully</h3>
-                    <p className="text-sm font-medium">Use this temporary password: <span className="font-mono bg-white px-2 py-1 rounded border border-green-300 select-all">{createdAdminPass}</span></p>
+                    <h3 className="font-bold text-sm mb-1 text-green-900">Admin Created Successfully</h3>
+                    <p className="text-xs font-medium text-green-700">Use this temporary password: <span className="font-mono bg-white px-2 py-1 rounded border border-green-200 select-all">{createdAdminPass}</span></p>
                 </div>
                 <button onClick={() => setCreatedAdminPass("")} className="p-2 hover:bg-green-200 rounded-lg">
-                    <XCircle className="w-5 h-5" />
+                    <HugeiconsIcon icon={CancelCircleIcon} className="w-5 h-5" />
                 </button>
              </div>
         )}
@@ -342,15 +388,18 @@ export default function SuperAdminPage() {
         {/* Audit Tab */}
         {activeTab === 'audit' && (
             <div className="space-y-6">
-                <h2 className="text-2xl font-black uppercase italic mb-6">Security Audit Logs</h2>
-                <div className="bg-white border-4 border-black rounded-[32px] overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                <div className="mb-4">
+                    <h2 className="text-lg font-bold text-black">Security Audit Logs</h2>
+                    <p className="text-[11px] font-bold text-gray-400 mt-1">Monitor administrator activity across the platform</p>
+                </div>
+                <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
                     <table className="w-full">
-                        <thead className="bg-black text-white">
+                        <thead className="bg-gray-50 border-b border-gray-100">
                             <tr>
-                                <th className="py-4 px-6 text-left font-black uppercase text-xs tracking-wider">Time</th>
-                                <th className="py-4 px-6 text-left font-black uppercase text-xs tracking-wider">Admin</th>
-                                <th className="py-4 px-6 text-left font-black uppercase text-xs tracking-wider">Action</th>
-                                <th className="py-4 px-6 text-left font-black uppercase text-xs tracking-wider">Details</th>
+                                <th className="py-3 px-6 text-left font-bold uppercase text-[10px] tracking-wider text-gray-500">Time</th>
+                                <th className="py-3 px-6 text-left font-bold uppercase text-[10px] tracking-wider text-gray-500">Admin</th>
+                                <th className="py-3 px-6 text-left font-bold uppercase text-[10px] tracking-wider text-gray-500">Action</th>
+                                <th className="py-3 px-6 text-left font-bold uppercase text-[10px] tracking-wider text-gray-500">Details</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
@@ -363,7 +412,7 @@ export default function SuperAdminPage() {
                                         {log.admin_name || log.admin_email || 'Unknown'}
                                     </td>
                                     <td className="py-4 px-6">
-                                        <span className={`px-2 py-1 rounded-lg text-xs font-black uppercase ${
+                                        <span className={`px-2 py-1 rounded-md text-[9px] font-bold tracking-wide uppercase ${
                                             log.action.includes('DELETE') ? 'bg-red-100 text-red-700' : 
                                             log.action.includes('CREATE') ? 'bg-green-100 text-green-700' : 
                                             'bg-gray-100 text-gray-700'
@@ -390,18 +439,21 @@ export default function SuperAdminPage() {
         {/* Settings Tab */}
         {activeTab === 'settings' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="bg-white p-8 rounded-[32px] border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-                    <div className="flex items-center gap-4 mb-6">
-                        <div className="p-3 bg-red-100 rounded-xl border-2 border-black">
-                             <ShieldAlert className="w-6 h-6 text-red-600" />
+                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="p-2 bg-red-50 rounded-lg text-red-600 border border-red-100">
+                             <HugeiconsIcon icon={SecurityWarningIcon} className="w-5 h-5" />
                         </div>
-                        <h2 className="text-xl font-black uppercase">Platform Controls</h2>
+                        <div>
+                            <h2 className="text-sm font-bold text-black">Platform Controls</h2>
+                            <p className="text-[10px] font-bold text-gray-400 mt-0.5">Manage system-wide features</p>
+                        </div>
                     </div>
                     
                     <div className="space-y-6">
-                        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border-2 border-gray-100">
+                        <div className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-100 shadow-sm mb-3">
                             <div>
-                                <h3 className="font-bold uppercase text-sm">Maintenance Mode</h3>
+                                <h3 className="font-bold text-xs text-black">Maintenance Mode</h3>
                                 <p className="text-xs text-gray-500 mt-1">Suspend all user access temporarily</p>
                             </div>
                             <label className="relative inline-flex items-center cursor-pointer">
@@ -416,20 +468,20 @@ export default function SuperAdminPage() {
                         </div>
                         
                         {settings['MAINTENANCE_MODE'] === 'true' && (
-                            <div className="p-4 bg-yellow-50 rounded-xl border-2 border-yellow-200">
-                                <label className="block text-xs font-bold uppercase mb-2 text-yellow-800">Maintenance End Time</label>
+                            <div className="p-4 bg-yellow-50/50 rounded-xl border border-yellow-100 mb-3 ml-4">
+                                <label className="block text-[10px] font-bold text-yellow-800 mb-1">Maintenance End Time</label>
                                 <input 
                                     type="datetime-local"
                                     value={settings['MAINTENANCE_END_TIME'] || ''}
                                     onChange={(e) => updateSystemSetting('MAINTENANCE_END_TIME', e.target.value)}
-                                    className="w-full px-4 py-2 rounded-lg border-2 border-yellow-300 bg-white font-mono text-sm"
+                                    className="w-full px-3 py-2 rounded-lg border border-yellow-200 bg-white font-medium text-xs text-black focus:outline-none focus:border-yellow-400"
                                 />
                             </div>
                         )}
                         
-                        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border-2 border-gray-100">
+                        <div className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-100 shadow-sm mb-3">
                             <div>
-                                <h3 className="font-bold uppercase text-sm">Disable Registrations</h3>
+                                <h3 className="font-bold text-xs text-black">Disable Registrations</h3>
                                 <p className="text-xs text-gray-500 mt-1">Stop new users from signing up</p>
                             </div>
                             <label className="relative inline-flex items-center cursor-pointer">
@@ -443,9 +495,9 @@ export default function SuperAdminPage() {
                             </label>
                         </div>
 
-                        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border-2 border-gray-100">
+                        <div className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-100 shadow-sm mb-3">
                             <div>
-                                <h3 className="font-bold uppercase text-sm">Daily Challenges</h3>
+                                <h3 className="font-bold text-xs text-black">Daily Challenges</h3>
                                 <p className="text-xs text-gray-500 mt-1">Enable daily design challenges on Home</p>
                             </div>
                             <label className="relative inline-flex items-center cursor-pointer">
@@ -460,9 +512,9 @@ export default function SuperAdminPage() {
                         </div>
 
 
-                        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border-2 border-gray-100">
+                        <div className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-100 shadow-sm mb-3">
                             <div>
-                                <h3 className="font-bold uppercase text-sm">Course Marketplace</h3>
+                                <h3 className="font-bold text-xs text-black">Course Marketplace</h3>
                                 <p className="text-xs text-gray-500 mt-1">Enable public course catalog</p>
                             </div>
                             <label className="relative inline-flex items-center cursor-pointer">
@@ -478,30 +530,33 @@ export default function SuperAdminPage() {
                     </div>
                 </div>
 
-                <div className="bg-white p-8 rounded-[32px] border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-                    <div className="flex items-center gap-4 mb-6">
-                        <div className="p-3 bg-blue-100 rounded-xl border-2 border-black">
-                             <Monitor className="w-6 h-6 text-blue-600" />
+                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="p-2 bg-blue-50 rounded-lg text-blue-600 border border-blue-100">
+                             <HugeiconsIcon icon={ComputerIcon} className="w-5 h-5" />
                         </div>
-                        <h2 className="text-xl font-black uppercase">System Banner</h2>
+                        <div>
+                            <h2 className="text-sm font-bold text-black">System Banner</h2>
+                            <p className="text-[10px] font-bold text-gray-400 mt-0.5">Top announcement bar</p>
+                        </div>
                     </div>
                     
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-xs font-bold uppercase mb-2">Banner Message</label>
+                            <label className="block text-[10px] font-bold text-gray-700 mb-1">Banner Message</label>
                             <textarea
                                 value={settings['BANNER_MESSAGE'] || ''}
                                 onChange={(e) => setSettings({...settings, 'BANNER_MESSAGE': e.target.value})}
                                 onBlur={(e) => updateSystemSetting('BANNER_MESSAGE', e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border-2 border-black font-medium text-sm focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all min-h-[100px]"
+                                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl font-medium text-sm focus:outline-none focus:border-gray-300 focus:bg-white transition-all min-h-[100px] text-black placeholder:text-gray-400"
                                 placeholder="Enter a global announcement..."
                             ></textarea>
                             <p className="text-xs text-gray-400 mt-2 text-right">Auto-saves on blur</p>
                         </div>
                         
-                        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border-2 border-gray-100">
+                        <div className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-100 shadow-sm mb-3">
                             <div>
-                                <h3 className="font-bold uppercase text-sm">Show Banner</h3>
+                                <h3 className="font-bold text-xs text-black">Show Banner</h3>
                                 <p className="text-xs text-gray-500 mt-1">Display this message on all pages</p>
                             </div>
                             <label className="relative inline-flex items-center cursor-pointer">
@@ -532,56 +587,154 @@ export default function SuperAdminPage() {
             <ExpertReviewsManager isAdmin={true} />
         )}
 
+        {activeTab === 'admins' && (
+            <div className="space-y-6">
+                <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div className="relative w-full md:w-96">
+                        <HugeiconsIcon icon={Search01Icon} className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <input 
+                            type="text"
+                            placeholder="Search by name or email..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-11 pr-4 py-3 bg-white border border-gray-100 rounded-2xl text-xs font-bold focus:outline-none focus:border-gray-200 transition-all shadow-sm"
+                        />
+                    </div>
+                    <button 
+                        onClick={() => setShowCreateAdmin(true)}
+                        className="w-full md:w-auto px-6 py-3 bg-black text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+                    >
+                        <HugeiconsIcon icon={Add01Icon} className="w-4 h-4" />
+                        Invite Admin
+                    </button>
+                </div>
+
+                <div className="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm">
+                    <table className="w-full">
+                        <thead className="bg-gray-50/50">
+                            <tr>
+                                <th className="px-6 py-4 text-left text-[10px] font-black uppercase text-gray-400 tracking-widest">Administrator</th>
+                                <th className="px-6 py-4 text-left text-[10px] font-black uppercase text-gray-400 tracking-widest">Role</th>
+                                <th className="px-6 py-4 text-left text-[10px] font-black uppercase text-gray-400 tracking-widest">Status</th>
+                                <th className="px-6 py-4 text-left text-[10px] font-black uppercase text-gray-400 tracking-widest">Created At</th>
+                                <th className="px-6 py-4 text-right text-[10px] font-black uppercase text-gray-400 tracking-widest">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50">
+                            {admins
+                                .filter(a => a.email.toLowerCase().includes(searchQuery.toLowerCase()) || a.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                                .map((admin) => (
+                                <tr key={admin.id} className="group hover:bg-gray-50/30 transition-colors">
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 bg-black/5 rounded-full flex items-center justify-center font-bold text-[10px]">
+                                                {admin.name.charAt(0)}
+                                            </div>
+                                            <div>
+                                                <div className="text-[12px] font-bold text-black">{admin.name}</div>
+                                                <div className="text-[10px] font-medium text-gray-400">{admin.email}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-tighter ${
+                                            admin.role === 'SUPER_ADMIN' ? 'bg-indigo-50 text-indigo-600' : 'bg-gray-100 text-gray-600'
+                                        }`}>
+                                            {admin.role.replace('_', ' ')}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-tighter ${
+                                            admin.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
+                                        }`}>
+                                            {admin.status}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 text-[11px] font-medium text-gray-400">
+                                        {new Date(admin.created_at).toLocaleDateString()}
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center justify-end gap-2">
+                                            {admin.status === 'PENDING' && (
+                                                <button 
+                                                    onClick={() => {
+                                                        if (confirm(`Send activation link to ${admin.email}?`)) {
+                                                            handleSendActivation(admin.email);
+                                                        }
+                                                    }}
+                                                    className="p-2 hover:bg-emerald-50 text-gray-400 hover:text-emerald-600 rounded-lg transition-all"
+                                                    title="Send Activation OTP"
+                                                >
+                                                    <HugeiconsIcon icon={Mail01Icon} className="w-4 h-4" />
+                                                </button>
+                                            )}
+                                            {admin.id !== user?.id && (
+                                                <button 
+                                                    onClick={() => handleDeleteAdmin(admin.id)}
+                                                    className="p-2 hover:bg-red-50 text-gray-400 hover:text-red-600 rounded-lg transition-all"
+                                                    title="Delete Admin"
+                                                >
+                                                    <HugeiconsIcon icon={Delete02Icon} className="w-4 h-4" />
+                                                </button>
+                                            )}
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        )}
+
         {/* System Health */}
         {activeTab === 'stats' && (
             <div className="space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <StatCard label="Active Users" value={stats.activeUsers.toString()} color="border-accent-blue" />
-                    <StatCard label="Instructors" value={stats.totalTrainers.toString()} color="border-accent-pink" />
-                    <StatCard label="Verifications" value={stats.pendingVerifications.toString()} color="border-accent-yellow" />
-                    <div className="cursor-pointer" onClick={() => setActiveTab('ideas')}>
-                        <StatCard label="Idea Submissions" value={stats.ideaCount.toString()} color="border-accent-yellow" />
-                    </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <StatCard label="Active Users" value={stats.activeUsers.toString()} color="border-blue-500" />
+                    <StatCard label="Active Admin" value={stats.activeAdmins.toString()} color="border-purple-500" />
+                    <StatCard label="Verifications" value={stats.pendingVerifications.toString()} color="border-amber-400" />
+                    <StatCard label="Total Admin" value={stats.totalAdmins.toString()} color="border-emerald-500" />
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* System Tools Card */}
-                    <div className="col-span-1 lg:col-span-2 bg-white p-8 rounded-[32px] border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex flex-wrap gap-4 items-center justify-between">
+                    <div className="col-span-1 lg:col-span-2 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-wrap gap-4 items-center justify-between">
                         <div>
-                            <h2 className="text-xl font-black uppercase">System Tools</h2>
-                            <p className="text-sm text-gray-500 font-medium">Critical maintenance operations</p>
+                            <h2 className="text-sm font-bold text-black">System Tools</h2>
+                            <p className="text-[11px] font-bold text-gray-400 mt-0.5">Critical maintenance operations</p>
                         </div>
-                        <div className="flex gap-4">
+                        <div className="flex gap-3">
                             <button 
                                 onClick={handleBackup}
-                                className="flex items-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-black rounded-xl border-2 border-black font-bold uppercase transition-all"
+                                className="flex items-center gap-2 px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-xl border border-gray-200 font-bold text-xs transition-all"
                             >
-                                <Save className="w-4 h-4" />
-                                Backup Database
+                                <HugeiconsIcon icon={SaveIcon} className="w-3.5 h-3.5" />
+                                Backup DB
                             </button>
                             <button 
                                 onClick={handleClearCache}
-                                className="flex items-center gap-2 px-6 py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl border-2 border-red-200 font-bold uppercase transition-all"
+                                className="flex items-center gap-2 px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl border border-red-100 font-bold text-xs transition-all"
                             >
-                                <RefreshCw className="w-4 h-4" />
+                                <HugeiconsIcon icon={Refresh01Icon} className="w-3.5 h-3.5" />
                                 Clear Cache
                             </button>
                         </div>
                     </div>
 
-                    <div className="bg-black text-white p-12 rounded-[48px] border-4 border-black shadow-[12px_12px_0px_0px_rgba(255,255,255,0.1)]">
-                        <h2 className="text-2xl font-black uppercase italic mb-8">System Health</h2>
-                        <div className="space-y-6">
-                            <StatRow label="Database Connection" status="ACTIVE" color="text-green-400" />
-                            <StatRow label="Email Service" status="READY" color="text-green-400" />
-                            <StatRow label="OTP Infrastructure" status="OPERATIONAL" color="text-green-400" />
-                            <StatRow label="Cdn Latency" status="14ms" color="text-accent-blue" />
+                    <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
+                        <h2 className="text-sm font-bold text-black mb-6">System Health</h2>
+                        <div className="space-y-4">
+                            <StatRow label="Database" status="ACTIVE" color="text-green-500" bg="bg-green-50" />
+                            <StatRow label="Email Service" status="READY" color="text-green-500" bg="bg-green-50" />
+                            <StatRow label="Authentication" status="OPERATIONAL" color="text-green-500" bg="bg-green-50" />
+                            <StatRow label="CDN Latency" status="14ms" color="text-blue-500" bg="bg-blue-50" />
                         </div>
                     </div>
                     
-                    <div className="bg-accent-yellow p-12 rounded-[48px] border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
-                        <h2 className="text-2xl font-black uppercase mb-8">Role Distribution</h2>
-                        <div className="space-y-4">
+                    <div className="bg-gray-50/50 p-8 rounded-3xl border border-gray-100">
+                        <h2 className="text-sm font-bold text-black mb-6">Role Distribution</h2>
+                        <div className="space-y-5">
                             <ProgressBar label="Students" percent={82} />
                             <ProgressBar label="Tutors" percent={12} />
                             <ProgressBar label="Staff" percent={6} />
@@ -597,31 +750,32 @@ export default function SuperAdminPage() {
 
 function StatCard({ label, value, color }: { label: string, value: string, color: string }) {
     return (
-        <div className={`p-8 bg-white border-2 border-black rounded-[32px] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-l-[16px] ${color}`}>
-            <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">{label}</h4>
-            <div className="text-5xl font-black tracking-tighter italic">{value}</div>
+        <div className={`p-6 bg-white border border-gray-100 rounded-2xl shadow-sm relative overflow-hidden`}>
+            <div className={`absolute top-0 left-0 w-1 h-full ${color.replace('border-', 'bg-')}`}></div>
+            <h4 className="text-[11px] font-bold text-gray-400 mb-1 ml-2">{label}</h4>
+            <div className="text-3xl font-bold tracking-tight text-black ml-2">{value}</div>
         </div>
     );
 }
 
-function StatRow({ label, status, color }: any) {
+function StatRow({ label, status, color, bg = '' }: any) {
     return (
-        <div className="flex justify-between items-center border-b border-white/10 pb-4">
-            <span className="font-bold text-sm uppercase tracking-widest text-gray-400">{label}</span>
-            <span className={`font-black text-sm uppercase ${color}`}>{status}</span>
+        <div className="flex justify-between items-center py-2.5 border-b border-gray-50 last:border-0">
+            <span className="font-bold text-[11px] text-gray-500">{label}</span>
+            <span className={`font-bold text-[10px] px-2 py-1 rounded-md ${color} ${bg}`}>{status}</span>
         </div>
     );
 }
 
 function ProgressBar({ label, percent }: any) {
     return (
-        <div className="space-y-2">
-            <div className="flex justify-between text-xs font-black uppercase">
+        <div className="space-y-1.5">
+            <div className="flex justify-between text-[11px] font-bold text-gray-600">
                 <span>{label}</span>
                 <span>{percent}%</span>
             </div>
-            <div className="h-4 bg-white border-2 border-black rounded-full overflow-hidden">
-                <div className="h-full bg-black" style={{ width: `${percent}%` }}></div>
+            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div className="h-full bg-black rounded-full" style={{ width: `${percent}%` }}></div>
             </div>
         </div>
     );

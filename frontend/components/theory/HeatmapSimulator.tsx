@@ -51,12 +51,12 @@ export function HeatmapSimulator() {
       <h3 className="text-2xl font-bold mb-6">Heatmap Simulator</h3>
       
       {/* Controls */}
-      <div className="flex gap-4 mb-8">
+      <div className="flex flex-wrap gap-2 sm:gap-4 mb-8">
         {(['F', 'Z', 'Single'] as const).map(p => (
             <button
                 key={p}
                 onClick={() => setActivePattern(p)}
-                className={`flex-1 py-3 px-4 rounded-lg border-2 font-bold transition-all ${
+                className={`flex-1 min-w-[100px] py-3 px-4 rounded-lg border-2 font-bold transition-all text-sm ${
                     activePattern === p 
                     ? "bg-black text-white border-black" 
                     : "bg-gray-50 text-gray-600 border-gray-200 hover:border-black"
@@ -99,9 +99,9 @@ export function HeatmapSimulator() {
                     <div className="w-12 h-12 bg-black rounded-full"></div>
                     <div className="w-32 h-10 bg-gray-400 rounded"></div>
                 </div>
-                <div className="self-center text-center">
-                    <div className="h-10 bg-gray-800 w-96 mx-auto mb-4"></div>
-                    <div className="h-4 bg-gray-300 w-64 mx-auto"></div>
+                <div className="self-center text-center w-full px-4">
+                    <div className="h-10 bg-gray-800 w-full max-w-[384px] mx-auto mb-4"></div>
+                    <div className="h-4 bg-gray-300 w-48 mx-auto"></div>
                 </div>
                  <div className="flex justify-between items-center">
                     <div className="w-full h-12 bg-gray-200 rounded"></div>

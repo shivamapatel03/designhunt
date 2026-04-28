@@ -18,6 +18,7 @@ import profileRoutes from "./routes/profile";
 import labsRoutes from "./routes/labs";
 import paymentRoutes from "./routes/payments";
 import learningRoutes from "./routes/learning";
+import newsletterRoutes from "./routes/newsletter";
 import db from "./db";
 
 dotenv.config();
@@ -48,10 +49,11 @@ app.use("/api/profile", profileRoutes);
 app.use("/api/labs", labsRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/learning", learningRoutes);
+app.use("/api/newsletter", newsletterRoutes);
 
 // Basic health check
 app.get("/", (req, res) => {
-  res.json({ message: "DesignHunt Backend is running" });
+  res.json({ message: "Designhunt. Backend is running" });
 });
 
 // Mock Upgrade Flow

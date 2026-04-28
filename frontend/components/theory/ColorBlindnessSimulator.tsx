@@ -64,7 +64,7 @@ export function ColorBlindnessSimulator() {
             className="w-full h-full bg-white p-8 flex flex-col items-center justify-center gap-6"
             style={{ filter: activeFilter !== 'normal' ? `url(#${activeFilter})` : 'none' }}
         >
-            <div className="flex gap-4">
+            <div className="flex flex-wrap justify-center gap-4">
                 <div className="w-24 h-24 rounded-full bg-red-500 flex items-center justify-center text-white font-bold">Error</div>
                 <div className="w-24 h-24 rounded-full bg-green-500 flex items-center justify-center text-white font-bold">Success</div>
                 <div className="w-24 h-24 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">Info</div>

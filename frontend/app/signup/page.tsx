@@ -1,18 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { Globe, ChevronDown, Eye, EyeOff } from "lucide-react";
+import { Globe, ChevronDown, Eye, EyeOff, Loader2 } from "lucide-react";
 
-export default function SignupPage() {
+function SignupForm() {
   const [formData, setFormData] = useState({ name: "", email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectPath = searchParams.get("redirect");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +31,7 @@ export default function SignupPage() {
 
       if (res.ok) {
         const data = await res.json();
-        router.push(data.redirect || "/");
+        router.push(redirectPath || data.redirect || "/");
       } else {
         const data = await res.json();
         setError(data.error || "Signup failed");
@@ -47,18 +49,24 @@ export default function SignupPage() {
       <div className="flex-1 flex flex-col items-center justify-center p-4 max-w-[340px] mx-auto w-full relative z-10">
         {/* Main Logo Branding */}
         <motion.div 
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, filter: "blur(8px)", y: 10 }}
+            animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-col items-center mb-6"
         >
+             <Link href="/" className="mb-4">
+               <div className="text-2xl font-bold tracking-tighter text-black font-plus-jakarta">
+                  Designhunt<span className="text-blue-500">.</span>
+               </div>
+             </Link>
              <h1 className="text-xl font-bold tracking-tight text-black">Create Account</h1>
         </motion.div>
 
         {/* Form Section */}
         <motion.form 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
+            initial={{ opacity: 0, filter: "blur(8px)", y: 10 }}
+            animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
             onSubmit={handleSubmit} 
             className="w-full space-y-2.5"
         >
@@ -159,7 +167,7 @@ export default function SignupPage() {
         {/* Google Signup */}
         <button 
           onClick={() => window.location.href = '/api/auth/google'}
-          className="w-full flex items-center justify-center py-2 bg-white border border-gray-200 rounded-xl font-bold text-sm hover:bg-gray-50 transition-all group"
+          className="w-full flex items-center justify-center py-2 bg-white border border-gray-200 border-b-2 border-b-gray-300 rounded-xl font-bold text-sm hover:bg-gray-50 active:border-b-0 active:translate-y-[2px] transition-all group"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -170,5 +178,13 @@ export default function SignupPage() {
         </button>
       </div>
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#fafafa]"><Loader2 className="w-6 h-6 animate-spin text-black" /></div>}>
+      <SignupForm />
+    </Suspense>
   );
 }

@@ -6,6 +6,7 @@ import {
   sendVerificationEmail,
   sendAdminLoginEmail,
   sendPasswordResetEmail,
+  sendAdminOnboardingEmail,
 } from "../lib/email";
 import { randomUUID } from "crypto";
 import { client as redis, isHealthy as isRedisHealthy } from "../lib/redis";
@@ -15,68 +16,7 @@ const OTP_EXPIRY_SECONDS = 600; // 10 minutes
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || "designhunt_secret_key_123";
 
-/**
- * Stores an OTP in Redis if healthy, otherwise falls back to SQLite.
- */
-async function storeOtp(email: string, otp: string, type: "signup" | "login" | "admin", hashed = false) {
-  const redisKey = `otp:${type}:${email}`;
-  const valueToStore = hashed ? await bcrypt.hash(otp, 10) : otp;
-
-  if (isRedisHealthy()) {
-    try {
-      await redis.set(redisKey, valueToStore, { EX: OTP_EXPIRY_SECONDS });
-      return { success: true, storedIn: "redis" };
-    } catch (err) {
-      console.error("Redis set error, falling back to DB:", err);
-    }
-  }
-
-  // Fallback to SQLite
-  const expiresAt = new Date(Date.now() + OTP_EXPIRY_SECONDS * 1000).toISOString();
-  db.prepare(
-    "UPDATE users SET otp_code = ?, otp_expires_at = ? WHERE email = ?"
-  ).run(valueToStore, expiresAt, email);
-  
-  return { success: true, storedIn: "db" };
-}
-
-/**
- * Retrieves an OTP from Redis or SQLite.
- */
-async function getStoredOtp(email: string, type: "signup" | "login" | "admin") {
-  const redisKey = `otp:${type}:${email}`;
-
-  if (isRedisHealthy()) {
-    try {
-      const redisOtp = await redis.get(redisKey);
-      if (redisOtp) return redisOtp;
-    } catch (err) {
-      console.error("Redis get error, checking DB:", err);
-    }
-  }
-
-  // Check SQLite
-  const user = db.prepare("SELECT otp_code, otp_expires_at FROM users WHERE email = ?").get(email) as any;
-  if (user && user.otp_code && new Date(user.otp_expires_at) > new Date()) {
-    return user.otp_code;
-  }
-
-  return null;
-}
-
-/**
- * Clears an OTP from both Redis and SQLite.
- */
-async function clearOtp(email: string, type: "signup" | "login" | "admin") {
-  if (isRedisHealthy()) {
-    try {
-      await redis.del(`otp:${type}:${email}`);
-    } catch (err) {
-      console.error("Redis del error:", err);
-    }
-  }
-  db.prepare("UPDATE users SET otp_code = NULL, otp_expires_at = NULL WHERE email = ?").run(email);
-}
+import { storeOtp, getStoredOtp, clearOtp } from "../lib/otp";
 
 // SIGNUP
 router.post("/signup", async (req, res) => {
@@ -154,6 +94,9 @@ router.post("/resend-otp", async (req, res) => {
     } else if (type === "login") {
       await storeOtp(email, otp, "login", true); // Login OTPs are usually hashed
       await sendAdminLoginEmail(email, otp, user.role);
+    } else if (type === "admin") {
+      await storeOtp(email, otp, "admin");
+      await sendAdminOnboardingEmail(email, otp, user.name);
     }
 
     res.json({ success: true, message: "New OTP sent" });
@@ -399,12 +342,22 @@ router.get("/me", async (req, res) => {
       completedCount = completed?.count || 0;
     }
 
+    // Calculate real dynamic rank based on total users
+    const totalUsersRes = db.prepare("SELECT COUNT(*) as count FROM users").get() as any;
+    const usersAheadRes = db.prepare("SELECT COUNT(*) as count FROM users WHERE total_xp > ?").get(user.total_xp || 0) as any;
+    
+    const totalUsers = totalUsersRes?.count || 1;
+    const usersAhead = usersAheadRes?.count || 0;
+    const topPercent = Math.max(1, Math.round((usersAhead / totalUsers) * 100));
+
     const userData = {
       ...user,
       handle: user.username
         ? `@${user.username}`
         : `@${user.name.toLowerCase().replace(/\s+/g, "")}`,
-      xp_percentile: user.total_xp > 1000 ? "Top 1%" : user.total_xp > 500 ? "Top 5%" : "Top 12%",
+      xp_percentile: `Top ${topPercent}%`,
+      xp: user.total_xp || 0,
+      streak: user.current_streak || 0,
       stats: {
         lessons_completed: completedCount,
         badges_earned: user.badges_json ? JSON.parse(user.badges_json).length : 0,
@@ -442,7 +395,7 @@ router.post("/admin-login-step1", async (req, res) => {
       return res.status(403).json({ message: "Unauthorized access" });
     }
 
-    // Validate Password (ONLY for regular Admins)
+    // Validate Password ONLY for regular Admins
     if (user.role === "ADMIN") {
       if (!password) {
         return res.status(400).json({ message: "Password required" });
@@ -452,10 +405,10 @@ router.post("/admin-login-step1", async (req, res) => {
         return res.status(400).json({ message: "Invalid credentials" });
       }
     }
-    // Super Admins skip password check (Email -> OTP only)
+    // Super Admins skip password check (Email -> OTP)
 
     if (user.status === "PENDING") {
-      return res.status(403).json({ message: "Account pending approval" });
+      return res.status(403).json({ message: "Account pending activation" });
     }
 
     // Generate OTP
@@ -609,6 +562,38 @@ router.post("/reset-password", async (req, res) => {
     });
   } catch (error) {
     console.error("Reset Password Error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Admin Onboarding: Verify OTP and Set Password
+router.post("/onboard-admin", async (req, res) => {
+  try {
+    const { email, otp, password } = req.body;
+
+    if (!email || !otp || !password) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const user = db.prepare("SELECT * FROM users WHERE email = ? AND role IN ('ADMIN', 'SUPER_ADMIN')").get(email) as any;
+    if (!user) return res.status(404).json({ error: "Admin not found" });
+
+    // Verify OTP
+    const storedOtp = await getStoredOtp(email, "admin");
+    if (!storedOtp || storedOtp !== otp) {
+      return res.status(400).json({ error: "Invalid or expired verification code" });
+    }
+
+    // Hash and update password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    db.prepare("UPDATE users SET password = ?, status = 'APPROVED', email_verified = 1 WHERE id = ?").run(hashedPassword, user.id);
+
+    // Clear OTP
+    await clearOtp(email, "admin");
+
+    res.json({ success: true, message: "Account activated successfully" });
+  } catch (error) {
+    console.error("Onboard Admin Error:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });

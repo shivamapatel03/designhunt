@@ -53,8 +53,11 @@ export function LearningProgressTracker({ currentTopic, topicSlug, totalLessons,
             <p className="text-xs font-bold text-gray-400 mt-1">{completedCount} of {totalLessons} lessons complete</p>
           </div>
         </div>
-        <div className="bg-green-50 text-green-600 px-3 py-1 rounded-full text-[10px] font-bold">
-          In progress
+        <div className={cn(
+          "px-3 py-1 rounded-full text-[10px] font-bold",
+          percentage === 100 ? "bg-indigo-50 text-indigo-600" : "bg-green-50 text-green-600"
+        )}>
+          {percentage === 100 ? "Mastered" : "In progress"}
         </div>
       </div>
 
@@ -102,12 +105,12 @@ export function LearningProgressTracker({ currentTopic, topicSlug, totalLessons,
 
       {/* Action Footer */}
       <div className="flex items-center gap-6">
-        <Link href={`/theory/learning/${topicSlug}`} className="bg-[#6366F1] text-white px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 hover:bg-[#5558e2] transition-colors">
-          Start level {currentLevel} <ChevronRight className="w-4 h-4" />
+        <Link 
+          href={percentage === 100 ? `/theory/learning/${topicSlug}/report` : `/theory/learning/${topicSlug}/path`} 
+          className="bg-[#6366F1] text-white px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 hover:bg-[#5558e2] transition-colors"
+        >
+          {percentage === 100 ? "Review Journey" : `Start level ${currentLevel}`} <ChevronRight className="w-4 h-4" />
         </Link>
-        <button className="flex items-center gap-2 text-xs font-bold text-black hover:opacity-70 transition-opacity">
-          <span className="filter grayscale">🏅</span> Download badge
-        </button>
       </div>
     </div>
   );

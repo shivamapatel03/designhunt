@@ -52,12 +52,12 @@ export function ColorWheel() {
 
             <div>
                 <label className="block text-sm font-bold mb-2">Harmony Rule</label>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                     {["complementary", "analogous", "triadic"].map(h => (
                         <button
                             key={h}
                             onClick={() => setHarmony(h as any)}
-                            className={`px-3 py-1 text-sm font-bold rounded border-2 capitalize transition-all ${harmony === h ? 'bg-black text-white border-black' : 'bg-white text-black border-gray-200 hover:border-black'}`}
+                            className={`flex-1 min-w-[100px] sm:flex-none px-3 py-1.5 text-[13px] sm:text-sm font-bold rounded border-2 capitalize transition-all ${harmony === h ? 'bg-black text-white border-black' : 'bg-white text-black border-gray-200 hover:border-black'}`}
                         >
                             {h}
                         </button>

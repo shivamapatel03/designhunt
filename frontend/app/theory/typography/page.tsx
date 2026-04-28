@@ -10,7 +10,7 @@ export default function TypographyPage() {
   const { user } = useAuth();
 
   return (
-    <div className="container mx-auto px-4 pt-14 md:pt-16 pb-12">
+    <div className="container mx-auto px-4 pt-16 sm:pt-20 pb-12">
         <Link href="/theory" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-black mb-10">
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to Theory Hub
         </Link>
@@ -78,10 +78,22 @@ export default function TypographyPage() {
                 <div className="p-5 md:p-6 border-2 border-black rounded-2xl bg-white shadow-[4px_4px_0px_0px_#000]">
                     <h3 className="font-black text-xs uppercase tracking-widest text-gray-400 mb-4 border-b border-gray-100 pb-2">Key Terms</h3>
                     <ul className="space-y-3">
-                        <li className="text-[13px] leading-tight"><strong className="block text-black">Kerning</strong> <span className="text-gray-500">Space between characters.</span></li>
-                        <li className="text-[13px] leading-tight"><strong className="block text-black">Leading</strong> <span className="text-gray-500">Space between lines.</span></li>
-                        <li className="text-[13px] leading-tight"><strong className="block text-black">Tracking</strong> <span className="text-gray-500">Space between words/groups.</span></li>
-                        <li className="text-[13px] leading-tight"><strong className="block text-black">Serif vs Sans</strong> <span className="text-gray-500">Feet vs No Feet.</span></li>
+                        <li className="text-[13px] leading-tight">
+                            <strong className="block text-black">Kerning</strong> 
+                            <span className="text-gray-500">Space between characters.</span>
+                        </li>
+                        <li className="text-[13px] leading-tight">
+                            <strong className="block text-black">Leading</strong> 
+                            <span className="text-gray-500">Space between lines.</span>
+                        </li>
+                        <li className="text-[13px] leading-tight">
+                            <strong className="block text-black">Tracking</strong> 
+                            <span className="text-gray-500">Space between words/groups.</span>
+                        </li>
+                        <li className="text-[13px] leading-tight">
+                            <strong className="block text-black">Serif vs Sans</strong> 
+                            <span className="text-gray-500">Feet vs No Feet.</span>
+                        </li>
                     </ul>
                 </div>
             </aside>

@@ -1,10 +1,16 @@
+"use client";
+
 import { ColorBlindnessSimulator } from "@/components/theory/ColorBlindnessSimulator";
-import { ArrowLeft, CheckCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle, Zap, Lock, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/components/providers/auth-provider";
+import { cn } from "@/lib/utils";
 
 export default function AccessibilityPage() {
+  const { user } = useAuth();
+
   return (
-    <div className="container mx-auto px-4 pt-14 md:pt-16 pb-12">
+    <div className="container mx-auto px-4 pt-16 sm:pt-20 pb-12">
         <Link href="/theory" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-black mb-10">
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to Theory Hub
         </Link>
@@ -15,7 +21,7 @@ export default function AccessibilityPage() {
             </p>
         </header>
 
-         <div className="grid lg:grid-cols-[1fr_350px] gap-12">
+         <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-12 items-start">
             <div className="space-y-16">
                  <section>
                     <h2 className="text-2xl font-bold mb-6">1. Designing for Color Blindness</h2>
@@ -36,7 +42,49 @@ export default function AccessibilityPage() {
                 </section>
             </div>
 
-             <aside className="space-y-6">
+             <aside className="space-y-6 lg:sticky lg:top-24">
+                <Link 
+                    href={user ? `/theory/learning/accessibility/path` : "/login"} 
+                    className={cn(
+                        "group w-full relative inline-flex items-center justify-between gap-3 px-5 py-4 md:px-6 md:py-5 rounded-2xl font-bold transition-all hover:translate-y-[-2px] active:scale-95 border border-black text-xs md:text-sm shadow-[4px_4px_0_0_#000]",
+                        user 
+                            ? "bg-black text-white hover:shadow-[6px_6px_0_0_#000]" 
+                            : "bg-gray-100 text-gray-400 border-gray-200 shadow-none hover:border-black hover:text-black"
+                    )}
+                >
+                    <div className="flex items-center gap-3">
+                        {user ? (
+                            <Zap className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                        ) : (
+                            <Lock className="w-5 h-5 opacity-40" />
+                        )}
+                        <span className="font-semibold">Advanced learning</span>
+                    </div>
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Link>
+
+                <div className="p-6 border-2 border-black rounded-xl bg-white shadow-[4px_4px_0px_0px_#000]">
+                    <h3 className="font-black text-xs uppercase tracking-widest text-gray-400 mb-4 border-b border-gray-100 pb-2">Key Terms</h3>
+                    <ul className="space-y-3">
+                        <li className="text-[13px] leading-tight">
+                            <strong className="block text-black">WCAG</strong> 
+                            <span className="text-gray-500">Web Content Accessibility Guidelines.</span>
+                        </li>
+                        <li className="text-[13px] leading-tight">
+                            <strong className="block text-black">Alt Text</strong> 
+                            <span className="text-gray-500">Text descriptions for non-text content.</span>
+                        </li>
+                        <li className="text-[13px] leading-tight">
+                            <strong className="block text-black">Contrast Ratio</strong> 
+                            <span className="text-gray-500">Legibility measurement between text and background.</span>
+                        </li>
+                        <li className="text-[13px] leading-tight">
+                            <strong className="block text-black">ARIA</strong> 
+                            <span className="text-gray-500">Roles that make web content more accessible.</span>
+                        </li>
+                    </ul>
+                </div>
+
                 <div className="p-6 border-2 border-black rounded-xl bg-white shadow-[4px_4px_0px_0px_#000]">
                     <h3 className="font-bold mb-4">Quick A11y Checklist</h3>
                     <ul className="space-y-3">
@@ -62,3 +110,4 @@ function Card({title, body}: {title: string, body: string}) {
         </div>
     )
 }
+

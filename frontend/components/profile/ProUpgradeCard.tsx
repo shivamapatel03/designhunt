@@ -38,7 +38,7 @@ export function ProUpgradeCard({ isPro, userEmail, userName, onUpgrade }: ProUpg
         key: orderData.key,
         amount: orderData.amount,
         currency: orderData.currency,
-        name: "DesignHunt",
+        name: "Designhunt.",
         description: "Unlock Pro Features",
         order_id: orderData.orderId,
         handler: async function (response: any) {
@@ -93,7 +93,7 @@ export function ProUpgradeCard({ isPro, userEmail, userName, onUpgrade }: ProUpg
           </div>
           <h3 className="text-3xl font-black mb-2">You are a Pro!</h3>
           <p className="text-gray-400 font-medium max-w-sm">
-            Thank you for supporting Design Hunt. You have fully unlocked access to all premium tools and content.
+            Thank you for supporting Designhunt.. You have fully unlocked access to all premium tools and content.
           </p>
         </div>
       </div>

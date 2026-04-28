@@ -18,7 +18,8 @@ import {
   Bookmark,
   ChevronDown,
   Circle,
-  LayoutGrid
+  LayoutGrid,
+  ArrowRight
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -60,20 +61,17 @@ export default function LearningPage() {
   const [topic, setTopic] = useState<Topic | null>(null);
   const [levels, setLevels] = useState<Level[]>([]);
   const [userStats, setUserStats] = useState({ xp: 0, streak: 0 });
-  const [isBookmarked, setIsBookmarked] = useState(false);
-  const [allBookmarks, setAllBookmarks] = useState<string[]>([]);
-  const [bookmarkFeedback, setBookmarkFeedback] = useState<string | null>(null);
   const [currentLevelIdx, setCurrentLevelIdx] = useState(0);
   const [currentSectionIdx, setCurrentSectionIdx] = useState(0);
   const [loading, setLoading] = useState(true);
   const [quizQuestionIdx, setQuizQuestionIdx] = useState(0);
   const [quizScore, setQuizScore] = useState(0);
   const [showQuizResult, setShowQuizResult] = useState(false);
-  const [earnedBadge, setEarnedBadge] = useState<any>(null);
   const [selectedQuizOption, setSelectedQuizOption] = useState<number | null>(null);
   const [quizData, setQuizData] = useState<any[] | null>(null);
+  const [isMastered, setIsMastered] = useState(false);
+
   useEffect(() => {
-    fetchTopicData();
     fetchTopicData();
     
     // Safety net for closing tab
@@ -100,7 +98,6 @@ export default function LearningPage() {
       }
       setTopic(data.topic);
       setLevels(data.levels);
-      setAllBookmarks(data.userBookmarks || []);
 
       // Fetch user stats
       const meRes = await fetch(`/api/auth/me`, { credentials: 'include' });
@@ -114,16 +111,25 @@ export default function LearningPage() {
       
       // Find where to start: first incomplete section
       let found = false;
+      let allCompleted = true;
       for (let l = 0; l < data.levels.length; l++) {
         for (let s = 0; s < data.levels[l].sections.length; s++) {
           if (!data.levels[l].sections[s].progress_status) {
             setCurrentLevelIdx(l);
             setCurrentSectionIdx(s);
             found = true;
+            allCompleted = false;
             break;
           }
         }
         if (found) break;
+      }
+
+      if (allCompleted && data.levels.length > 0) {
+        // If all are completed, show the last section but maybe they want to see congrats again?
+        // For now, just show the last section.
+        setCurrentLevelIdx(data.levels.length - 1);
+        setCurrentSectionIdx(data.levels[data.levels.length - 1].sections.length - 1);
       }
     } catch (err) {
       toast.error("Failed to load learning data");
@@ -136,40 +142,6 @@ export default function LearningPage() {
   const currentSection = currentLevel?.sections[currentSectionIdx];
 
   const currentSectionRef = useRef<any>(null);
-
-  useEffect(() => {
-    if (currentSection) {
-      setIsBookmarked(allBookmarks.includes(currentSection.id));
-    }
-  }, [currentSection, allBookmarks]);
-
-  const handleToggleBookmark = async () => {
-    if (!currentSection) return;
-    const originalState = isBookmarked;
-    setIsBookmarked(!originalState);
-    
-    try {
-      const res = await fetch('/api/learning/toggle-bookmark', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ section_id: currentSection.id }),
-        credentials: 'include'
-      });
-      const data = await res.json();
-      if (data.status === 'BOOKMARKED') {
-        setAllBookmarks(prev => [...prev, currentSection.id]);
-        setBookmarkFeedback("Section bookmarked");
-        setTimeout(() => setBookmarkFeedback(null), 2000);
-      } else {
-        setAllBookmarks(prev => prev.filter(id => id !== currentSection.id));
-        setBookmarkFeedback("Bookmark removed");
-        setTimeout(() => setBookmarkFeedback(null), 2000);
-      }
-    } catch (err) {
-      setIsBookmarked(originalState);
-      toast.error("Failed to update bookmark");
-    }
-  };
 
   // Fetch quiz if current section is TEST
   useEffect(() => {
@@ -200,16 +172,8 @@ export default function LearningPage() {
       
       if (data.success) {
         toast.success(`+${data.xp_earned} XP earned!`);
-        
-        if (data.badge_earned) {
-          setEarnedBadge(data.badge_earned);
-          confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 }, colors: ['#6366f1', '#a5b4fc', '#ffffff'] });
-        } else {
-          confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
-          handleNext();
-        }
-        
-        // Refresh data to show marks in sidebar
+        confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
+        handleNext();
         fetchTopicData();
       }
     } catch (err) {
@@ -224,19 +188,21 @@ export default function LearningPage() {
       setCurrentLevelIdx(prev => prev + 1);
       setCurrentSectionIdx(0);
     } else {
-      toast.success("Topic Mastered!");
-      router.push("/theory/typography");
+      setIsMastered(true);
+      confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
     }
   };
 
-  const handlePrev = () => {
-    if (currentSectionIdx > 0) {
-      setCurrentSectionIdx(prev => prev - 1);
-    } else if (currentLevelIdx > 0) {
-      const prevLevel = levels[currentLevelIdx - 1];
-      setCurrentLevelIdx(prev => prev - 1);
-      setCurrentSectionIdx(prevLevel.sections.length - 1);
-    }
+  const getTheoryUrl = (slug: string) => {
+    if (slug === 'typography') return '/theory/typography';
+    if (slug === 'colour-theory') return '/theory/color';
+    if (slug === 'layout-grids') return '/theory/layout';
+    if (slug === 'visual-hierarchy') return '/theory/visual-hierarchy';
+    return '/theory';
   };
 
   const handleQuizSubmit = () => {
@@ -271,7 +237,64 @@ export default function LearningPage() {
     }
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading Mastery...</div>;
+  if (loading) return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white gap-4">
+      <div className="animate-spin w-8 h-8 border-2 border-black border-t-transparent rounded-full" />
+      <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Loading Mastery...</span>
+    </div>
+  );
+
+  if (isMastered) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white p-6 text-center">
+        <motion.div
+          initial={{ scale: 0.5, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="mb-8"
+        >
+          <div className="w-32 h-32 bg-yellow-400 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_8px_0_0_#ca8a04]">
+            <Trophy className="w-16 h-16 text-white" />
+          </div>
+          <h1 className="text-4xl md:text-5xl font-black text-black tracking-tighter mb-2">TOPIC MASTERED!</h1>
+          <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">You have completed all levels of {topic?.title}</p>
+        </motion.div>
+
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="flex flex-col gap-4 w-full max-w-sm"
+        >
+          <div className="bg-gray-50 p-6 rounded-3xl border border-black/5 mb-4">
+            <div className="flex items-center justify-around">
+              <div className="text-center">
+                <span className="block text-2xl font-black text-black">+{levels.length * 50}</span>
+                <span className="text-[10px] font-bold text-gray-400 uppercase">XP Earned</span>
+              </div>
+              <div className="w-px h-8 bg-gray-200" />
+              <div className="text-center">
+                <span className="block text-2xl font-black text-black">{levels.length}</span>
+                <span className="text-[10px] font-bold text-gray-400 uppercase">Levels Done</span>
+              </div>
+            </div>
+          </div>
+
+          <Link
+            href={getTheoryUrl(topicSlug)}
+            className="w-full py-4 bg-black text-white rounded-2xl font-black text-sm uppercase tracking-widest transition-all hover:translate-y-[-2px] active:scale-95 shadow-[0_6px_0_0_#333]"
+          >
+            Continue Learning
+          </Link>
+          <Link
+            href="/profile"
+            className="w-full py-4 bg-white text-black border-2 border-black rounded-2xl font-black text-sm uppercase tracking-widest transition-all hover:bg-gray-50 active:scale-95"
+          >
+            View Profile
+          </Link>
+        </motion.div>
+      </div>
+    );
+  }
 
   const normalLevels = levels.filter(l => l.difficulty === "NORMAL");
   const mediumLevels = levels.filter(l => l.difficulty === "MEDIUM");
@@ -281,107 +304,73 @@ export default function LearningPage() {
     <div className="flex h-screen bg-white overflow-hidden">
       {/* Sidebar */}
       {/* Main Content */}
-      <main className="flex-1 flex flex-col bg-white overflow-hidden">
+      <main className="flex-1 flex flex-col bg-white overflow-hidden relative">
         {/* Header */}
-        <header className="px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-             <Link href={`/theory/learning/${topicSlug}/path`} className="p-1 hover:bg-gray-100 rounded-lg transition-all border border-transparent hover:border-black/5">
-                <ChevronLeft className="w-4 h-4" />
+        <header className="px-4 md:px-8 py-3 md:py-4 flex flex-row items-center justify-between gap-3 md:gap-4 border-b border-gray-50">
+          <div className="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
+             <Link href={`/theory/learning/${topicSlug}/path`} className="p-1.5 md:p-2 hover:bg-gray-100 rounded-lg transition-all border border-transparent hover:border-black/5 shrink-0">
+                <ChevronLeft className="w-4 h-4 md:w-4 md:h-4" />
              </Link>
-             <Link 
-               href={`/theory/learning/${topicSlug}/path`}
-               className="flex flex-col text-left group"
-             >
-               <div className="flex items-center gap-1.5">
-                 <h1 className="text-base font-bold font-clash tracking-tight leading-none group-hover:text-black/70 transition-colors">
-                    {topic?.title} : Level {currentLevel?.level_number}
+             <div className="flex flex-col text-left group min-w-0 flex-1">
+               <div className="flex items-center gap-1.5 min-w-0">
+                 <h1 className="text-xs md:text-base font-bold font-clash tracking-tight leading-none text-black truncate">
+                    {topic?.title} <span className="text-gray-300 mx-1 md:mx-2">:</span> Level {currentLevel?.level_number}
                  </h1>
                </div>
-               <div className="flex items-center gap-2 mt-1.5">
+               <div className="flex items-center gap-1.5 md:gap-2 mt-1 md:mt-1.5 min-w-0">
                   <span className={cn(
-                    "text-[8px] font-black px-1.5 py-0.5 rounded",
+                    "text-[7px] md:text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0",
                     currentLevel?.difficulty === 'NORMAL' && "bg-gray-100 text-gray-500",
                     currentLevel?.difficulty === 'MEDIUM' && "bg-indigo-50 text-indigo-500",
                     currentLevel?.difficulty === 'HARD' && "bg-pink-50 text-pink-500"
                   )}>
-                    {currentLevel?.difficulty.charAt(0) + currentLevel?.difficulty.slice(1).toLowerCase()} theory
+                    {currentLevel?.difficulty}
                   </span>
-                  <span className="text-[10px] font-bold text-gray-300">/</span>
-                  <span className="text-[10px] font-bold text-gray-400 group-hover:text-black transition-colors">{currentSection?.title}</span>
+                  <span className="text-[10px] font-bold text-gray-200 shrink-0">|</span>
+                  <span className="text-[9px] md:text-[10px] font-bold text-gray-400 group-hover:text-black transition-colors truncate">
+                    {currentSection?.title}
+                  </span>
                </div>
-             </Link>
+             </div>
           </div>
-          <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 mr-4 relative">
-                <div className="relative flex items-center">
-                  <AnimatePresence>
-                    {bookmarkFeedback && (
-                      <motion.span
-                        initial={{ opacity: 0, x: 5 }}
-                        animate={{ opacity: [0, 1, 0.4, 1], x: -10 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        transition={{ duration: 0.4 }}
-                        className="absolute right-full whitespace-nowrap text-[10px] font-bold text-[#FF69B4] mr-2 pointer-events-none"
-                      >
-                        {bookmarkFeedback}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                  <button 
-                    onClick={handleToggleBookmark}
-                    className={cn(
-                      "p-1.5 hover:bg-gray-50 rounded-lg transition-all border border-transparent hover:border-black/5",
-                      isBookmarked ? "text-[#FF69B4]" : "text-gray-300 hover:text-gray-400"
-                    )}
-                    title="Bookmark section"
-                  >
-                    <Bookmark className={cn("w-4 h-4", isBookmarked && "fill-current")} />
-                  </button>
-                </div>
-             </div>
-
-             <div className="flex items-center gap-1.5 border border-gray-100 px-2 py-1 rounded font-bold text-[10px] text-gray-500">
-                <NextImage src="/dashboardicons/streaks.png" width={14} height={14} alt="streak" className="object-contain" /> {userStats.streak}D Streak
-             </div>
-             <div className="flex items-center gap-1.5 border border-gray-100 px-2 py-1 rounded font-bold text-[10px] text-gray-500">
-                <NextImage src="/dashboardicons/xp.png" width={14} height={14} alt="xp" className="object-contain" /> {userStats.xp.toLocaleString()} XP
-             </div>
-             <button className="flex items-center gap-1.5 font-bold text-xs hover:underline transition-all">
-                Speech <Volume2 className="w-3.5 h-3.5" />
-             </button>
+          
+          <div className="flex items-center justify-end gap-2 shrink-0">
+              <button className="flex items-center justify-center w-8 h-8 md:w-auto md:h-auto gap-1.5 font-bold text-[10px] md:text-xs text-gray-500 hover:text-indigo-600 transition-colors bg-gray-50 md:bg-transparent rounded-full md:rounded-none">
+                 <span className="hidden sm:inline">Listen</span> <Volume2 className="w-4 h-4 md:w-3.5 md:h-3.5" />
+              </button>
           </div>
         </header>
 
         {/* Content Area */}
-        <div className="flex-1 p-8 overflow-y-auto">
+        <div className="flex-1 px-4 md:px-8 py-6 md:py-10 overflow-y-auto pb-32">
           <AnimatePresence mode="wait">
              <motion.div 
                key={currentSection?.id}
-               initial={{ opacity: 0, y: 5 }}
+               initial={{ opacity: 0, y: 10 }}
                animate={{ opacity: 1, y: 0 }}
-               exit={{ opacity: 0, y: -5 }}
-               className="max-w-2xl mx-auto"
+               exit={{ opacity: 0, y: -10 }}
+               className="max-w-xl md:max-w-2xl mx-auto"
              >
                 {currentSection?.type === "READ" ? (
-                  <div className="space-y-10">
+                  <div className="space-y-8 md:space-y-10">
                     <section className="max-w-none flex flex-col items-center">
                       {currentSection.content_json?.map((block: any, i: number) => {
                         if (block.type === 'text') return (
                           <p 
                             key={i} 
-                            className="text-[15px] font-semibold text-black font-plus-jakarta text-center leading-relaxed mb-8 max-w-xl"
+                            className="text-sm md:text-[15px] font-semibold text-gray-800 font-plus-jakarta text-center leading-relaxed mb-6 md:mb-8 w-full"
                           >
                             {block.value}
                           </p>
                         );
                         if (block.type === 'image') return (
-                          <div key={i} className="w-full flex justify-center mb-10">
+                          <div key={i} className="w-full flex justify-center mb-8 md:mb-10 px-2 md:px-0">
                             <img 
                               src={block.value} 
                               alt="" 
                               className={cn(
-                                "rounded-xl border border-black/5 object-contain shadow-sm",
-                                block.size === 'small' ? "max-w-[320px]" : "w-full"
+                                "rounded-2xl border border-black/5 object-contain shadow-sm w-full h-auto max-h-[400px]",
+                                block.size === 'small' ? "max-w-[280px] md:max-w-[320px]" : "max-w-full"
                               )} 
                             />
                           </div>
@@ -406,98 +395,31 @@ export default function LearningPage() {
           </AnimatePresence>
         </div>
 
-        {/* Badge Celebration Modal */}
-        <AnimatePresence>
-          {earnedBadge && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-6">
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 1.1 }}
-                className="bg-white rounded-[40px] max-w-sm w-full p-10 flex flex-col items-center text-center shadow-2xl relative overflow-hidden"
-              >
-                {/* Animated Background Rays */}
-                <div className="absolute inset-0 bg-indigo-50/50 -z-10 animate-pulse" />
-                
-                <div className="w-40 h-40 mb-8 relative">
-                    <motion.img 
-                      initial={{ rotate: -20, scale: 0 }}
-                      animate={{ rotate: 0, scale: 1 }}
-                      transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
-                      src={`/badges/typography/images/${earnedBadge.image}`}
-                      alt="Earned Badge"
-                      className="w-full h-full object-contain filter drop-shadow-2xl"
-                    />
-                </div>
-
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500 mb-2">Tier Unlock</span>
-                <h2 className="text-3xl font-black text-black tracking-tight mb-2 leading-none uppercase">
-                   {earnedBadge.tier} MASTERED!
-                </h2>
-                <p className="text-sm font-semibold text-gray-500 mb-8">
-                  Congratulations! You've earned the <strong>{earnedBadge.name}</strong> badge for {earnedBadge.topic}.
-                </p>
-
-                <div className="flex flex-col gap-3 w-full">
-                  <button 
-                    onClick={() => {
-                        setEarnedBadge(null);
-                        handleNext();
-                    }}
-                    className="w-full py-4 bg-black text-white rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-gray-800 transition-all active:scale-95"
-                  >
-                    Continue Journey
-                  </button>
-                  <Link
-                    href="/profile?tab=badges"
-                    className="w-full py-4 border border-black/10 rounded-2xl font-bold text-xs uppercase tracking-widest text-black/40 hover:text-black transition-all text-center"
-                  >
-                    View Collection
-                  </Link>
-                </div>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
-
-        {/* Footer Navigation */}
-        <footer className="px-8 py-4 flex items-center justify-between">
-           <div className="flex items-center gap-1.5 text-[9px] font-bold text-gray-400 tracking-widest">
-              {currentSection?.duration_mins}m Read
-           </div>
-           
-           <div className="flex items-center gap-8">
-              <button 
-                onClick={handlePrev}
-                disabled={currentLevelIdx === 0 && currentSectionIdx === 0}
-                className="flex items-center gap-0.5 font-semibold transition-all tracking-widest text-[9px] border-b border-black pb-0.5 disabled:opacity-0 disabled:pointer-events-none transition-opacity"
-              >
-                <ChevronLeft className="w-3 h-3" /> Previous
-              </button>
-
-              <button 
-                onClick={handleMarkAsDone}
-                disabled={currentSection?.progress_status?.toLowerCase() === 'completed' || currentSection?.type === 'TEST'}
-                className={cn(
-                  "px-6 py-2 rounded-md font-semibold transition-all flex items-center gap-1.5 text-[11px]",
-                  currentSection?.progress_status?.toLowerCase() === 'completed' 
-                    ? "bg-black text-white cursor-default"
-                    : "bg-white text-black border border-black hover:bg-black hover:text-white"
-                )}
-              >
-                {currentSection?.progress_status?.toLowerCase() === 'completed' ? (
-                  <>Done <CheckCircle className="w-3 h-3" /></>
-                ) : (
-                  <>Mark done</>
-                )}
-              </button>
-              
-              <button 
-                onClick={handleNext}
-                className="flex items-center gap-0.5 font-semibold transition-all tracking-widest text-[9px] border-b border-black pb-0.5"
-              >
-                Next <ChevronRight className="w-3 h-3" />
-              </button>
+        {/* Footer Navigation - Sticky & Hovering */}
+        <footer className="absolute bottom-0 left-0 right-0 py-8 md:py-10 flex flex-col items-center justify-center pointer-events-none z-20">
+           <div className="flex flex-col items-center pointer-events-auto">
+              {(currentSection?.type !== 'TEST' || showQuizResult) && (
+                <button 
+                  onClick={handleMarkAsDone}
+                  disabled={currentSection?.progress_status?.toLowerCase() === 'completed'}
+                  className={cn(
+                    "px-8 py-3.5 rounded-2xl font-black transition-all flex items-center justify-center gap-2 text-[10px] md:text-xs uppercase tracking-widest group",
+                    currentSection?.progress_status?.toLowerCase() === 'completed' 
+                      ? "bg-gray-100 text-gray-400 cursor-default"
+                      : "bg-[#2B7FFF] text-white hover:brightness-110 hover:translate-y-[-2px] active:scale-95 shadow-[0_4px_0_0_#1556B8] hover:shadow-[0_6px_0_0_#1556B8] active:shadow-none active:translate-y-[2px]"
+                  )}
+                >
+                  {currentSection?.progress_status?.toLowerCase() === 'completed' ? (
+                    <>Lesson Completed <CheckCircle className="w-5 h-5" /></>
+                  ) : (
+                    currentLevelIdx === levels.length - 1 && currentSectionIdx === currentLevel.sections.length - 1 ? (
+                      <>Finish Module <Trophy className="w-5 h-5 fill-current" /></>
+                    ) : (
+                      <>Next Lesson <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></>
+                    )
+                  )}
+                </button>
+              )}
            </div>
         </footer>
       </main>
@@ -514,6 +436,8 @@ function InteractiveLego({ type, label }: { type: string; label: string }) {
   const [tracking, setTracking] = useState(0);
   const [hierarchyMode, setHierarchyMode] = useState('BAD');
   const [contrastColor, setContrastColor] = useState('#6611FF');
+  const [showGrid, setShowGrid] = useState(true);
+  const [activeOpenType, setActiveOpenType] = useState(false);
 
   if (type === 'font-weight-slider') {
     return (
@@ -599,6 +523,105 @@ function InteractiveLego({ type, label }: { type: string; label: string }) {
     );
   }
 
+  if (type === 'fluid-scale-interactive') {
+    return (
+      <div className="bg-white border-2 border-black rounded-2xl p-6 my-8 shadow-sm">
+        <label className="block text-[10px] font-semibold text-black mb-4 uppercase tracking-widest">{label}</label>
+        <div className="mb-6 p-6 bg-gray-50 rounded-xl overflow-hidden flex flex-col items-center min-h-[160px] justify-center">
+            <div 
+                className="font-clash font-bold text-center transition-all duration-300 ease-out break-all"
+                style={{ fontSize: `${Math.max(16, Math.min(64, (weight / 900) * 64))}px` }}
+            >
+                FLUID TYPE
+            </div>
+            <p className="mt-4 text-[10px] font-bold text-gray-400">Current Size: {Math.round(Math.max(16, Math.min(64, (weight / 900) * 64)))}px</p>
+        </div>
+        <input 
+            type="range" 
+            min="100" 
+            max="900" 
+            step="10" 
+            value={weight} 
+            onChange={(e) => setWeight(Number(e.target.value))} 
+            className="w-full cursor-pointer accent-black" 
+        />
+        <div className="flex justify-between mt-2 text-[9px] font-bold text-gray-400"><span>MOBILE (320px)</span><span>DESKTOP (1440px)</span></div>
+        <p className="mt-4 text-[10px] text-gray-500 italic leading-tight">Simulating viewport resize. In CSS: <code>clamp(1rem, 5vw, 4rem)</code></p>
+      </div>
+    );
+  }
+
+  if (type === 'baseline-grid-visualizer') {
+    return (
+      <div className="bg-white border-2 border-black rounded-2xl p-6 my-8 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+            <label className="text-[10px] font-semibold text-black uppercase tracking-widest">{label}</label>
+            <button 
+                onClick={() => setShowGrid(!showGrid)}
+                className={cn(
+                    "px-3 py-1 rounded text-[10px] font-bold transition-all",
+                    showGrid ? "bg-black text-white" : "bg-gray-100 text-gray-400"
+                )}
+            >
+                Grid: {showGrid ? 'ON' : 'OFF'}
+            </button>
+        </div>
+        <div className="relative p-6 bg-white rounded-xl overflow-hidden border border-gray-100">
+            {showGrid && (
+                <div className="absolute inset-0 pointer-events-none" style={{ 
+                    backgroundImage: 'linear-gradient(#e5e7eb 1px, transparent 1px)',
+                    backgroundSize: '100% 8px'
+                }} />
+            )}
+            <div className="relative z-10 space-y-4">
+                <h4 className="text-xl font-bold leading-[24px]">Perfect Alignment</h4>
+                <p className="text-sm leading-[16px]">
+                    This text is snapped to an 8px baseline grid. Notice how the lines sit exactly on the imaginary horizontal wires.
+                </p>
+                <p className="text-sm leading-[16px]">
+                    Consistent vertical rhythm makes layouts feel professional and stable.
+                </p>
+            </div>
+        </div>
+        <p className="mt-4 text-[10px] text-gray-500 italic">Line-heights are multiples of 8 (24px, 16px).</p>
+      </div>
+    );
+  }
+
+  if (type === 'opentype-feature-toggle') {
+     return (
+        <div className="bg-white border-2 border-black rounded-2xl p-6 my-8 shadow-sm">
+            <div className="flex items-center justify-between mb-6">
+                <label className="text-[10px] font-semibold text-black uppercase tracking-widest">{label}</label>
+                <button 
+                    onClick={() => setActiveOpenType(!activeOpenType)}
+                    className={cn(
+                        "px-3 py-2 rounded-lg text-[10px] font-black transition-all border-2",
+                        activeOpenType ? "bg-black border-black text-white" : "bg-white border-black text-black"
+                    )}
+                >
+                    {activeOpenType ? 'LIGATURES ENABLED' : 'ENABLE LIGATURES'}
+                </button>
+            </div>
+            <div className="bg-gray-50 p-10 rounded-xl flex items-center justify-center gap-10">
+                <div className="flex flex-col items-center">
+                    <span className="text-[10px] font-black text-gray-300 mb-2 uppercase">"fi" pair</span>
+                    <span className="text-5xl font-serif" style={{ fontVariantLigatures: activeOpenType ? 'common-ligatures' : 'none' }}>
+                        fi
+                    </span>
+                </div>
+                <div className="flex flex-col items-center">
+                    <span className="text-[10px] font-black text-gray-300 mb-2 uppercase">"ffl" pair</span>
+                    <span className="text-5xl font-serif" style={{ fontVariantLigatures: activeOpenType ? 'common-ligatures' : 'none' }}>
+                        ffl
+                    </span>
+                </div>
+            </div>
+            <p className="mt-4 text-[10px] text-gray-500 text-center">Ligatures combine multiple characters into a single glyph for better flow.</p>
+        </div>
+     );
+  }
+
   return (
     <div className="bg-white border-2 border-black rounded-2xl p-8 flex flex-col items-center justify-center gap-3">
       <Play className="w-10 h-10 text-black" />
@@ -606,6 +629,8 @@ function InteractiveLego({ type, label }: { type: string; label: string }) {
     </div>
   );
 }
+
+
 
 function QuizView({ data, selectedOption, onSelect, onSubmit, disabled, result, onNext }: any) {
   const [timeLeft, setTimeLeft] = useState(20);
@@ -674,9 +699,9 @@ function QuizView({ data, selectedOption, onSelect, onSubmit, disabled, result, 
         <p className="text-gray-500 text-[10px] font-bold tracking-widest mb-6">Score: {result.score}%</p>
         <button 
           onClick={onNext}
-          className="px-6 py-2 bg-black text-white rounded font-semibold text-[10px] hover:bg-gray-800 transition-all"
+          className="px-8 py-3 bg-slate-800 text-white rounded-full font-bold text-[11px] uppercase tracking-widest transition-all hover:bg-slate-700 active:translate-y-[2px]"
         >
-          {result.isCorrect ? "Next level" : "Review material"}
+          {result.isCorrect ? "Next lesson" : "Review material"}
         </button>
       </motion.div>
     );
@@ -698,7 +723,7 @@ function QuizView({ data, selectedOption, onSelect, onSubmit, disabled, result, 
             <p className="text-[10px] font-bold text-gray-400 mb-8 text-center">Time's up, focus back up buddy!</p>
             <button
                 onClick={handleRetry}
-                className="px-8 py-3 bg-black text-white rounded-full font-bold text-[11px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all"
+                className="px-8 py-3 bg-slate-800 text-white rounded-full font-black text-[11px] uppercase tracking-widest transition-all shadow-[0_4px_0_0_#000000] hover:bg-slate-700 active:shadow-none active:translate-y-[4px] mb-1"
             >
                 Try Again
             </button>
@@ -727,7 +752,7 @@ function QuizView({ data, selectedOption, onSelect, onSubmit, disabled, result, 
         {question.question}
       </h2>
 
-      <div className="space-y-2 mb-10">
+      <div className="flex flex-col gap-4 mb-10">
         {question.options_json.map((option: string, idx: number) => {
           const isSelected = selectedOption === idx;
           const isCorrect = question.correct_answer === idx;
@@ -738,23 +763,23 @@ function QuizView({ data, selectedOption, onSelect, onSubmit, disabled, result, 
               disabled={isSubmitted || isTimeout}
               onClick={() => onSelect(idx)}
               className={cn(
-                "w-full text-left p-3 rounded-lg border-2 transition-all flex items-center justify-between group",
-                !isSubmitted && isSelected && "border-black bg-black text-white",
-                !isSubmitted && !isSelected && "border-gray-100 bg-white hover:border-gray-300 text-gray-600 font-semibold",
-                isSubmitted && isCorrect && "border-green-500 bg-green-50 text-green-700",
-                isSubmitted && isSelected && !isCorrect && "border-red-500 bg-red-50 text-red-700",
-                isSubmitted && !isSelected && !isCorrect && "border-gray-100 bg-white opacity-40"
+                "w-full text-left px-5 py-4 rounded-full border-2 transition-all flex items-center justify-between group",
+                !isSubmitted && isSelected && "bg-[#2B7FFF] border-[#2B7FFF] text-white shadow-[0_4px_0_0_#1556B8] active:shadow-none active:translate-y-[4px]",
+                !isSubmitted && !isSelected && "bg-white border-gray-200 text-gray-600 font-semibold shadow-[0_4px_0_0_#e5e7eb] hover:bg-gray-50 active:shadow-none active:translate-y-[4px]",
+                isSubmitted && isCorrect && "bg-green-50 border-green-500 text-green-700 shadow-[0_4px_0_0_#22c55e]",
+                isSubmitted && isSelected && !isCorrect && "bg-red-50 border-red-500 text-red-700 shadow-[0_4px_0_0_#ef4444]",
+                isSubmitted && !isSelected && !isCorrect && "bg-white border-gray-200 text-gray-400 opacity-50 shadow-[0_4px_0_0_#e5e7eb]"
               )}
             >
-              <span className="text-[11px]">{option}</span>
+              <span className="text-sm md:text-[15px] pl-1">{option}</span>
               <div className={cn(
-                "w-3.5 h-3.5 rounded-full border flex items-center justify-center transition-colors",
-                isSelected ? "border-white bg-white/20" : "border-gray-200",
-                isSubmitted && isCorrect && "border-green-500 bg-green-500",
-                isSubmitted && isSelected && !isCorrect && "border-red-500 bg-red-500"
+                "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors shrink-0",
+                isSelected && !isSubmitted ? "border-white bg-white/20" : "border-gray-300",
+                isSubmitted && isCorrect ? "border-green-500 bg-green-500" : "",
+                isSubmitted && isSelected && !isCorrect ? "border-red-500 bg-red-500" : ""
               )}>
-                {isSelected && !isSubmitted && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                {isSubmitted && isCorrect && <CheckCircle2 className="w-3 h-3 text-white" />}
+                {isSelected && !isSubmitted && <div className="w-2.5 h-2.5 rounded-full bg-white" />}
+                {isSubmitted && isCorrect && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
               </div>
             </button>
           );
@@ -764,7 +789,12 @@ function QuizView({ data, selectedOption, onSelect, onSubmit, disabled, result, 
       <button
         onClick={handleLocalSubmit}
         disabled={disabled || selectedOption === null || isSubmitted || isTimeout}
-        className="w-full h-10 bg-black text-white rounded font-semibold tracking-widest text-[10px] disabled:bg-gray-100 disabled:text-gray-300 transition-all hover:bg-gray-800 active:scale-[0.98]"
+        className={cn(
+          "w-full h-12 rounded-full font-black tracking-widest text-[11px] md:text-xs uppercase transition-all flex items-center justify-center mb-2",
+          (disabled || selectedOption === null || isSubmitted || isTimeout)
+            ? "bg-gray-200 text-gray-400 shadow-[0_4px_0_0_#d1d5db]"
+            : "bg-slate-800 text-white shadow-[0_4px_0_0_#000000] hover:bg-slate-700 active:shadow-none active:translate-y-[4px]"
+        )}
       >
         {isSubmitted ? "Checking..." : "Submit answer"}
       </button>

@@ -4,7 +4,7 @@ import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Loader2, Key, ShieldCheck, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, Key, ShieldCheck, CheckCircle2, Lock } from "lucide-react";
 
 function ResetPasswordForm() {
   const router = useRouter();
@@ -84,14 +84,14 @@ function ResetPasswordForm() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="block text-[10px] font-bold text-gray-700 uppercase tracking-widest" htmlFor="email">Email</label>
+                  <label className="flex items-center gap-1.5 text-[10px] font-bold text-gray-700 uppercase tracking-widest" htmlFor="email">
+                    Email <Lock className="w-3 h-3 text-gray-400" />
+                  </label>
                   <input 
                     type="email" 
-                    required
+                    readOnly
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-gray-100 border-none rounded-xl font-medium text-xs focus:outline-none focus:ring-2 focus:ring-black/5 transition-all text-black"
-                    placeholder="name@email.com"
+                    className="w-full px-4 py-2.5 bg-[#E0F2FE] border-none rounded-xl font-bold text-xs focus:outline-none transition-all text-black cursor-not-allowed"
                   />
                 </div>
                 <div className="space-y-1">
@@ -148,7 +148,7 @@ function ResetPasswordForm() {
             key="success-message"
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white p-8 rounded-[32px] border border-black/5 shadow-xl flex flex-col items-center text-center space-y-4"
+            className="bg-white p-8 rounded-[32px] border-2 border-black flex flex-col items-center text-center space-y-4 shadow-[4px_4px_0_0_#000]"
           >
             <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center mb-2">
                 <CheckCircle2 className="w-6 h-6 text-green-500" />
@@ -157,7 +157,7 @@ function ResetPasswordForm() {
                 <h2 className="text-lg font-bold text-black">Reset Successful</h2>
                 <p className="text-xs text-gray-500 font-medium">Your password has been updated. You'll be redirected to login shortly.</p>
             </div>
-            <Link href="/login" className="w-full py-3 bg-[#6366F1] text-white font-bold text-xs rounded-xl hover:bg-[#4F46E5] transition-colors flex items-center justify-center">
+            <Link href="/login" className="w-full py-3 bg-black text-white font-bold text-xs rounded-xl hover:bg-gray-900 transition-colors flex items-center justify-center shadow-[4px_4px_0_0_#333]">
                 Go to Login
             </Link>
           </motion.div>

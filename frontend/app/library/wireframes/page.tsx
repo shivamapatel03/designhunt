@@ -122,7 +122,7 @@ export default function WireframesPage() {
                 </div>
                 <h2 className="text-3xl md:text-4xl font-black mb-4 leading-tight">Create your own <br/> wireframes instantly.</h2>
                 <p className="text-gray-400 font-medium text-lg max-w-md mb-8">
-                    Use our built-in infinite canvas editor to sketch, plan, and iterate on your ideas without leaving Design Hunt.
+                    Use our built-in infinite canvas editor to sketch, plan, and iterate on your ideas without leaving Designhunt..
                 </p>
                 <Link 
                     href="/library/wireframes/editor" 

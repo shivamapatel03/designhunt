@@ -241,17 +241,23 @@ export default function TypographyIntroPage() {
               <div className="mb-6 flex flex-col items-center">
                 <AaLabel text="The reward" className="mb-1" />
                 <h1 className="text-2xl md:text-3xl font-bold mb-2 tracking-tight">
-                  Earn type badges
+                  Build your skill profile
                 </h1>
                 <p className="text-gray-500 text-xs font-medium">
-                  Unlock exclusive mastery badges as you climb.
+                  Master professional design theory and track your growth.
                 </p>
               </div>
 
               <div className="flex gap-2 justify-center mb-8">
-                <div className="w-14 h-14 rounded-full border border-black bg-gray-50 opacity-20" />
-                <div className="w-14 h-14 rounded-full border-2 border-black bg-white -translate-y-2" />
-                <div className="w-14 h-14 rounded-full border border-black bg-gray-50 opacity-20" />
+                <div className="w-14 h-14 rounded-2xl border border-black/5 bg-gray-50 flex items-center justify-center">
+                   <Target className="w-6 h-6 text-black/10" />
+                </div>
+                <div className="w-14 h-14 rounded-2xl border-2 border-black bg-white -translate-y-2 flex items-center justify-center shadow-lg">
+                   <Zap className="w-6 h-6 text-black" />
+                </div>
+                <div className="w-14 h-14 rounded-2xl border border-black/5 bg-gray-50 flex items-center justify-center">
+                   <Play className="w-6 h-6 text-black/10" />
+                </div>
               </div>
 
               <button 
