@@ -7,6 +7,7 @@ import { ArrowRight, Sparkles, CheckCircle2, ChevronRight, Zap, Target, Trophy, 
 import Image from "next/image";
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
+import { ListenButton } from "@/components/ui/ListenButton";
 
 const AaLabel = ({ text, className = "" }: { text: string, className?: string }) => (
   <div className={`flex items-center ${className}`}>
@@ -102,6 +103,13 @@ export default function TypographyIntroPage() {
   return (
     <div className="min-h-screen bg-[#fafafa] flex flex-col font-sans selection:bg-black selection:text-white overflow-hidden pt-6 relative">
       <Navbar />
+      
+      <div className="absolute top-24 right-6 z-50">
+         <ListenButton 
+           text="Welcome to your learning journey. Let's explore the fundamentals of design together."
+           variant="full"
+         />
+      </div>
 
       {/* Progress Bar */}
       <div className="fixed top-0 left-0 w-full h-[2px] bg-black/5 z-40 overflow-hidden">

@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import { BeforeAfterSlider } from "@/components/ui/before-after-slider";
 import { ArrowLeft, Check, X, BookOpen, Share2 } from "lucide-react";
+import { ListenButton } from "@/components/ui/ListenButton";
 import Link from "next/link";
 
 export default function TheoryTopicPage() {
@@ -25,8 +26,11 @@ export default function TheoryTopicPage() {
         {/* Main Content */}
         <article className="space-y-12">
            <header className="space-y-4">
-              <div className="flex items-center gap-2 text-sm font-bold text-accent-blue uppercase tracking-wider">
-                <BookOpen className="w-4 h-4" /> Foundation
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2 text-sm font-bold text-accent-blue uppercase tracking-wider">
+                  <BookOpen className="w-4 h-4" /> Foundation
+                </div>
+                <ListenButton text={`${title}. ${isColorTheory ? "Understanding how colors interact, contrast ratios, and psychological effects is crucial." : "Mastering this principle is key."}`} />
               </div>
               <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight">{title}</h1>
               <p className="text-xl text-gray-600 leading-relaxed max-w-2xl">

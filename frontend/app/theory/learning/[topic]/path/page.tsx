@@ -169,7 +169,7 @@ export default function PathPage() {
         <main className="min-h-screen flex flex-col bg-white pt-36 pb-48 overflow-y-auto overflow-x-hidden relative scroll-smooth">
           {/* Header */}
           <div className="flex flex-col items-center mb-12 px-6 text-center shrink-0">
-            <h2 className="text-3xl font-semibold tracking-tight text-black font-figtree">{topic?.title || "Typography"}</h2>
+            <h2 className="text-3xl font-semibold tracking-tight text-black font-figtree">{topic?.title || (topicSlug.charAt(0).toUpperCase() + topicSlug.slice(1).replace(/-/g, ' '))}</h2>
             <div className="mt-3 flex flex-col items-center gap-2">
                 <div className="w-48 h-2.5 bg-gray-100 rounded-full overflow-hidden border border-black/5">
                     <motion.div 
@@ -257,7 +257,7 @@ export default function PathPage() {
                     </div>
                     <h3 className="text-lg font-black text-indigo-900 tracking-tight uppercase leading-none">End of Path</h3>
                     <p className="text-[10px] font-bold text-indigo-400 mt-3 uppercase tracking-widest leading-relaxed">
-                      You've unlocked the full potential of Typography. New levels are currently in design.
+                      You've unlocked the full potential of {topic?.title || topicSlug}. New levels are currently in design.
                     </p>
                 </div>
              </div>
@@ -267,7 +267,7 @@ export default function PathPage() {
         /* DESKTOP PAGINATED VIEW */
         <main className="h-screen flex flex-col items-center relative overflow-hidden bg-white pt-36 md:pt-40">
           <div className="flex flex-col items-center mb-6 md:mb-3 px-6 text-center">
-            <h2 className="text-xl md:text-2xl font-black tracking-tight text-black">{topic?.title || "Typography"}</h2>
+            <h2 className="text-xl md:text-2xl font-black tracking-tight text-black">{topic?.title || (topicSlug.charAt(0).toUpperCase() + topicSlug.slice(1).replace(/-/g, ' '))}</h2>
             <span className="text-[10px] font-bold text-gray-300 mt-1.5 tracking-[0.2em] uppercase">{completedLevels}/{totalLevels} Levels completed</span>
           </div>
 
@@ -301,7 +301,7 @@ export default function PathPage() {
                     topicSlug={topicSlug} 
                     activeIdx={activeLevelIdx}
                     focusedIdx={focusedIdx}
-                    topicTitle={topic?.title || "Typography"}
+                    topicTitle={topic?.title || topicSlug}
                     pageOffset={currentPage * 10}
                     isMobile={false}
                   />

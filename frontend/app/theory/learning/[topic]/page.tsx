@@ -21,6 +21,7 @@ import {
   LayoutGrid,
   ArrowRight
 } from "lucide-react";
+import { ListenButton } from "@/components/ui/ListenButton";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -335,9 +336,16 @@ export default function LearningPage() {
           </div>
           
           <div className="flex items-center justify-end gap-2 shrink-0">
-              <button className="flex items-center justify-center w-8 h-8 md:w-auto md:h-auto gap-1.5 font-bold text-[10px] md:text-xs text-gray-500 hover:text-indigo-600 transition-colors bg-gray-50 md:bg-transparent rounded-full md:rounded-none">
-                 <span className="hidden sm:inline">Listen</span> <Volume2 className="w-4 h-4 md:w-3.5 md:h-3.5" />
-              </button>
+              <ListenButton 
+                text={
+                  currentSection?.type === 'READ' 
+                    ? currentSection.content_json
+                        ?.filter((b: any) => b.type === 'text')
+                        ?.map((b: any) => b.value)
+                        ?.join('. ')
+                    : "Quiz time! Please select the correct answer for the following questions."
+                } 
+              />
           </div>
         </header>
 

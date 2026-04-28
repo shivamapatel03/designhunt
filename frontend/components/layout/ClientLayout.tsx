@@ -13,7 +13,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
   const isAuthPage = pathname === "/login" || pathname === "/signup" || pathname === "/verify-email" || pathname?.startsWith("/onboarding");
   const isLearningPage = pathname?.startsWith("/theory/learning") && !pathname?.endsWith("/report");
   const showNavbar = !isFullscreen && !isAdmin && !isLearningPage && !isAuthPage;
-  const showFooter = !isFullscreen && !isAdmin && !isAuthPage && !isLearningPage;
+  const showFooter = !isFullscreen && !isAdmin && !isAuthPage && !isLearningPage && pathname !== "/profile";
 
   const applyExtraGap = showNavbar && (pathname?.startsWith("/theory") || pathname?.startsWith("/library"));
 

@@ -41,7 +41,7 @@ export default function LayoutPage() {
              
              <aside className="space-y-6 lg:sticky lg:top-24">
                 <Link 
-                    href={user ? `/theory/learning/layout-grids/path` : "/login"} 
+                    href={user ? `/theory/learning/layout-grid/path` : "/login"} 
                     className={cn(
                         "group w-full relative inline-flex items-center justify-between gap-3 px-5 py-4 md:px-6 md:py-5 rounded-2xl font-bold transition-all hover:translate-y-[-2px] active:scale-95 border border-black text-xs md:text-sm shadow-[4px_4px_0_0_#000]",
                         user 

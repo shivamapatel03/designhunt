@@ -4,6 +4,7 @@ import { ContrastChecker } from "@/components/theory/ContrastChecker";
 import { ColorWheel } from "@/components/theory/ColorWheel";
 import { VisualGlossary } from "@/components/theory/VisualGlossary";
 import { ArrowLeft, Zap, Lock, ArrowRight } from "lucide-react";
+import { ListenButton } from "@/components/ui/ListenButton";
 import Link from "next/link";
 import { useAuth } from "@/components/providers/auth-provider";
 import { cn } from "@/lib/utils";
@@ -17,7 +18,10 @@ export default function ColorTheoryPage() {
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to Theory Hub
         </Link>
         <header className="max-w-3xl mb-10">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 leading-tight text-balance">Color Theory</h1>
+            <div className="flex items-center justify-between gap-4 mb-4">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold leading-tight text-balance">Color Theory</h1>
+              <ListenButton text="Color evokes emotion, directs attention, and ensures accessibility. Master the art and science of color." />
+            </div>
             <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
                 Color evokes emotion, directs attention, and ensures accessibility. Master the art and science of color.
             </p>
@@ -72,7 +76,7 @@ export default function ColorTheoryPage() {
 
              <aside className="space-y-6 lg:sticky lg:top-24">
                 <Link 
-                    href={user ? `/theory/learning/colour-theory/path` : "/login"} 
+                    href={user ? `/theory/learning/color-theory/path` : "/login"} 
                     className={cn(
                         "group w-full relative inline-flex items-center justify-between gap-3 px-5 py-4 md:px-6 md:py-5 rounded-2xl font-bold transition-all hover:translate-y-[-2px] active:scale-95 border border-black text-xs md:text-sm shadow-[4px_4px_0_0_#000]",
                         user 

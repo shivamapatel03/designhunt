@@ -311,16 +311,16 @@ export function Navbar() {
                         <motion.div variants={itemVariants} className="grid grid-cols-3 gap-x-4 gap-y-6">
                           {[
                             { href: "/theory/typography", icon: TextIcon, text: "Typography", desc: "The foundation of UI design.", color: "#E0F2FE" },
-                            { href: "/theory/color", icon: ColorsIcon, text: "Colour Theory", desc: "Master the art of color.", color: "#F3E8FF" },
+                            { href: "/theory/color", icon: ColorsIcon, text: "Color Theory", desc: "Master the art of color.", color: "#F3E8FF" },
                             { href: "/theory/layout", icon: LayoutGridIcon, text: "Layout & Grids", desc: "Structure your interface.", color: "#FCE7F3" },
                             { href: "/theory/visual-hierarchy", icon: EyeIcon, text: "Visual Hierarchy", desc: "Guide the user's eye.", color: "#FEF3C7" },
                             { href: "/theory/motion", icon: PlaySquareIcon, text: "Motion", desc: "Bring your UI to life.", color: "#FFEDD5" },
                             { href: "/theory/ux-laws", icon: Brain01Icon, text: "Laws of UX", desc: "Psychology for designers.", color: "#DCFCE7" },
                             { href: "/theory/ux-design", icon: UserGroupIcon, text: "UX Design", desc: "Design for humans first.", color: "#DBEAFE" },
-                            { href: "/theory/product-strategy", icon: Idea01Icon, text: "Strategy", desc: "Business meets design.", color: "#ECFCCB" },
+                            { href: "/theory/product-strategy", icon: Idea01Icon, text: "Product Strategy", desc: "Business meets design.", color: "#ECFCCB" },
                             { href: "/theory/accessibility", icon: UniversalAccessIcon, text: "Accessibility", desc: "Design for everyone.", color: "#E0F2FE" },
                             { href: "/theory/user-research", icon: Search01Icon, text: "User Research", desc: "Understand your users.", color: "#F3E8FF" },
-                            { href: "/theory/information-architecture", icon: GlobeIcon, text: "Information IA", desc: "Organize the chaos.", color: "#DCFCE7" },
+                            { href: "/theory/information-architecture", icon: GlobeIcon, text: "Information Architecture", desc: "Organize the chaos.", color: "#DCFCE7" },
                             { href: "/theory/design-systems", icon: ComponentIcon, text: "Design Systems", desc: "Build at scale easily.", color: "#FEF3C7" }
                           ].map((item) => (
                             <Link key={item.href} href={item.href} className="flex items-start gap-3 group/item transition-all hover:translate-y-[-2px]">
