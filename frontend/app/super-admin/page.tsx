@@ -527,6 +527,33 @@ export default function SuperAdminPage() {
                                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
                             </label>
                         </div>
+
+                        <div className="pt-4 border-t border-gray-100">
+                            <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Navbar Controls</h3>
+                            
+                            {[
+                                { key: 'ENABLE_LIBRARY', label: 'Library Tab', desc: 'Main resource directory' },
+                                { key: 'ENABLE_THEORY', label: 'Theory Tab', desc: 'Learning paths & lessons' },
+                                { key: 'ENABLE_CRITIQUE', label: 'Critique AI Tab', desc: 'AI design review feature' },
+                                { key: 'ENABLE_TOOLS', label: 'Tools Tab', desc: 'Designer utility suite' },
+                            ].map((item) => (
+                                <div key={item.key} className="flex items-center justify-between p-4 bg-gray-50/50 rounded-xl border border-gray-100 mb-3">
+                                    <div>
+                                        <h4 className="font-bold text-xs text-black">{item.label}</h4>
+                                        <p className="text-[10px] text-gray-500 mt-0.5">{item.desc}</p>
+                                    </div>
+                                    <label className="relative inline-flex items-center cursor-pointer">
+                                        <input 
+                                            type="checkbox" 
+                                            checked={settings[item.key] !== 'false'} 
+                                            onChange={(e) => updateSystemSetting(item.key, String(e.target.checked))}
+                                            className="sr-only peer" 
+                                        />
+                                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+                                    </label>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
 

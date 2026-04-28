@@ -26,15 +26,15 @@ import { SkillActivityCard } from "@/components/profile/SkillActivityCard";
 import { updateOnboardingData } from "@/app/actions/onboarding";
 
 const AVAILABLE_SKILLS = [
-  { title: "Typography", percentage: 73, status: "best", themeColor: "#FFF8D6" },
-  { title: "UI/UX Design", percentage: 45, status: "pending", themeColor: "#E0F2FE" },
-  { title: "Motion & Animation", percentage: 100, status: "completed", themeColor: "#F0FDF4" },
-  { title: "Color Theory", percentage: 20, status: "pending", themeColor: "#FFEDD5" },
-  { title: "Visual Hierarchy", percentage: 10, status: "pending", themeColor: "#F3E8FF" },
-  { title: "Layout & Grid", percentage: 65, status: "pending", themeColor: "#ECFDF5" },
-  { title: "Design Systems", percentage: 30, status: "pending", themeColor: "#F5F3FF" },
-  { title: "UX Laws", percentage: 15, status: "pending", themeColor: "#FEF2F2" },
-  { title: "User Research", percentage: 5, status: "pending", themeColor: "#F8FAFC" },
+  { title: "Typography", percentage: 73, status: "best", themeColor: "#FFF8D6" }, // Yellow
+  { title: "UI/UX Design", percentage: 45, status: "pending", themeColor: "#E0F2FE" }, // Light Blue
+  { title: "Motion & Animation", percentage: 100, status: "completed", themeColor: "#F0FDF4" }, // Green
+  { title: "Color Theory", percentage: 20, status: "pending", themeColor: "#FFEDD5" }, // Orange
+  { title: "Visual Hierarchy", percentage: 10, status: "pending", themeColor: "#F3E8FF" }, // Purple
+  { title: "Layout & Grid", percentage: 65, status: "pending", themeColor: "#ECFDF5" }, // Mint
+  { title: "Design Systems", percentage: 30, status: "pending", themeColor: "#EBE9FE" }, // Indigo
+  { title: "UX Laws", percentage: 15, status: "pending", themeColor: "#FEF2F2" }, // Rose
+  { title: "User Research", percentage: 5, status: "pending", themeColor: "#F1F5F9" }, // Slate
 ];
 
 function ProfileContent() {
@@ -80,9 +80,19 @@ function ProfileContent() {
   };
 
   const addSkill = async (skill: any) => {
-    const updatedSkills = [...userSkills, skill];
+    const newSkill = { ...skill, percentage: 0, status: "pending" };
+    const updatedSkills = [...userSkills, newSkill];
     setUserSkills(updatedSkills);
     setIsAddingSkill(false);
+    
+    // Persist to database
+    const topics = updatedSkills.map(s => s.title);
+    await updateOnboardingData({ topics_to_learn: topics });
+  };
+
+  const removeSkill = async (skillTitle: string) => {
+    const updatedSkills = userSkills.filter(s => s.title !== skillTitle);
+    setUserSkills(updatedSkills);
     
     // Persist to database
     const topics = updatedSkills.map(s => s.title);
@@ -130,12 +140,12 @@ function ProfileContent() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#fafafa] pt-24 pb-20 font-[family-name:var(--font-plus-jakarta)]">
+    <div className="min-h-screen bg-[#fafafa] pt-36 pb-20 font-[family-name:var(--font-plus-jakarta)]">
       <div className="max-w-4xl mx-auto px-6 space-y-10">
         
         <div className="flex flex-col md:flex-row justify-between items-stretch gap-6">
           {/* Profile Section */}
-          <div className="flex items-center gap-5 bg-white p-6 rounded-[32px] border border-black/5 flex-1">
+          <div className="flex items-center gap-5 bg-white p-6 rounded-[32px] border border-black/5 border-b-4 border-black/5 flex-1">
              <Link href="/profile/edit" className="relative group cursor-pointer shrink-0">
                 <img 
                   src={user.avatar} 
@@ -158,13 +168,7 @@ function ProfileContent() {
              </div>
           </div>
 
-          {/* Learning Stats moved next to profile */}
-          <div className="w-full md:w-[480px]">
-             <ProfileStatsCards 
-               streak={user.streak}
-               xp={user.xp}
-             />
-          </div>
+          {/* Learning Stats removed as requested */}
         </div>
 
         {/* Tab section removed as requested */}
@@ -172,16 +176,16 @@ function ProfileContent() {
         {/* Skills Section */}
         <div className="space-y-6">
            <div className="flex items-center justify-between px-2">
-              <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Skill Overview</h3>
+              <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Module Overview</h3>
               <button 
                 onClick={() => setIsAddingSkill(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-black text-white text-[10px] font-black rounded-xl hover:bg-gray-800 transition-all active:scale-95 uppercase tracking-widest"
+                className="flex items-center gap-2 px-4 py-2 bg-black text-white text-[10px] font-black rounded-xl border-b-4 border-gray-800 hover:bg-gray-800 transition-all active:border-b-0 active:translate-y-[2px] uppercase tracking-widest"
               >
                 <Plus className="w-3.5 h-3.5" />
-                Add Skill
+                Add Module
               </button>
            </div>
-
+ 
            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {userSkills.map((skill: any, idx: number) => (
                 <SkillActivityCard 
@@ -190,11 +194,12 @@ function ProfileContent() {
                   percentage={skill.percentage}
                   status={skill.status}
                   themeColor={skill.themeColor}
+                  onDelete={removeSkill}
                 />
               ))}
            </div>
         </div>
-
+ 
         {/* Add Skill Modal Overlay */}
         <AnimatePresence>
           {isAddingSkill && (
@@ -204,7 +209,7 @@ function ProfileContent() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setIsAddingSkill(false)}
-                className="fixed inset-0 bg-black/40 z-[60]"
+                className="fixed inset-0 z-[60]"
               />
               <motion.div 
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -214,7 +219,7 @@ function ProfileContent() {
               >
                 <div className="flex items-center justify-between mb-8">
                   <div>
-                    <h3 className="text-xl font-bold text-black tracking-tight">Add New Skill ✨</h3>
+                    <h3 className="text-xl font-bold text-black tracking-tight">Add New Module</h3>
                     <p className="text-xs font-medium text-gray-400 mt-1">Select a topic from the theory library</p>
                   </div>
                   <button onClick={() => setIsAddingSkill(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
@@ -227,9 +232,10 @@ function ProfileContent() {
                     <button
                       key={skill.title}
                       onClick={() => addSkill(skill)}
-                      className="p-4 bg-gray-50 border-2 border-transparent hover:border-black/10 hover:bg-gray-100 rounded-2xl transition-all text-left group"
+                      style={{ backgroundColor: skill.themeColor }}
+                      className="p-4 border border-black/5 border-b-4 border-b-black/10 rounded-2xl transition-all flex items-center justify-center text-center group active:border-b-0 active:translate-y-[2px]"
                     >
-                      <span className="text-xs font-bold text-gray-400 group-hover:text-black transition-colors">{skill.title}</span>
+                      <span className="text-xs font-bold text-black/60 group-hover:text-black transition-colors">{skill.title}</span>
                     </button>
                   ))}
                 </div>

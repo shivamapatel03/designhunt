@@ -147,6 +147,11 @@ export function Navbar() {
   // Dropdown state
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [sysSettings, setSysSettings] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/settings').then(res => res.json()).then(data => setSysSettings(data));
+  }, []);
 
   const handleMouseEnter = (name: string) => {
     if (dropdownTimeoutRef.current) clearTimeout(dropdownTimeoutRef.current);
@@ -230,6 +235,7 @@ export function Navbar() {
             {/* Desktop Menu - Center */}
             <div className="hidden md:flex items-center gap-8">
               {/* Library with Dropdown */}
+              {(sysSettings?.ENABLE_LIBRARY !== false) && (
               <div 
                 className="relative py-2"
                 onMouseEnter={() => handleMouseEnter('library')}
@@ -280,8 +286,9 @@ export function Navbar() {
                   )}
                 </AnimatePresence>
               </div>
+              )}
 
-              {/* Theory with Dropdown */}
+              {(sysSettings?.ENABLE_THEORY !== false) && (
               <div 
                 className="relative py-2"
                 onMouseEnter={() => handleMouseEnter('theory')}
@@ -291,7 +298,6 @@ export function Navbar() {
                   Theory <HugeiconsIcon icon={ArrowDown01Icon} className={cn("w-3.5 h-3.5 opacity-40 transition-transform duration-300", activeDropdown === 'theory' ? "rotate-180" : "")} />
                 </Link>
                 
-                {/* Dropdown Card */}
                 <AnimatePresence>
                   {activeDropdown === 'theory' && (
                     <motion.div 
@@ -336,15 +342,20 @@ export function Navbar() {
                   )}
                 </AnimatePresence>
               </div>
+              )}
 
+              {(sysSettings?.ENABLE_CRITIQUE !== false) && (
               <Link href="/critique" className={cn("text-sm font-semibold transition-colors flex items-center gap-1.5", pathname === "/critique" ? "text-black" : "text-black hover:opacity-70")}>
                 Critique
                 <span className="px-1.5 py-0.5 rounded-md bg-accent-blue/10 text-accent-blue text-[10px] font-black uppercase tracking-wider">AI</span>
               </Link>
+              )}
+              
+              {(sysSettings?.ENABLE_TOOLS !== false) && (
               <Link href="/tools" className={cn("text-sm font-semibold transition-colors flex items-center gap-1.5", pathname === "/tools" ? "text-black" : "text-black hover:opacity-70")}>
                 Tools
               </Link>
-              {/* <Link href="/ideas" className={cn("text-sm font-medium transition-colors", pathname === "/ideas" ? "text-black" : "text-black hover:opacity-70")}>Community</Link> */}
+              )}
             </div>
 
             <div className="hidden md:flex items-center gap-6">
@@ -520,7 +531,13 @@ export function Navbar() {
 
               {/* Sidebar Links */}
               <div className="flex-1 overflow-y-auto py-6 px-4 flex flex-col gap-1">
-                {navItems.map((item) => (
+                {navItems.filter(item => {
+                  if (item.name === "Library") return sysSettings?.ENABLE_LIBRARY !== false;
+                  if (item.name === "Theory") return sysSettings?.ENABLE_THEORY !== false;
+                  if (item.name === "Critique") return sysSettings?.ENABLE_CRITIQUE !== false;
+                  if (item.name === "Tools") return sysSettings?.ENABLE_TOOLS !== false;
+                  return true;
+                }).map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}

@@ -4,7 +4,7 @@ import { ReactNode } from "react";
 
 export default function TheoryPage() {
   return (
-    <div className="container mx-auto px-4 pt-16 md:pt-20 pb-12 lg:pb-20 max-w-7xl">
+    <div className="container mx-auto px-4 pt-36 md:pt-40 pb-12 lg:pb-20 max-w-7xl">
       <div className="text-center max-w-3xl mx-auto mb-6">
         <h1 className="text-5xl font-extrabold mb-4">Design Theory Hub</h1>
         <p className="text-xl text-muted-foreground">

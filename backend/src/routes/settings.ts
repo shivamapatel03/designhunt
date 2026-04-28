@@ -15,6 +15,10 @@ router.get("/", (req, res) => {
       BANNER_MESSAGE: allSettings.BANNER_MESSAGE || "",
       MAINTENANCE_END_TIME: allSettings.MAINTENANCE_END_TIME || "",
       ENABLE_MARKETPLACE: allSettings.ENABLE_MARKETPLACE === "true",
+      ENABLE_CRITIQUE: allSettings.ENABLE_CRITIQUE !== "false", // Default to true if not set
+      ENABLE_LIBRARY: allSettings.ENABLE_LIBRARY !== "false",
+      ENABLE_THEORY: allSettings.ENABLE_THEORY !== "false",
+      ENABLE_TOOLS: allSettings.ENABLE_TOOLS !== "false",
     };
     res.json(publicSettings);
   } catch (err) {

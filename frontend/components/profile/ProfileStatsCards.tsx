@@ -24,7 +24,7 @@ export function ProfileStatsCards({ streak, xp }: StatsProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {stats.map((stat) => (
-        <div key={stat.label} className="bg-white p-5 rounded-2xl border border-black/10 transition-all hover:border-black/20 group">
+        <div key={stat.label} className="bg-white p-5 rounded-2xl border border-black/10 border-b-4 border-black/5 transition-all hover:border-black/20 group">
           <div className="flex items-start justify-between mb-3">
             <div className="w-10 h-10 bg-gray-50 rounded-xl group-hover:bg-gray-100 transition-colors flex items-center justify-center p-1.5 overflow-hidden">
               <img src={stat.image} alt={stat.label} className="w-full h-full object-contain" />

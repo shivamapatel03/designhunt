@@ -163,30 +163,10 @@ export default function PathPage() {
     <div className="min-h-screen bg-white text-black font-sans selection:bg-black selection:text-white select-none overflow-x-hidden" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       <Navbar />
 
-      {/* Bottom Centered Stats - Flat Design */}
-      <div className="fixed bottom-6 md:bottom-12 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 md:gap-4 w-full max-w-[95%] md:max-w-none justify-center px-4">
-          <div className="flex items-center gap-2 md:gap-4 border-2 border-indigo-500/10 bg-white/90 backdrop-blur-md px-3 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl shadow-lg transition-transform active:scale-95">
-              <Image src="/dashboardicons/streaks.png" width={isMobile ? 18 : 24} height={isMobile ? 18 : 24} alt="streaks" className="object-contain" />
-              <div className="flex flex-col">
-                <span className="hidden md:block text-[10px] font-bold text-indigo-500/40 uppercase tracking-widest leading-none mb-1">Day</span>
-                <span className="text-xs md:text-sm font-semibold text-gray-900">{userStats.streak}<span className="md:ml-1">{isMobile ? "D" : "Days"}</span></span>
-              </div>
-          </div>
-
-          <div className="flex items-center gap-2 md:gap-4 border-2 border-indigo-500/10 bg-white/90 backdrop-blur-md px-3 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl shadow-lg transition-transform active:scale-95">
-              <Image src="/dashboardicons/xp.png" width={isMobile ? 18 : 24} height={isMobile ? 18 : 24} alt="xp" className="object-contain" />
-              <div className="flex flex-col">
-                <span className="hidden md:block text-[10px] font-bold text-indigo-500/40 uppercase tracking-widest leading-none mb-1">XP</span>
-                <span className="text-xs md:text-sm font-semibold text-gray-900">{userStats.xp >= 1000 ? (userStats.xp / 1000).toFixed(1) + 'k' : userStats.xp} <span className="md:inline hidden">XP</span></span>
-              </div>
-          </div>
-
-
-      </div>
 
       {isMobile ? (
         /* DUOLINGO MOBILE VIEW */
-        <main className="min-h-screen flex flex-col bg-white pt-28 pb-48 overflow-y-auto overflow-x-hidden relative scroll-smooth">
+        <main className="min-h-screen flex flex-col bg-white pt-36 pb-48 overflow-y-auto overflow-x-hidden relative scroll-smooth">
           {/* Header */}
           <div className="flex flex-col items-center mb-12 px-6 text-center shrink-0">
             <h2 className="text-3xl font-semibold tracking-tight text-black font-figtree">{topic?.title || "Typography"}</h2>
@@ -285,7 +265,7 @@ export default function PathPage() {
         </main>
       ) : (
         /* DESKTOP PAGINATED VIEW */
-        <main className="h-screen flex flex-col items-center relative overflow-hidden bg-white pt-24 md:pt-20">
+        <main className="h-screen flex flex-col items-center relative overflow-hidden bg-white pt-36 md:pt-40">
           <div className="flex flex-col items-center mb-6 md:mb-3 px-6 text-center">
             <h2 className="text-xl md:text-2xl font-black tracking-tight text-black">{topic?.title || "Typography"}</h2>
             <span className="text-[10px] font-bold text-gray-300 mt-1.5 tracking-[0.2em] uppercase">{completedLevels}/{totalLevels} Levels completed</span>

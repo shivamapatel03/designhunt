@@ -197,7 +197,7 @@ function LoginForm() {
 
                     <button 
                         disabled={loading} 
-                        className="w-full py-3 bg-black text-white font-bold text-sm rounded-xl hover:bg-gray-900 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                        className="w-full py-3 bg-[#6366F1] text-white font-bold text-sm rounded-xl border-b-4 border-[#4F46E5] hover:bg-[#5558e2] active:border-b-0 active:translate-y-[2px] transition-all flex items-center justify-center gap-2"
                     >
                         {loading ? 'Entering...' : 'Sign In'}
                     </button>
@@ -267,7 +267,7 @@ function LoginForm() {
                 <div className="space-y-3">
                     <button 
                         disabled={loading || otp.length !== 6} 
-                        className="w-full py-3 bg-black text-white font-bold text-sm rounded-xl shadow-sm hover:bg-gray-900 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                        className="w-full py-3 bg-[#6366F1] text-white font-bold text-sm rounded-xl border-b-4 border-[#4F46E5] hover:bg-[#5558e2] active:border-b-0 active:translate-y-[2px] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                         {loading ? 'Verifying...' : 'Verify Code'} <ArrowRight className="w-4 h-4" />
                     </button>
