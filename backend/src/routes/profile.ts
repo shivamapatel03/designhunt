@@ -174,16 +174,7 @@ router.patch("/update", authenticate, (req: any, res: any) => {
   }
 });
  
-// Configure Multer
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, "../../public/uploads"));
-  },
-  filename: (req: any, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, `avatar-${req.userId}-${uniqueSuffix}${path.extname(file.originalname)}`);
-  },
-});
+import { storage } from "../lib/cloudinary";
  
 const upload = multer({
   storage,
@@ -201,7 +192,11 @@ router.post("/upload-avatar", authenticate, upload.single("avatar"), (req: any, 
   try {
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
  
-    const fileUrl = `http://localhost:5000/uploads/${req.file.filename}`;
+    const fileUrl = req.file.path; // Cloudinary URL is in req.file.path
+    
+    // Update user avatar in database
+    db.prepare("UPDATE users SET avatar = ? WHERE id = ?").run(fileUrl, req.userId);
+
     res.json({ success: true, url: fileUrl });
   } catch (error: any) {
     console.error("Upload error:", error);

@@ -180,22 +180,28 @@ export default function EditProfilePage() {
                         </div>
                     </div>
 
-                    <div className="space-y-1">
-                        <label className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider pl-1" htmlFor="avatar">Avatar URL</label>
-                        <div className="relative">
-                            <input 
-                                type="url" 
-                                id="avatar"
-                                value={formData.avatar}
-                                onChange={(e) => setFormData({ ...formData, avatar: e.target.value })}
-                                className="w-full px-4 py-2.5 bg-gray-50 border border-black/5 rounded-xl font-semibold text-sm focus:outline-none focus:ring-1 focus:ring-black/10 transition-all text-black placeholder:text-gray-300 pr-10"
-                                placeholder="https://..."
-                            />
-                            <ImageIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+                    <div className="flex flex-col items-center gap-4 mb-6">
+                        <div 
+                            className="relative w-24 h-24 rounded-full border-4 border-white shadow-md overflow-hidden group cursor-pointer bg-gray-100"
+                            onClick={() => fileInputRef.current?.click()}
+                        >
+                            {formData.avatar ? (
+                                <img src={formData.avatar} alt="Avatar Preview" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-gray-300">
+                                    <ImageIcon className="w-8 h-8" />
+                                </div>
+                            )}
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Upload className="w-6 h-6 text-white" />
+                            </div>
+                            {uploading && (
+                                <div className="absolute inset-0 bg-white/60 flex items-center justify-center z-10">
+                                    <Loader2 className="w-6 h-6 animate-spin text-black" />
+                                </div>
+                            )}
                         </div>
-                    </div>
- 
-                    <div className="space-y-2">
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Click to change photo</p>
                         <input 
                             type="file" 
                             ref={fileInputRef}
@@ -203,15 +209,6 @@ export default function EditProfilePage() {
                             accept="image/*"
                             className="hidden"
                         />
-                        <button 
-                            type="button"
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={uploading}
-                            className="w-full py-2.5 border-2 border-dashed border-gray-100 rounded-xl flex items-center justify-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest hover:border-black/10 hover:text-black transition-all disabled:opacity-50"
-                        >
-                            {uploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
-                            {uploading ? "Uploading..." : "Upload your photo"}
-                        </button>
                     </div>
 
                     <div className="space-y-1">

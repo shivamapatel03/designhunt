@@ -204,7 +204,7 @@ function ProfileContent() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setIsAddingSkill(false)}
-                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]"
+                className="fixed inset-0 bg-black/40 z-[60]"
               />
               <motion.div 
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -214,7 +214,7 @@ function ProfileContent() {
               >
                 <div className="flex items-center justify-between mb-8">
                   <div>
-                    <h3 className="text-xl font-bold text-black tracking-tight">Add New Skill</h3>
+                    <h3 className="text-xl font-bold text-black tracking-tight">Add New Skill ✨</h3>
                     <p className="text-xs font-medium text-gray-400 mt-1">Select a topic from the theory library</p>
                   </div>
                   <button onClick={() => setIsAddingSkill(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
