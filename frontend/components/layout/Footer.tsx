@@ -73,9 +73,9 @@ export function Footer() {
               
               <div className="flex flex-col gap-1.5 text-center md:text-left">
                  <p className="text-[10px] font-black text-gray-300">
-                    © {new Date().getFullYear()} DESIGNHUNT.
+                    © 2026 Designhunt.
                  </p>
-                 <p className="text-[10px] font-black text-gray-300 uppercase tracking-tighter">
+                 <p className="text-[10px] font-black text-gray-300 tracking-tighter">
                     All rights reserved.
                  </p>
               </div>

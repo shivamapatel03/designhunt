@@ -13,6 +13,7 @@ export default function EditProfilePage() {
   const [formData, setFormData] = useState({
     name: "",
     username: "",
+    email: "",
     bio: "",
     avatar: ""
   });
@@ -71,6 +72,7 @@ export default function EditProfilePage() {
       setFormData({
         name: data.user.name || "",
         username: data.user.handle?.replace("@", "") || "",
+        email: data.user.email || "",
         bio: data.user.bio || "",
         avatar: data.user.avatar || ""
       });
@@ -164,7 +166,7 @@ export default function EditProfilePage() {
                         />
                     </div>
 
-                    <div className="space-y-1">
+                    <div className="space-y-1 opacity-60">
                         <label className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider pl-1" htmlFor="username">Handle</label>
                         <div className="relative">
                             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-semibold">@</span>
@@ -172,12 +174,23 @@ export default function EditProfilePage() {
                                 type="text" 
                                 id="username"
                                 value={formData.username}
-                                onChange={(e) => setFormData({ ...formData, username: e.target.value.toLowerCase().replace(/\s+/g, '') })}
-                                className="w-full px-4 py-2.5 pl-8 bg-gray-50 border border-black/5 rounded-xl font-semibold text-sm focus:outline-none focus:ring-1 focus:ring-black/10 transition-all text-black placeholder:text-gray-300"
+                                disabled
+                                className="w-full px-4 py-2.5 pl-8 bg-gray-100 border border-black/5 rounded-xl font-semibold text-sm text-gray-500 cursor-not-allowed"
                                 placeholder="handle"
-                                required
                             />
                         </div>
+                    </div>
+
+                    <div className="space-y-1 opacity-60">
+                        <label className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider pl-1" htmlFor="email">Email</label>
+                        <input 
+                            type="email" 
+                            id="email"
+                            value={formData.email}
+                            disabled
+                            className="w-full px-4 py-2.5 bg-gray-100 border border-black/5 rounded-xl font-semibold text-sm text-gray-500 cursor-not-allowed"
+                            placeholder="email@example.com"
+                        />
                     </div>
 
                     <div className="flex flex-col items-center gap-4 mb-6">
@@ -225,7 +238,7 @@ export default function EditProfilePage() {
 
                 <button 
                     disabled={saving} 
-                    className="w-full py-3 bg-black text-white font-semibold text-sm rounded-xl hover:bg-gray-900 transition-all disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95"
+                    className="w-full py-3.5 bg-black text-white font-black text-[11px] rounded-[18px] transition-all shadow-[0_4px_0_0_#222] active:shadow-none active:translate-y-[4px] flex items-center justify-center gap-2 uppercase tracking-widest font-plus-jakarta"
                 >
                     {saving ? 'Saving...' : 'Save Changes'}
                 </button>
