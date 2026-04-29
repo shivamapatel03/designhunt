@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Palette, Type, Layout, MousePointer, Scale, Eye, Box, LayoutTemplate } from "lucide-react";
 import { ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
 export default function TheoryPage() {
   return (

@@ -25,7 +25,7 @@ export default async function Home() {
       <Hero userStats={userStats} />
       
       {/* Design Modules */}
-      <div className="bg-[#fafafa] overflow-hidden">
+      <div className="bg-white overflow-hidden">
         {/* Modules Overview */}
         <MasterDesignSection />
       </div>

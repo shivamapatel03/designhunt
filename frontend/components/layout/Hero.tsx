@@ -27,7 +27,7 @@ export function Hero({ userStats }: HeroProps) {
   }, []);
 
   return (
-    <section className="relative min-h-[calc(100vh-64px)] md:h-[100vh] flex flex-col items-center justify-center bg-white overflow-hidden pt-2 md:pt-20 pb-12 md:pb-10">
+    <section className="relative min-h-[auto] md:h-[100vh] flex flex-col items-center justify-center bg-white overflow-hidden pt-24 md:pt-20 pb-2 md:pb-10">
       <div className="max-w-7xl w-full relative z-10 mx-auto px-6 md:px-12 flex flex-col md:grid md:grid-cols-2 gap-4 md:gap-8 items-center justify-center flex-1">
         
         {/* Right Side - Image (Mobile Top) */}
@@ -35,12 +35,12 @@ export function Hero({ userStats }: HeroProps) {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="flex md:col-start-2 items-center justify-center relative w-full mb-4 md:mb-0 order-1 md:order-2"
+          className="flex md:col-start-2 items-center justify-center relative w-full mb-1 md:mb-0 order-1 md:order-2"
         >
           <img 
-            src="/heroimages/sideimg.png" 
-            className="w-[90%] max-w-[380px] md:w-full md:max-w-[500px] h-auto object-contain transition-all duration-500" 
-            alt="Hero Illustration" 
+            src="/onboardingavatars/hero.png" 
+            className="w-[95%] max-w-[420px] md:w-full md:max-w-[600px] h-auto object-contain transition-all duration-500" 
+            alt="Hero Character" 
           />
         </motion.div>
 
@@ -51,7 +51,7 @@ export function Hero({ userStats }: HeroProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-[26px] sm:text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-gray-800 md:text-black max-w-2xl leading-[1.25] md:leading-[1.2] mt-4 md:mt-0"
+            className="text-[26px] sm:text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-gray-800 md:text-black max-w-2xl leading-[1.25] md:leading-[1.2] mt-1 md:mt-0"
           >
             <span className="font-bungee">Everything Great in Design Starts With</span>{" "}
             <span className="inline-grid overflow-hidden align-top pb-[0.1em] text-center md:text-left w-full md:w-auto">
