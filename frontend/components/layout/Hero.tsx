@@ -58,14 +58,16 @@ export function Hero({ userStats }: HeroProps) {
               <AnimatePresence mode="popLayout">
                 <motion.span
                   key={words[index]}
-                  initial={{ y: "40%", opacity: 0 }}
-                  animate={{ y: "0%", opacity: 1 }}
-                  exit={{ y: "-40%", opacity: 0 }}
+                  initial={{ y: 40, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -40, opacity: 0 }}
                   transition={{ 
-                    duration: 0.8, 
-                    ease: [0.4, 0, 0.2, 1] 
+                    type: "spring",
+                    stiffness: 120,
+                    damping: 20,
+                    mass: 1
                   }}
-                  className="col-start-1 row-start-1 text-[#4F39F6] font-black-han"
+                  className="col-start-1 row-start-1 text-[#2B7FFF] font-black-han will-change-transform"
                 >
                   {words[index]}
                 </motion.span>

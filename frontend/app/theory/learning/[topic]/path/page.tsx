@@ -218,8 +218,8 @@ export default function PathPage() {
                        isLocked 
                         ? "bg-gray-200 border-b-[6px] border-gray-300 translate-y-[-6px]"
                         : isNext 
-                          ? "bg-indigo-500 border-b-[6px] border-indigo-700 translate-y-[-6px] active:translate-y-[-2px] active:border-b-[2px]"
-                          : "bg-indigo-600 border-b-[6px] border-indigo-800 translate-y-[-6px] active:translate-y-[-2px] active:border-b-[2px]"
+                          ? "bg-[#2B7FFF] border-b-[6px] border-[#1556B8] translate-y-[-6px] active:translate-y-[-2px] active:border-b-[2px]"
+                          : "bg-[#2B7FFF] border-b-[6px] border-[#1556B8] translate-y-[-6px] active:translate-y-[-2px] active:border-b-[2px]"
                      )}>
                         {isLocked ? (
                           <Lock className="w-8 h-8 text-gray-400" />
@@ -229,7 +229,7 @@ export default function PathPage() {
                             <motion.div 
                               animate={{ scale: [1, 1.2, 1] }}
                               transition={{ repeat: Infinity, duration: 2 }}
-                              className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full border-2 border-indigo-600"
+                              className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full border-2 border-[#2B7FFF]"
                             />
                           </div>
                         ) : (
@@ -250,13 +250,13 @@ export default function PathPage() {
 
              {/* End indicator */}
              <div className="flex flex-col items-center mt-8 translate-y-[-20px]">
-                <div className="w-1.5 h-20 bg-gradient-to-b from-indigo-500/20 to-transparent rounded-full" />
-                <div className="mt-4 p-8 bg-indigo-50/50 backdrop-blur-sm rounded-[40px] border-2 border-indigo-100 flex flex-col items-center text-center max-w-[260px] shadow-sm">
+                <div className="w-1.5 h-20 bg-gradient-to-b from-[#2B7FFF]/20 to-transparent rounded-full" />
+                <div className="mt-4 p-8 bg-blue-50/50 backdrop-blur-sm rounded-[40px] border-2 border-blue-100 flex flex-col items-center text-center max-w-[260px] shadow-sm">
                     <div className="w-16 h-16 bg-white rounded-2xl shadow-md flex items-center justify-center mb-6">
-                      <Trophy className="w-8 h-8 text-indigo-500 animate-pulse" />
+                      <Trophy className="w-8 h-8 text-[#2B7FFF] animate-pulse" />
                     </div>
-                    <h3 className="text-lg font-black text-indigo-900 tracking-tight uppercase leading-none">End of Path</h3>
-                    <p className="text-[10px] font-bold text-indigo-400 mt-3 uppercase tracking-widest leading-relaxed">
+                    <h3 className="text-lg font-black text-blue-900 tracking-tight uppercase leading-none">End of Path</h3>
+                    <p className="text-[10px] font-bold text-blue-400 mt-3 uppercase tracking-widest leading-relaxed">
                       You've unlocked the full potential of {topic?.title || topicSlug}. New levels are currently in design.
                     </p>
                 </div>
@@ -385,8 +385,8 @@ function RoadmapStrip({ levels, topicSlug, activeIdx, focusedIdx, topicTitle, pa
                 <div className={cn(
                   "relative w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-lg transition-all duration-300 -translate-y-1 group-hover:-translate-y-1.5 group-active:translate-y-0 shadow-lg",
                   isCompleted || isNext
-                    ? "bg-indigo-600 text-white shadow-[0_6px_0_0_rgb(67,56,202)]" 
-                    : "bg-white border-2 border-gray-100 text-gray-300 shadow-[0_6px_0_0_rgb(229,231,235)]"
+                    ? "bg-[#2B7FFF] text-white shadow-[0_6px_0_0_#1556B8]" 
+                    : "bg-white border-2 border-gray-100 text-gray-300 shadow-[0_6px_0_0_#E5E7EB]"
                 )}>
                   {isCompleted ? <CheckCircle className="w-6 h-6" /> : level.level_number}
                 </div>

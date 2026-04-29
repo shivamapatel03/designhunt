@@ -255,7 +255,7 @@ export function Navbar() {
                       variants={dropdownVariants}
                       className="absolute top-full left-[-40px] pt-4 z-50"
                     >
-                      <div className="bg-white rounded-[24px] border-2 border-black w-[640px] p-6 relative before:absolute before:-top-2.5 before:left-[70px] before:-translate-x-1/2 before:border-[10px] before:border-transparent before:border-b-black after:absolute after:-top-2 after:left-[70px] after:-translate-x-1/2 after:border-[8px] after:border-transparent after:border-b-white">
+                      <div className="bg-white rounded-2xl border border-black/5 w-[640px] p-6 relative shadow-[0_20px_50px_rgba(0,0,0,0.1)] before:absolute before:-top-2.5 before:left-[70px] before:-translate-x-1/2 before:border-[10px] before:border-transparent before:border-b-black/5 after:absolute after:-top-2 after:left-[70px] after:-translate-x-1/2 after:border-[8px] after:border-transparent after:border-b-white">
                         <motion.div variants={itemVariants} className="grid grid-cols-3 gap-x-4 gap-y-6">
                           {[
                             { href: "/library/icons", icon: HappyIcon, text: "Icons", desc: "50,000+ premium icons.", color: "#FFEDD5" },
@@ -269,7 +269,7 @@ export function Navbar() {
                           ].map((item) => (
                             <Link key={item.href} href={item.href} className="flex items-start gap-3 group/item transition-all hover:translate-y-[-2px]">
                               <div 
-                                className="w-10 h-10 rounded-xl border-2 border-black flex items-center justify-center shrink-0 transition-transform group-hover/item:scale-110"
+                                className="w-10 h-10 rounded-xl border-2 border-black/5 flex items-center justify-center shrink-0 transition-all duration-200 shadow-[0_2.5px_0_0_rgba(0,0,0,0.08)] -translate-y-[1px] group-hover/item:-translate-y-[1.5px] group-hover/item:shadow-[0_3px_0_0_rgba(0,0,0,0.1)]"
                                 style={{ backgroundColor: item.color }}
                               >
                                 <HugeiconsIcon icon={item.icon} className="w-5 h-5 text-black" />
@@ -307,7 +307,7 @@ export function Navbar() {
                       variants={dropdownVariants}
                       className="absolute top-full left-[-200px] pt-4 z-50"
                     >
-                      <div className="bg-white rounded-[24px] border-2 border-black w-[640px] p-6 relative before:absolute before:-top-2.5 before:left-[230px] before:-translate-x-1/2 before:border-[10px] before:border-transparent before:border-b-black after:absolute after:-top-2 after:left-[230px] after:-translate-x-1/2 after:border-[8px] after:border-transparent after:border-b-white">
+                      <div className="bg-white rounded-2xl border border-black/5 w-[640px] p-6 relative shadow-[0_20px_50px_rgba(0,0,0,0.1)] before:absolute before:-top-2.5 before:left-[230px] before:-translate-x-1/2 before:border-[10px] before:border-transparent before:border-b-black/5 after:absolute after:-top-2 after:left-[230px] after:-translate-x-1/2 after:border-[8px] after:border-transparent after:border-b-white">
                         <motion.div variants={itemVariants} className="grid grid-cols-3 gap-x-4 gap-y-6">
                           {[
                             { href: "/theory/typography", icon: TextIcon, text: "Typography", desc: "The foundation of UI design.", color: "#E0F2FE" },
@@ -325,7 +325,7 @@ export function Navbar() {
                           ].map((item) => (
                             <Link key={item.href} href={item.href} className="flex items-start gap-3 group/item transition-all hover:translate-y-[-2px]">
                               <div 
-                                className="w-10 h-10 rounded-xl border-2 border-black flex items-center justify-center shrink-0 transition-transform group-hover/item:scale-110"
+                                className="w-10 h-10 rounded-xl border-2 border-black/5 flex items-center justify-center shrink-0 transition-all duration-200 shadow-[0_2.5px_0_0_rgba(0,0,0,0.08)] -translate-y-[1px] group-hover/item:-translate-y-[1.5px] group-hover/item:shadow-[0_3px_0_0_rgba(0,0,0,0.1)]"
                                 style={{ backgroundColor: item.color }}
                               >
                                 <HugeiconsIcon icon={item.icon} className="w-5 h-5 text-black" />

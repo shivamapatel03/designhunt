@@ -113,7 +113,11 @@ function LinkCard({
                 </div>
             )}
             
-            <div className={`mb-6 p-4 rounded-2xl w-fit ${color} ${iconTextColor} border-2 border-black shadow-sm`}>
+            <div className={cn(
+                "mb-6 p-2.5 rounded-2xl w-fit border-2 border-black/5 flex items-center justify-center transition-all duration-200 shadow-[0_2.5px_0_0_rgba(0,0,0,0.08)] -translate-y-[1px]",
+                color,
+                iconTextColor
+            )}>
                 {icon}
             </div>
             

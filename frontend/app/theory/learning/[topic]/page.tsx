@@ -368,7 +368,11 @@ export default function LearningPage() {
                             key={i} 
                             className="text-sm md:text-[15px] font-semibold text-gray-800 font-plus-jakarta text-center leading-relaxed mb-6 md:mb-8 w-full"
                           >
-                            {block.value}
+                            {block.value.split(/(200ms-500ms)/g).map((part: string, idx: number) => 
+                              part === '200ms-500ms' 
+                                ? <span key={idx} className="border-b-2 border-dotted border-black/20 pb-0.5 px-0.5">{part}</span>
+                                : part
+                            )}
                           </p>
                         );
                         if (block.type === 'image') return (
@@ -379,6 +383,21 @@ export default function LearningPage() {
                               className={cn(
                                 "rounded-2xl border border-black/5 object-contain shadow-sm w-full h-auto max-h-[400px]",
                                 block.size === 'small' ? "max-w-[280px] md:max-w-[320px]" : "max-w-full"
+                              )} 
+                            />
+                          </div>
+                        );
+                        if (block.type === 'video') return (
+                          <div key={i} className="w-full flex justify-center mb-8 md:mb-10 px-2 md:px-0">
+                            <video 
+                              src={block.value} 
+                              autoPlay 
+                              loop 
+                              muted
+                              playsInline
+                              className={cn(
+                                "rounded-2xl border border-black/5 object-cover shadow-sm w-full h-auto max-h-[300px]",
+                                block.size === 'small' ? "max-w-[280px] md:max-w-[320px]" : "max-w-[400px]"
                               )} 
                             />
                           </div>
