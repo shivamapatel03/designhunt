@@ -18,12 +18,30 @@ const JWT_SECRET = process.env.JWT_SECRET || "designhunt_secret_key_123";
 
 import { storeOtp, getStoredOtp, clearOtp } from "../lib/otp";
 
+// CHECK USERNAME AVAILABILITY
+router.get("/check-username/:username", async (req, res) => {
+  try {
+    const { username } = req.params;
+    if (!username) {
+      return res.status(400).json({ error: "Username is required" });
+    }
+
+    const existingUser = db
+      .prepare("SELECT id FROM users WHERE username = ? COLLATE NOCASE")
+      .get(username);
+
+    res.json({ available: !existingUser });
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // SIGNUP
 router.post("/signup", async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, username } = req.body;
 
-    if (!email || !password || !name) {
+    if (!email || !password || !name || !username) {
       res.status(400).json({ error: "Missing required fields" });
       return;
     }
@@ -33,7 +51,16 @@ router.post("/signup", async (req, res) => {
       .get(email);
 
     if (existingUser) {
-      res.status(400).json({ error: "User already exists" });
+      res.status(400).json({ error: "Email already exists" });
+      return;
+    }
+
+    const existingUsername = db
+      .prepare("SELECT id FROM users WHERE username = ? COLLATE NOCASE")
+      .get(username);
+
+    if (existingUsername) {
+      res.status(400).json({ error: "Username already taken" });
       return;
     }
 
@@ -41,8 +68,8 @@ router.post("/signup", async (req, res) => {
     const userId = randomUUID();
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     db.prepare(
-      "INSERT INTO users (id, email, password, name, email_verified) VALUES (?, ?, ?, ?, 0)",
-    ).run(userId, email, hashedPassword, name);
+      "INSERT INTO users (id, email, password, name, username, email_verified) VALUES (?, ?, ?, ?, ?, 0)",
+    ).run(userId, email, hashedPassword, name, username.toLowerCase());
 
     // Store OTP (Redis or DB Fallback)
     await storeOtp(email, otp, "signup");

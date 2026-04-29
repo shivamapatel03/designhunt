@@ -195,6 +195,24 @@ function ProfileContent() {
                   </div>
                </div>
             </div>
+
+            {/* Gamification Stats */}
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <div className="bg-white p-4 rounded-[24px] border border-black/5 border-b-4 flex items-center gap-3">
+                <img src="/daily/XP.png" className="w-8 h-8 object-contain" alt="XP" />
+                <div className="min-w-0 flex-1">
+                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Total XP</p>
+                   <h4 className="text-sm font-black text-black mt-1 leading-none">{user.total_xp || 0}</h4>
+                </div>
+              </div>
+              <div className="bg-white p-4 rounded-[24px] border border-black/5 border-b-4 flex items-center gap-3">
+                <img src="/daily/streak.png" className="w-8 h-8 object-contain" alt="Streak" />
+                <div className="min-w-0 flex-1">
+                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Day Streak</p>
+                   <h4 className="text-sm font-black text-black mt-1 leading-none">{user.current_streak || 0}</h4>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
  

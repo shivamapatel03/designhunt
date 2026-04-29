@@ -716,20 +716,24 @@ function QuizView({ data, selectedOption, onSelect, onSubmit, disabled, result, 
         animate={{ opacity: 1, scale: 1 }}
         className="flex flex-col items-center justify-center py-10 text-center"
       >
-        <div className={cn(
-            "w-12 h-12 rounded-full flex items-center justify-center mb-4",
-            result.isCorrect ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
-        )}>
-            {result.isCorrect ? <CheckCircle2 className="w-6 h-6" /> : <Play className="w-6 h-6 rotate-90" />}
-        </div>
-        <h2 className="text-lg font-semibold mb-1">{result.isCorrect ? "Correct!" : "Try Again"}</h2>
-        <p className="text-gray-500 text-[10px] font-bold tracking-widest mb-6">Score: {result.score}%</p>
-        <button 
-          onClick={onNext}
-          className="px-8 py-3 bg-slate-800 text-white rounded-full font-bold text-[11px] uppercase tracking-widest transition-all hover:bg-slate-700 active:translate-y-[2px]"
-        >
-          {result.isCorrect ? "Next lesson" : "Review material"}
-        </button>
+        {result.isCorrect ? (
+          <div className="w-24 h-24 mb-6">
+            <img src="/insidelevel/correct.png" alt="Correct" className="w-full h-full object-contain" />
+          </div>
+        ) : (
+          <div className="w-12 h-12 rounded-full flex items-center justify-center mb-4 bg-red-100 text-red-600">
+            <Play className="w-6 h-6 rotate-90" />
+          </div>
+        )}
+        <h2 className="text-2xl font-black tracking-tighter mb-8">{result.isCorrect ? "Correct!" : "Try Again"}</h2>
+        {!result.isCorrect && (
+          <button 
+            onClick={onNext}
+            className="px-8 py-3 bg-slate-800 text-white rounded-full font-bold text-[11px] uppercase tracking-widest transition-all hover:bg-slate-700 active:translate-y-[2px]"
+          >
+            Review material
+          </button>
+        )}
       </motion.div>
     );
   }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -8,13 +8,37 @@ import { motion } from "framer-motion";
 import { Globe, ChevronDown, Eye, EyeOff, Loader2 } from "lucide-react";
 
 function SignupForm() {
-  const [formData, setFormData] = useState({ name: "", email: "", password: "" });
+  const [formData, setFormData] = useState({ name: "", email: "", password: "", username: "" });
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
+  const [checkingUsername, setCheckingUsername] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get("redirect");
+
+  // Check username availability
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+    if (formData.username.length >= 3) {
+      setCheckingUsername(true);
+      timeout = setTimeout(async () => {
+        try {
+          const res = await fetch(`/api/auth/check-username/${formData.username}`);
+          const data = await res.json();
+          setUsernameAvailable(data.available);
+        } catch (err) {
+          console.error("Username check failed", err);
+        } finally {
+          setCheckingUsername(false);
+        }
+      }, 500);
+    } else {
+      setUsernameAvailable(null);
+    }
+    return () => clearTimeout(timeout);
+  }, [formData.username]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,16 +102,38 @@ function SignupForm() {
 
           <div className="space-y-3">
             <div className="space-y-1">
-              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider font-plus-jakarta" htmlFor="name">Username</label>
-              <input 
-                type="text" 
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-100 border-none rounded-xl font-bold text-sm focus:outline-none focus:ring-2 focus:ring-black/5 transition-all text-black placeholder:text-gray-400 font-plus-jakarta"
-                placeholder="Username"
-                required
-              />
+              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider font-plus-jakarta" htmlFor="username">Username</label>
+              <div className="relative">
+                <input 
+                  type="text" 
+                  id="username"
+                  value={formData.username}
+                  onChange={(e) => {
+                    const val = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
+                    setFormData({ ...formData, username: val, name: val }); // Set name same as username for now
+                  }}
+                  className={`w-full px-4 py-3 bg-gray-100 border-none rounded-xl font-bold text-sm focus:outline-none focus:ring-2 transition-all text-black placeholder:text-gray-400 font-plus-jakarta ${
+                    usernameAvailable === false ? 'ring-2 ring-red-500/20' : usernameAvailable === true ? 'ring-2 ring-green-500/20' : 'focus:ring-black/5'
+                  }`}
+                  placeholder="Username"
+                  required
+                />
+                {checkingUsername && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <Loader2 className="w-3 h-3 animate-spin text-gray-400" />
+                  </div>
+                )}
+              </div>
+              {usernameAvailable === false && (
+                <p className="text-[9px] font-black text-red-500 uppercase tracking-wider pl-1 font-plus-jakarta">
+                  Username already taken
+                </p>
+              )}
+              {usernameAvailable === true && (
+                <p className="text-[9px] font-black text-green-500 uppercase tracking-wider pl-1 font-plus-jakarta">
+                  Username available
+                </p>
+              )}
             </div>
 
             <div className="space-y-1">

@@ -264,63 +264,121 @@ export default function PathPage() {
           </div>
         </main>
       ) : (
-        /* DESKTOP PAGINATED VIEW */
-        <main className="h-screen flex flex-col items-center relative overflow-hidden bg-white pt-36 md:pt-40">
-          <div className="flex flex-col items-center mb-6 md:mb-3 px-6 text-center">
-            <h2 className="text-xl md:text-2xl font-black tracking-tight text-black">{topic?.title || (topicSlug.charAt(0).toUpperCase() + topicSlug.slice(1).replace(/-/g, ' '))}</h2>
-            <span className="text-[10px] font-bold text-gray-300 mt-1.5 tracking-[0.2em] uppercase">{completedLevels}/{totalLevels} Levels completed</span>
-          </div>
+        /* DESKTOP SPLIT VIEW */
+        <main className="h-screen flex items-center justify-center bg-[#fafafa] pt-20 px-10 overflow-hidden">
+          <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-12 items-center">
+            
+            {/* Left Side: Module Dashboard */}
+            <div className="space-y-8">
+              <div>
+                <Link href="/theory" className="inline-flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-black transition-colors mb-6 group">
+                  <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
+                  Back to Library
+                </Link>
+                <h1 className="text-4xl md:text-5xl font-black text-black tracking-tighter leading-[0.9] mb-4">
+                  {topic?.title || (topicSlug.charAt(0).toUpperCase() + topicSlug.slice(1).replace(/-/g, ' '))}
+                </h1>
+                <p className="text-sm font-semibold text-gray-400 leading-relaxed max-w-sm">
+                  Master the fundamentals and advanced techniques of {topic?.title || 'this topic'} through interactive levels.
+                </p>
+              </div>
 
-          <div className="flex flex-col items-center gap-4 md:gap-8 w-full px-4">
-            <div className="flex items-center justify-between md:justify-center gap-4 md:gap-20 w-full max-w-[800px]">
-              <button 
-                onClick={() => {
-                  if (currentPage > 0) {
-                    const prevPage = currentPage - 1;
-                    setCurrentPage(prevPage);
-                    setFocusedIdx(prevPage * 10);
-                  }
-                }}
-                disabled={currentPage === 0}
-                className="text-gray-300 hover:text-black transition-colors disabled:opacity-0 disabled:pointer-events-none p-2 active:scale-90"
-              >
-                <ChevronLeft className="w-8 h-8 md:w-10 md:h-10 stroke-[1.5]" />
-              </button>
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white p-5 rounded-[24px] border border-black/5 border-b-4 flex items-center gap-4">
+                  <img src="/daily/level.png" className="w-10 h-10 object-contain" alt="Level" />
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Mastery</span>
+                    <h4 className="text-xl font-black text-black mt-1 leading-none">{completedLevels}/{totalLevels} <span className="text-[10px] text-gray-300">Lvls</span></h4>
+                  </div>
+                </div>
+                <div className="bg-white p-5 rounded-[24px] border border-black/5 border-b-4 flex items-center gap-4">
+                  <img src="/daily/XP.png" className="w-10 h-10 object-contain" alt="XP" />
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Potential XP</span>
+                    <h4 className="text-xl font-black text-black mt-1 leading-none">{totalLevels * 50} <span className="text-[10px] text-gray-300">XP</span></h4>
+                  </div>
+                </div>
+              </div>
 
-              <AnimatePresence mode="wait">
-                <motion.div 
-                  key={currentPage}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 1.05 }}
-                  transition={{ duration: 0.4, ease: "easeOut" }}
-                  className="flex items-center justify-center w-full md:w-[600px] h-[350px] md:h-[280px]"
+              <div className="flex items-center gap-4">
+                <button 
+                  onClick={() => router.push(`/theory/learning/${topicSlug}?level=${currentActiveLevel.level_number}`)}
+                  className="px-6 py-3 bg-[#2B7FFF] text-white rounded-xl font-black text-[11px] uppercase tracking-widest shadow-[0_4px_0_0_#1556B8] hover:translate-y-[-2px] hover:shadow-[0_6px_0_0_#1556B8] active:translate-y-[2px] active:shadow-none transition-all"
                 >
-                  <RoadmapStrip 
-                    levels={levels.slice(currentPage * 10, (currentPage + 1) * 10)} 
-                    topicSlug={topicSlug} 
-                    activeIdx={activeLevelIdx}
-                    focusedIdx={focusedIdx}
-                    topicTitle={topic?.title || topicSlug}
-                    pageOffset={currentPage * 10}
-                    isMobile={false}
-                  />
-                </motion.div>
-              </AnimatePresence>
+                  Continue Learning
+                </button>
+              </div>
+            </div>
 
-              <button 
-                onClick={() => {
-                  if ((currentPage + 1) * 10 < levels.length) {
-                    const nextPage = currentPage + 1;
-                    setCurrentPage(nextPage);
-                    setFocusedIdx(nextPage * 10);
-                  }
-                }}
-                disabled={(currentPage + 1) * 10 >= levels.length}
-                className="text-gray-300 hover:text-black transition-colors disabled:opacity-0 disabled:pointer-events-none p-2 active:scale-90"
-              >
-                <ChevronRight className="w-8 h-8 md:w-10 md:h-10 stroke-[1.5]" />
-              </button>
+            {/* Right Side: Paginated Horizontal Path with Bottom Controls */}
+            <div className="flex flex-col items-center gap-12 -mt-16 w-full lg:w-[550px]">
+              {/* The Path Zone */}
+              <div className="w-full h-[320px] relative overflow-visible flex items-center justify-center">
+                <AnimatePresence mode="wait">
+                  <motion.div 
+                    key={currentPage}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="relative w-full h-full flex items-center justify-center"
+                  >
+                    <RoadmapStrip 
+                      levels={levels.slice(currentPage * 10, (currentPage + 1) * 10)} 
+                      topicSlug={topicSlug} 
+                      activeIdx={activeLevelIdx}
+                      focusedIdx={focusedIdx}
+                      topicTitle={topic?.title || topicSlug}
+                      pageOffset={currentPage * 10}
+                      isMobile={false}
+                    />
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+
+              {/* Bottom Navigation Controls - Minimal Version */}
+              <div className="flex items-center gap-4 mt-[-20px]">
+                <button 
+                  onClick={() => {
+                    if (currentPage > 0) {
+                      const prevPage = currentPage - 1;
+                      setCurrentPage(prevPage);
+                      setFocusedIdx(prevPage * 10);
+                    }
+                  }}
+                  disabled={currentPage === 0}
+                  className="text-gray-200 hover:text-black transition-colors disabled:opacity-0 disabled:pointer-events-none p-1 active:scale-90"
+                >
+                  <ChevronLeft className="w-6 h-6 stroke-[2.5]" />
+                </button>
+
+                <div className="flex gap-1.5 items-center">
+                  {Array.from({ length: Math.ceil(levels.length / 10) }).map((_, i) => (
+                    <div 
+                      key={i}
+                      className={cn(
+                        "w-1.5 h-1.5 rounded-full transition-all duration-300",
+                        currentPage === i ? "w-4 bg-[#2B7FFF]" : "bg-gray-200"
+                      )}
+                    />
+                  ))}
+                </div>
+
+                <button 
+                  onClick={() => {
+                    if ((currentPage + 1) * 10 < levels.length) {
+                      const nextPage = currentPage + 1;
+                      setCurrentPage(nextPage);
+                      setFocusedIdx(nextPage * 10);
+                    }
+                  }}
+                  disabled={(currentPage + 1) * 10 >= levels.length}
+                  className="text-gray-200 hover:text-black transition-colors disabled:opacity-0 disabled:pointer-events-none p-1 active:scale-90"
+                >
+                  <ChevronRight className="w-6 h-6 stroke-[2.5]" />
+                </button>
+              </div>
             </div>
           </div>
         </main>
@@ -339,8 +397,8 @@ function RoadmapStrip({ levels, topicSlug, activeIdx, focusedIdx, topicTitle, pa
   isMobile: boolean
 }) {
   const router = useRouter();
-  const xSpacing = 130;
-  const ySpacing = 110;
+  const xSpacing = 110;
+  const ySpacing = 140;
 
   const points = levels.map((_, i) => {
     const column = Math.floor(i / 2);
@@ -352,7 +410,7 @@ function RoadmapStrip({ levels, topicSlug, activeIdx, focusedIdx, topicTitle, pa
   });
 
   return (
-    <div className="relative w-[600px]">
+    <div className="relative w-full h-full flex items-center justify-center">
       {levels.map((level, i) => {
         const globalIdx = pageOffset + i;
         const isCompleted = level.sections.every(s => s.progress_status?.toLowerCase() === 'completed');
@@ -367,7 +425,7 @@ function RoadmapStrip({ levels, topicSlug, activeIdx, focusedIdx, topicTitle, pa
             animate={{ opacity: 1, scale: 1, y: 0 }}
             style={{ 
               position: 'absolute',
-              top: `${p.y}px`,
+              top: `calc(50% + ${p.y}px)`,
               left: `${p.x}px`,
               transform: 'translate(-50%, -50%)',
               zIndex: 10
@@ -383,17 +441,17 @@ function RoadmapStrip({ levels, topicSlug, activeIdx, focusedIdx, topicTitle, pa
               >
                 {/* Desktop Style Button */}
                 <div className={cn(
-                  "relative w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-lg transition-all duration-300 -translate-y-1 group-hover:-translate-y-1.5 group-active:translate-y-0 shadow-lg",
+                  "relative w-16 h-16 rounded-[24px] flex items-center justify-center font-black text-2xl transition-all duration-300 -translate-y-1 group-hover:-translate-y-1.5 group-active:translate-y-0 shadow-lg",
                   isCompleted || isNext
-                    ? "bg-[#2B7FFF] text-white shadow-[0_6px_0_0_#1556B8]" 
-                    : "bg-white border-2 border-gray-100 text-gray-300 shadow-[0_6px_0_0_#E5E7EB]"
+                    ? "bg-[#2B7FFF] text-white shadow-[0_8px_0_0_#1556B8]" 
+                    : "bg-white border-2 border-gray-100 text-gray-300 shadow-[0_8px_0_0_#E5E7EB]"
                 )}>
-                  {isCompleted ? <CheckCircle className="w-6 h-6" /> : level.level_number}
+                  {isCompleted ? <CheckCircle className="w-8 h-8" /> : level.level_number}
                 </div>
               </button>
               
               <span className={cn(
-                "mt-3 text-[9px] font-semibold",
+                "mt-3 text-[10px] font-black uppercase tracking-[0.1em]",
                 isCompleted || isNext ? "text-black" : "text-black/30"
               )}>
                 Lvl {level.level_number.toString().padStart(2, '0')}
