@@ -73,10 +73,7 @@ export function Footer() {
               
               <div className="flex flex-col gap-1.5 text-center md:text-left">
                  <p className="text-[10px] font-black text-gray-300">
-                    © 2026 Designhunt.
-                 </p>
-                 <p className="text-[10px] font-black text-gray-300 tracking-tighter">
-                    All rights reserved.
+                    Designed with Passion | © 2026 DesignHunt. All rights reserved, Built by Haronex Technology Pvt. Ltd.
                  </p>
               </div>
             </div>
