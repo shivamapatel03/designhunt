@@ -370,14 +370,16 @@ export function Navbar() {
                 <div className="relative">
                   <button
                     onClick={() => setIsProfileOpen(!isProfileOpen)}
-                    className="w-10 h-10 border border-black/10 rounded-full flex items-center justify-center text-black hover:border-black hover:bg-black/5 transition-all active:scale-95 shrink-0 overflow-hidden"
-                    title="Profile"
+                    className="flex items-center gap-2 group transition-all"
                   >
-                    {user.avatar ? (
-                      <img src={user.avatar} className="w-full h-full object-cover" alt="" />
-                    ) : (
-                      <HugeiconsIcon icon={UserIcon} className="w-5 h-5" />
-                    )}
+                    <div className="w-10 h-10 border border-black/10 rounded-full flex items-center justify-center text-black hover:border-black hover:bg-black/5 transition-all active:scale-95 shrink-0 overflow-hidden">
+                      {user.avatar ? (
+                        <img src={user.avatar} className="w-full h-full object-cover" alt="" />
+                      ) : (
+                        <HugeiconsIcon icon={UserIcon} className="w-5 h-5" />
+                      )}
+                    </div>
+                    <HugeiconsIcon icon={ArrowDown01Icon} className={cn("w-3.5 h-3.5 opacity-40 transition-transform duration-300 group-hover:opacity-100", isProfileOpen ? "rotate-180" : "")} />
                   </button>
 
                   <AnimatePresence>

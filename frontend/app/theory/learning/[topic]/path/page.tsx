@@ -303,10 +303,22 @@ export default function PathPage() {
 
               <div className="flex items-center gap-4">
                 <button 
-                  onClick={() => router.push(`/theory/learning/${topicSlug}?level=${currentActiveLevel.level_number}`)}
-                  className="px-6 py-3 bg-[#2B7FFF] text-white rounded-xl font-black text-[11px] uppercase tracking-widest shadow-[0_4px_0_0_#1556B8] hover:translate-y-[-2px] hover:shadow-[0_6px_0_0_#1556B8] active:translate-y-[2px] active:shadow-none transition-all"
+                  onClick={() => router.push(`/theory/learning/${topicSlug}/${completedLevels === totalLevels ? 'completion' : '?level=' + currentActiveLevel.level_number}`)}
+                  className={cn(
+                    "px-6 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all flex items-center gap-2",
+                    completedLevels === totalLevels
+                      ? "bg-green-500 text-white shadow-[0_4px_0_0_#15803d] hover:translate-y-[-2px] hover:shadow-[0_6px_0_0_#15803d]"
+                      : "bg-[#2B7FFF] text-white shadow-[0_4px_0_0_#1556B8] hover:translate-y-[-2px] hover:shadow-[0_6px_0_0_#1556B8]"
+                  )}
                 >
-                  Continue Learning
+                  {completedLevels === totalLevels ? (
+                    <>
+                      <Sparkles className="w-3.5 h-3.5" />
+                      Path Mastered
+                    </>
+                  ) : (
+                    "Continue Learning"
+                  )}
                 </button>
               </div>
             </div>
