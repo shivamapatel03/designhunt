@@ -62,7 +62,7 @@ const insert = db.prepare(`
   VALUES (@id, @term, @slug, @definition, @content, @category, @widget_type, @visual_example)
 `);
 
-const insertMany = db.transaction((concepts) => {
+const insertMany = db.transaction((concepts: any[]) => {
   for (const concept of concepts) insert.run(concept);
 });
 
