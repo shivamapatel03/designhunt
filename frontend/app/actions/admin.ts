@@ -88,7 +88,7 @@ export async function getSystemStats() {
             activeAdmins: totalAdmins?.count || 0
         };
     } catch (error) {
-        return { totalUsers: 0, activeUsers: 0, totalTrainers: 0, pendingVerifications: 0 };
+        return { totalUsers: 0, activeUsers: 0, totalTrainers: 0, pendingVerifications: 0, totalAdmins: 0, activeAdmins: 0 };
     }
 }
 

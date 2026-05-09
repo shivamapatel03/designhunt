@@ -22,7 +22,7 @@ const createRedisInstance = () => {
       }
     });
 
-    instance.on('error', (err) => {
+    instance.on('error', (err: any) => {
       // Silence unhandled error events
       if (err.code === 'ECONNREFUSED') {
         // Just log a minimal message instead of a full stack trace

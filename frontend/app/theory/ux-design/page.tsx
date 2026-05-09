@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, UserGroup, Zap, Lock, ArrowRight, CheckCircle, Smartphone, MousePointer2, Heart } from "lucide-react";
+import { ArrowLeft, Zap, Lock, ArrowRight, CheckCircle, Smartphone, MousePointer2, Heart } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/components/providers/auth-provider";
 import { cn } from "@/lib/utils";

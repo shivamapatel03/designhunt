@@ -72,7 +72,7 @@ export default function CompletionPage() {
           {/* Right Side: Achievement Details */}
           <div className="flex flex-col text-center lg:text-left">
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-black tracking-tighter leading-tight lg:leading-none mb-3 lg:mb-4">
-              Epic Work,<br className="hidden lg:block" />{user?.username || 'Designer'}!
+              Epic Work,<br className="hidden lg:block" />{user?.name || 'Designer'}!
             </h1>
             <p className="text-sm lg:text-base font-semibold text-gray-400 max-w-sm mx-auto lg:mx-0 leading-relaxed mb-6 lg:mb-8">
               You've officially mastered <span className="text-black font-black">{topicTitle || topicSlug}</span>. Every level is unlocked and your skills have peaked.

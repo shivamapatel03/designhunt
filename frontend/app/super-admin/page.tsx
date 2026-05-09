@@ -67,7 +67,10 @@ export default function SuperAdminPage() {
       activeUsers: 0,
       activeAdmins: 0,
       pendingVerifications: 0,
-      totalAdmins: 0
+      totalAdmins: 0,
+      totalUsers: 0,
+      totalTrainers: 0,
+      ideaCount: 0
   });
 
   const handleBackup = async () => {
@@ -138,7 +141,7 @@ export default function SuperAdminPage() {
         } */
         
         const systemStats = await getSystemStats();
-        setStats({ ...systemStats });
+        setStats(prev => ({ ...prev, ...systemStats }));
     } catch (err) {
         console.error(err);
     } finally {
