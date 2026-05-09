@@ -130,26 +130,34 @@ function generateMoreChallenges(count: number) {
 
 const ALL_CHALLENGES = [...CHALLENGES, ...generateMoreChallenges(40)];
 
-const stmt = db.prepare(`
-    INSERT INTO challenges (id, title, description, difficulty, points, category, requirements)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-`);
+async function seedChallenges() {
+  console.log("Seeding challenges...");
 
-console.log("Seeding challenges...");
+  try {
+    await db.run("DELETE FROM challenges");
 
-const deleteStmt = db.prepare("DELETE FROM challenges");
-deleteStmt.run();
+    for (const challenge of ALL_CHALLENGES) {
+      await db.run(
+        `
+        INSERT INTO challenges (id, title, description, difficulty, points, category, requirements)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `,
+        [
+          randomUUID(),
+          challenge.title,
+          challenge.description,
+          challenge.difficulty,
+          challenge.points,
+          challenge.category,
+          challenge.requirements,
+        ]
+      );
+    }
 
-for (const challenge of ALL_CHALLENGES) {
-  stmt.run(
-    randomUUID(),
-    challenge.title,
-    challenge.description,
-    challenge.difficulty,
-    challenge.points,
-    challenge.category,
-    challenge.requirements,
-  );
+    console.log(`Seeded ${ALL_CHALLENGES.length} challenges!`);
+  } catch (error) {
+    console.error("Seeding failed:", error);
+  }
 }
 
-console.log(`Seeded ${ALL_CHALLENGES.length} challenges!`);
+seedChallenges().then(() => process.exit(0));

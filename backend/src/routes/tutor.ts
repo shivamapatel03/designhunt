@@ -6,17 +6,16 @@ import { v4 as uuidv4 } from "uuid";
 const router = express.Router();
 
 // Apply to be a Tutor
-router.post("/apply", authenticateToken, (req: any, res) => {
+router.post("/apply", authenticateToken, async (req: any, res) => {
   const { bio, experience, portfolio, expertise } = req.body;
   const userId = req.user.userId;
 
   try {
     // Check if request already exists
-    const existing = db
-      .prepare(
-        "SELECT * FROM tutor_requests WHERE user_id = ? AND status = 'PENDING'",
-      )
-      .get(userId);
+    const existing = await db.get(
+      "SELECT * FROM tutor_requests WHERE user_id = $1 AND status = 'PENDING'",
+      [userId]
+    );
     if (existing) {
       return res
         .status(400)
@@ -24,17 +23,14 @@ router.post("/apply", authenticateToken, (req: any, res) => {
     }
 
     const id = uuidv4();
-    const stmt = db.prepare(`
-      INSERT INTO tutor_requests (id, user_id, name, email, role, bio, expertise, portfolio, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'PENDING')
-    `);
-
+    
     // Fetch user details for the record
-    const user = db
-      .prepare("SELECT name, email, role FROM users WHERE id = ?")
-      .get(userId) as any;
+    const user = await db.get("SELECT name, email, role FROM users WHERE id = $1", [userId]) as any;
 
-    stmt.run(
+    await db.run(`
+      INSERT INTO tutor_requests (id, user_id, name, email, role, bio, expertise, portfolio, status)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'PENDING')
+    `, [
       id,
       userId,
       user.name,
@@ -42,8 +38,8 @@ router.post("/apply", authenticateToken, (req: any, res) => {
       user.role,
       bio,
       expertise,
-      portfolio,
-    );
+      portfolio
+    ]);
 
     res.json({ message: "Application submitted successfully." });
   } catch (err) {
@@ -53,14 +49,13 @@ router.post("/apply", authenticateToken, (req: any, res) => {
 });
 
 // Get My Application Status
-router.get("/status", authenticateToken, (req: any, res) => {
+router.get("/status", authenticateToken, async (req: any, res) => {
   const userId = req.user.userId;
   try {
-    const request = db
-      .prepare(
-        "SELECT * FROM tutor_requests WHERE user_id = ? ORDER BY created_at DESC LIMIT 1",
-      )
-      .get(userId);
+    const request = await db.get(
+      "SELECT * FROM tutor_requests WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1",
+      [userId]
+    );
     res.json(request || { status: null });
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch status" });

@@ -4,9 +4,9 @@ import { getAllSettings } from "../lib/settings";
 const router = express.Router();
 
 // Get Public Settings (Maintenance Mode, Banner, etc.)
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const allSettings = getAllSettings();
+    const allSettings = await getAllSettings();
     // Filter only public settings
     const publicSettings = {
       MAINTENANCE_MODE: allSettings.MAINTENANCE_MODE === "true",

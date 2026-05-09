@@ -1,8 +1,7 @@
 import db from "./db";
 import { randomUUID } from "crypto";
-import { addDays, format } from "date-fns"; // Date helper library might not be present, using native JS for now
 
-const seedDuels = () => {
+const seedDuels = async () => {
   console.log("Seeding daily duels...");
 
   // Create 7 duels for the next week
@@ -84,41 +83,41 @@ const seedDuels = () => {
     },
   ];
 
-  duels.forEach((duel, index) => {
+  for (let index = 0; index < duels.length; index++) {
+    const duel = duels[index];
     const date = new Date(today);
     date.setDate(today.getDate() + index);
     const dateStr = date.toISOString().split("T")[0]; // YYYY-MM-DD
 
     // Check if exists
-    const existing = db
-      .prepare("SELECT id FROM daily_duels WHERE date = ?")
-      .get(dateStr);
+    const existing = await db.get("SELECT id FROM daily_duels WHERE date = $1", [dateStr]);
 
     if (!existing) {
       const id = randomUUID();
-      db.prepare(
+      await db.run(
         `
                 INSERT INTO daily_duels (id, title, description, option_a_label, option_a_image, option_b_label, option_b_image, category, date)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
              `,
-      ).run(
-        id,
-        duel.title,
-        duel.description,
-        duel.option_a_label,
-        duel.option_a_image,
-        duel.option_b_label,
-        duel.option_b_image,
-        duel.category,
-        dateStr,
+        [
+          id,
+          duel.title,
+          duel.description,
+          duel.option_a_label,
+          duel.option_a_image,
+          duel.option_b_label,
+          duel.option_b_image,
+          duel.category,
+          dateStr,
+        ]
       );
       console.log(`Created duel for ${dateStr}: ${duel.title}`);
     } else {
       console.log(`Duel already exists for ${dateStr}, skipping.`);
     }
-  });
+  }
 
   console.log("Seeding complete.");
 };
 
-seedDuels();
+seedDuels().then(() => process.exit(0));

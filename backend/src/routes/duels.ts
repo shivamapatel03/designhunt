@@ -5,20 +5,16 @@ import { randomUUID } from "crypto";
 const router = express.Router();
 
 // GET /daily - Fetch current daily duel
-router.get("/daily", (req: Request, res: Response) => {
+router.get("/daily", async (req: Request, res: Response) => {
   try {
     const today = new Date().toISOString().split("T")[0];
 
     // Get today's duel
-    let duel = db
-      .prepare("SELECT * FROM daily_duels WHERE date = ?")
-      .get(today) as any;
+    let duel = await db.get("SELECT * FROM daily_duels WHERE date = $1", [today]) as any;
 
     // Fallback: Get most recent duel if today's is missing
     if (!duel) {
-      duel = db
-        .prepare("SELECT * FROM daily_duels ORDER BY date DESC LIMIT 1")
-        .get() as any;
+      duel = await db.get("SELECT * FROM daily_duels ORDER BY date DESC LIMIT 1") as any;
     }
 
     if (!duel) {
@@ -27,25 +23,24 @@ router.get("/daily", (req: Request, res: Response) => {
     }
 
     // Get vote counts
-    const votes = db
-      .prepare(
-        `
+    const votes = await db.get(
+      `
             SELECT 
                 SUM(CASE WHEN choice = 'A' THEN 1 ELSE 0 END) as votes_a,
                 SUM(CASE WHEN choice = 'B' THEN 1 ELSE 0 END) as votes_b,
                 COUNT(*) as total_votes
             FROM duel_votes 
-            WHERE duel_id = ?
+            WHERE duel_id = $1
         `,
-      )
-      .get(duel.id) as any;
+      [duel.id]
+    ) as any;
 
     res.json({
       ...duel,
       votes: {
-        a: votes.votes_a || 0,
-        b: votes.votes_b || 0,
-        total: votes.total_votes || 0,
+        a: parseInt(votes.votes_a || "0"),
+        b: parseInt(votes.votes_b || "0"),
+        total: parseInt(votes.total_votes || "0"),
       },
     });
   } catch (error) {
@@ -55,7 +50,7 @@ router.get("/daily", (req: Request, res: Response) => {
 });
 
 // POST /daily/:id/vote - Vote on a duel
-router.post("/:id/vote", (req: Request, res: Response) => {
+router.post("/:id/vote", async (req: Request, res: Response) => {
   try {
     const { choice, userId } = req.body; // userId is optional (can be anon session)
 
@@ -69,42 +64,40 @@ router.post("/:id/vote", (req: Request, res: Response) => {
 
     // If userId is provided, ensure unique vote per user
     if (userId) {
-      const existing = db
-        .prepare("SELECT id FROM duel_votes WHERE duel_id = ? AND user_id = ?")
-        .get(req.params.id, userId);
+      const existing = await db.get("SELECT id FROM duel_votes WHERE duel_id = $1 AND user_id = $2", [req.params.id, userId]);
       if (existing) {
         res.status(400).json({ error: "User already voted on this duel." });
         return;
       }
     }
 
-    db.prepare(
+    await db.run(
       `
             INSERT INTO duel_votes (id, duel_id, user_id, choice)
-            VALUES (?, ?, ?, ?)
+            VALUES ($1, $2, $3, $4)
         `,
-    ).run(voteId, req.params.id, userId || null, choice);
+      [voteId, req.params.id, userId || null, choice]
+    );
 
     // Return updated stats
-    const votes = db
-      .prepare(
-        `
+    const votes = await db.get(
+      `
              SELECT 
                 SUM(CASE WHEN choice = 'A' THEN 1 ELSE 0 END) as votes_a,
                 SUM(CASE WHEN choice = 'B' THEN 1 ELSE 0 END) as votes_b,
                 COUNT(*) as total_votes
             FROM duel_votes 
-            WHERE duel_id = ?
+            WHERE duel_id = $1
         `,
-      )
-      .get(req.params.id) as any;
+      [req.params.id]
+    ) as any;
 
     res.json({
       success: true,
       votes: {
-        a: votes.votes_a || 0,
-        b: votes.votes_b || 0,
-        total: votes.total_votes || 0,
+        a: parseInt(votes.votes_a || "0"),
+        b: parseInt(votes.votes_b || "0"),
+        total: parseInt(votes.total_votes || "0"),
       },
     });
   } catch (error) {

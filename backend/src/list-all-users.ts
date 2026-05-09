@@ -1,4 +1,8 @@
 import db from "./db";
 
-const users = db.prepare("SELECT id, username, name, email FROM users").all();
-console.log(JSON.stringify(users, null, 2));
+async function listAllUsers() {
+  const users = await db.all("SELECT id, username, name, email FROM users");
+  console.log(JSON.stringify(users, null, 2));
+}
+
+listAllUsers().then(() => process.exit(0));

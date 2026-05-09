@@ -57,13 +57,13 @@ app.get("/", (req, res) => {
 });
 
 // Mock Upgrade Flow
-app.post("/api/upgrade-pro", (req, res) => {
+app.post("/api/upgrade-pro", async (req, res) => {
   const token = req.cookies.token;
   if (!token) return res.status(401).json({ error: "Unauthorized" });
 
   try {
     const payload = jwt.verify(token, JWT_SECRET) as any;
-    db.prepare("UPDATE users SET is_pro = 1 WHERE id = ?").run(payload.userId);
+    await db.run("UPDATE users SET is_pro = true WHERE id = $1", [payload.userId]);
     res.json({ success: true, message: "Upgraded to Pro!" });
   } catch (error) {
     res.status(401).json({ error: "Invalid token" });

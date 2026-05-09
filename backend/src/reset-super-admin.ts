@@ -11,16 +11,17 @@ async function resetSuperAdmin() {
     console.log(`Resetting user: ${email}`);
 
     // Delete existing to avoid any state issues
-    db.prepare("DELETE FROM users WHERE email = ?").run(email);
+    await db.run("DELETE FROM users WHERE email = $1", [email]);
 
     // Insert fresh
     const id = randomUUID();
-    db.prepare(
+    await db.run(
       `
       INSERT INTO users (id, email, password, name, role, status, email_verified, onboarding_completed) 
-      VALUES (?, ?, ?, 'Super Admin', 'SUPER_ADMIN', 'APPROVED', 1, 1)
+      VALUES ($1, $2, $3, 'Super Admin', 'SUPER_ADMIN', 'APPROVED', 1, 1)
     `,
-    ).run(id, email, hashedPassword);
+      [id, email, hashedPassword]
+    );
 
     console.log("\n==================================================");
     console.log("SUPER ADMIN CREDENTIALS FORCED");
@@ -34,4 +35,4 @@ async function resetSuperAdmin() {
   }
 }
 
-resetSuperAdmin();
+resetSuperAdmin().then(() => process.exit(0));

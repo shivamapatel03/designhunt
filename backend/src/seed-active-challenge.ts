@@ -15,30 +15,39 @@ const CHALLENGE = {
     "Album Art",
     "Song Title",
   ]),
-  is_active: 1,
+  is_active: true,
   expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours from now
 };
 
-console.log("Seeding single active challenge...");
+async function seedActiveChallenge() {
+  console.log("Seeding single active challenge...");
 
-// Clear existing
-db.prepare("DELETE FROM challenges").run();
+  try {
+    // Clear existing
+    await db.run("DELETE FROM challenges");
 
-const stmt = db.prepare(`
-    INSERT INTO challenges (id, title, description, difficulty, points, category, requirements, is_active, expires_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-`);
+    await db.run(
+      `
+      INSERT INTO challenges (id, title, description, difficulty, points, category, requirements, is_active, expires_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    `,
+      [
+        randomUUID(),
+        CHALLENGE.title,
+        CHALLENGE.description,
+        CHALLENGE.difficulty,
+        CHALLENGE.points,
+        CHALLENGE.category,
+        CHALLENGE.requirements,
+        CHALLENGE.is_active,
+        CHALLENGE.expires_at,
+      ]
+    );
 
-stmt.run(
-  randomUUID(),
-  CHALLENGE.title,
-  CHALLENGE.description,
-  CHALLENGE.difficulty,
-  CHALLENGE.points,
-  CHALLENGE.category,
-  CHALLENGE.requirements,
-  CHALLENGE.is_active,
-  CHALLENGE.expires_at,
-);
+    console.log(`Seeded active challenge: ${CHALLENGE.title}`);
+  } catch (error) {
+    console.error("Seeding failed:", error);
+  }
+}
 
-console.log(`Seeded active challenge: ${CHALLENGE.title}`);
+seedActiveChallenge().then(() => process.exit(0));

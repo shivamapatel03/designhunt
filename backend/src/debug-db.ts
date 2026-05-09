@@ -1,11 +1,15 @@
-import Database from "better-sqlite3";
-import path from "path";
+import db from "./db";
 
-const dbPath = path.join(process.cwd(), "designhunt_v2.db");
-const db = new Database(dbPath);
+async function debugDb() {
+  const schema = await db.all(`
+    SELECT column_name 
+    FROM information_schema.columns 
+    WHERE table_name = 'users'
+  `) as any[];
+  console.log(
+    "Users table columns:",
+    schema.map((c: any) => c.column_name),
+  );
+}
 
-const columns = db.prepare("PRAGMA table_info(users)").all();
-console.log(
-  "Users table columns:",
-  columns.map((c: any) => c.name),
-);
+debugDb().then(() => process.exit(0));

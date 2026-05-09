@@ -3,11 +3,9 @@ import db from "../db";
 
 const router = express.Router();
 
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const tools = db
-      .prepare("SELECT * FROM tools ORDER BY created_at DESC")
-      .all();
+    const tools = await db.all("SELECT * FROM tools ORDER BY created_at DESC");
     res.json(tools);
   } catch (error) {
     console.error("Error fetching tools:", error);

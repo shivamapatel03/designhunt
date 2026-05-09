@@ -38,34 +38,47 @@ const concepts = [
   },
 ];
 
-console.log("🌱 Seeding Concepts...");
+async function seedConcepts() {
+  console.log("🌱 Seeding Concepts...");
 
-// Re-create table to ensure schema update
-db.exec("DROP TABLE IF EXISTS concepts");
-db.exec(`
-  CREATE TABLE IF NOT EXISTS concepts (
-    id TEXT PRIMARY KEY,
-    term TEXT UNIQUE NOT NULL,
-    slug TEXT UNIQUE NOT NULL,
-    definition TEXT NOT NULL,
-    content TEXT,
-    category TEXT,
-    widget_type TEXT DEFAULT 'standard',
-    visual_example TEXT,
-    related_lesson_id TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )
-`);
+  try {
+    // Re-create table to ensure schema update
+    await db.exec("DROP TABLE IF EXISTS concepts");
+    await db.exec(`
+      CREATE TABLE IF NOT EXISTS concepts (
+        id TEXT PRIMARY KEY,
+        term TEXT UNIQUE NOT NULL,
+        slug TEXT UNIQUE NOT NULL,
+        definition TEXT NOT NULL,
+        content TEXT,
+        category TEXT,
+        widget_type TEXT DEFAULT 'standard',
+        visual_example TEXT,
+        related_lesson_id TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
 
-const insert = db.prepare(`
-  INSERT INTO concepts (id, term, slug, definition, content, category, widget_type, visual_example)
-  VALUES (@id, @term, @slug, @definition, @content, @category, @widget_type, @visual_example)
-`);
+    for (const concept of concepts) {
+      await db.run(`
+        INSERT INTO concepts (id, term, slug, definition, content, category, widget_type, visual_example)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      `, [
+        concept.id,
+        concept.term,
+        concept.slug,
+        concept.definition,
+        concept.content,
+        concept.category,
+        concept.widget_type,
+        concept.visual_example
+      ]);
+    }
 
-const insertMany = db.transaction((concepts: any[]) => {
-  for (const concept of concepts) insert.run(concept);
-});
+    console.log("✅ Concepts seeded successfully!");
+  } catch (error) {
+    console.error("Seeding failed:", error);
+  }
+}
 
-insertMany(concepts);
-
-console.log("✅ Concepts seeded successfully!");
+seedConcepts().then(() => process.exit(0));

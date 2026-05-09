@@ -83,21 +83,21 @@ router.post("/verify", async (req, res) => {
           scanIncrement = 45;
           description = "Monthly Pro (45 Scans)";
           // Mark as Pro for monthly plan
-          db.prepare("UPDATE users SET is_pro = 1 WHERE id = ?").run(payload.userId);
+          await db.run("UPDATE users SET is_pro = true WHERE id = $1", [payload.userId]);
         }
 
         console.log(`[PAYMENT VERIFY] Incrementing scans by: ${scanIncrement}`);
 
         // Update User Credits
         if (scanIncrement > 0) {
-          db.prepare("UPDATE users SET scan_balance = scan_balance + ? WHERE id = ?").run(scanIncrement, payload.userId);
+          await db.run("UPDATE users SET scan_balance = scan_balance + $1 WHERE id = $2", [scanIncrement, payload.userId]);
         }
 
         // Record Transaction
-        db.prepare(`
+        await db.run(`
           INSERT INTO transactions (id, user_id, amount, currency, status, type, description)
-          VALUES (?, ?, ?, ?, ?, ?, ?)
-        `).run(
+          VALUES ($1, $2, $3, $4, $5, $6, $7)
+        `, [
           `txn_${Date.now()}`,
           payload.userId,
           amountNum,
@@ -105,7 +105,7 @@ router.post("/verify", async (req, res) => {
           "completed",
           "subscription",
           description
-        );
+        ]);
 
         res.json({ success: true, message: "Payment verified and Balance updated!" });
       } catch (dbError) {

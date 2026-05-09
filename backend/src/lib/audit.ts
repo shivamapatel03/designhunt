@@ -1,7 +1,7 @@
 import db from "../db";
 import { v4 as uuidv4 } from "uuid";
 
-export const logAction = (
+export const logAction = async (
   adminId: string,
   action: string,
   targetId: string = "",
@@ -9,23 +9,23 @@ export const logAction = (
 ) => {
   try {
     const id = uuidv4();
-    db.prepare(
+    await db.run(
       `
             INSERT INTO audit_logs (id, admin_id, action, target_id, details)
-            VALUES (?, ?, ?, ?, ?)
+            VALUES ($1, $2, $3, $4, $5)
         `,
-    ).run(id, adminId, action, targetId, JSON.stringify(details));
+      [id, adminId, action, targetId, JSON.stringify(details)]
+    );
   } catch (err) {
     console.error("Failed to log action:", err);
   }
 };
 
-export const getAuditLogs = () => {
+export const getAuditLogs = async () => {
   try {
     // limit to last 100 logs for now
-    return db
-      .prepare(
-        `
+    return await db.all(
+      `
             SELECT 
                 audit_logs.*, 
                 users.name as admin_name, 
@@ -35,8 +35,7 @@ export const getAuditLogs = () => {
             ORDER BY created_at DESC 
             LIMIT 100
         `,
-      )
-      .all();
+    );
   } catch (err) {
     console.error("Failed to fetch logs:", err);
     return [];

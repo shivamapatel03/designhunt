@@ -19,9 +19,7 @@ router.post(
     try {
       const { email, name, avatar } = req.body;
 
-      const existingUser = db
-        .prepare("SELECT id FROM users WHERE email = ?")
-        .get(email);
+      const existingUser = await db.get("SELECT id FROM users WHERE email = $1", [email]);
       if (existingUser) {
         return res.status(400).json({ error: "User already exists" });
       }
@@ -33,11 +31,12 @@ router.post(
       const hashedPassword = await bcrypt.hash(password, 10);
       const id = randomUUID();
 
-      db.prepare(
-        "INSERT INTO users (id, email, password, name, role, status, email_verified, avatar) VALUES (?, ?, ?, ?, 'ADMIN', 'APPROVED', 1, ?)",
-      ).run(id, email, hashedPassword, name || "Admin", avatar || null);
+      await db.run(
+        "INSERT INTO users (id, email, password, name, role, status, email_verified, avatar) VALUES ($1, $2, $3, $4, 'ADMIN', 'APPROVED', true, $5)",
+        [id, email, hashedPassword, name || "Admin", avatar || null]
+      );
 
-      logAction(req.user.userId, "CREATE_ADMIN", id, { email, name });
+      await logAction(req.user.userId, "CREATE_ADMIN", id, { email, name });
 
       console.log(`[CREATE ADMIN] Request for: ${email}`);
       res.json({ success: true, password }); // Return password to Super Admin
@@ -51,9 +50,9 @@ router.post(
 );
 
 // Get Global Settings
-router.get("/settings", authenticateToken, requireSuperAdmin, (req, res) => {
+router.get("/settings", authenticateToken, requireSuperAdmin, async (req, res) => {
   try {
-    const settings = getAllSettings();
+    const settings = await getAllSettings();
     res.json(settings);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch settings" });
@@ -65,14 +64,14 @@ router.post(
   "/settings",
   authenticateToken,
   requireSuperAdmin,
-  (req: any, res) => {
+  async (req: any, res) => {
     try {
       const { key, value } = req.body;
       if (!key) return res.status(400).json({ error: "Key is required" });
 
-      const success = updateSetting(key, String(value));
+      const success = await updateSetting(key, String(value));
       if (success) {
-        logAction(req.user.userId, "UPDATE_SETTING", key, { value });
+        await logAction(req.user.userId, "UPDATE_SETTING", key, { value });
         res.json({ success: true });
       } else {
         res.status(500).json({ error: "Failed to update setting" });
@@ -84,9 +83,9 @@ router.post(
 );
 
 // Get Audit Logs
-router.get("/audit-logs", authenticateToken, requireSuperAdmin, (req, res) => {
+router.get("/audit-logs", authenticateToken, requireSuperAdmin, async (req, res) => {
   try {
-    const logs = getAuditLogs();
+    const logs = await getAuditLogs();
     res.json(logs);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch logs" });
@@ -94,9 +93,9 @@ router.get("/audit-logs", authenticateToken, requireSuperAdmin, (req, res) => {
 });
 
 // Get Financial Stats
-router.get("/financials", authenticateToken, requireSuperAdmin, (req, res) => {
+router.get("/financials", authenticateToken, requireSuperAdmin, async (req, res) => {
   try {
-    const stats = getFinancialStats();
+    const stats = await getFinancialStats();
     res.json(stats);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch financials" });
@@ -104,11 +103,9 @@ router.get("/financials", authenticateToken, requireSuperAdmin, (req, res) => {
 });
 
 // Get Admin Access Code
-router.get("/code", (req, res) => {
+router.get("/code", async (req, res) => {
   try {
-    const row = db
-      .prepare("SELECT value FROM system_settings WHERE key = 'ADMIN_CODE'")
-      .get() as any;
+    const row = await db.get("SELECT value FROM system_settings WHERE key = 'ADMIN_CODE'") as any;
     const code = row ? row.value : process.env.ADMIN_CODE || "DESIGNHUNT_ADMIN";
     res.json({ code });
   } catch (error) {
@@ -121,12 +118,12 @@ router.post(
   "/delete-user",
   authenticateToken,
   requireSuperAdmin,
-  (req: any, res) => {
+  async (req: any, res) => {
     try {
       const { id } = req.body;
-      db.prepare("DELETE FROM users WHERE id = ?").run(id);
+      await db.run("DELETE FROM users WHERE id = $1", [id]);
 
-      logAction(req.user.userId, "DELETE_USER", id, {});
+      await logAction(req.user.userId, "DELETE_USER", id, {});
 
       res.json({ success: true });
     } catch (error) {
@@ -141,10 +138,10 @@ router.post(
   "/delete-all-users",
   authenticateToken,
   requireSuperAdmin,
-  (req: any, res) => {
+  async (req: any, res) => {
     try {
-      db.prepare("DELETE FROM users WHERE role != 'SUPER_ADMIN'").run();
-      logAction(req.user.userId, "DELETE_ALL_USERS", "", {});
+      await db.run("DELETE FROM users WHERE role != 'SUPER_ADMIN'");
+      await logAction(req.user.userId, "DELETE_ALL_USERS", "", {});
       res.json({ success: true });
     } catch (error) {
       console.error(error);
@@ -163,9 +160,10 @@ router.post("/rotate-access-code", async (req, res) => {
       newCode += chars.charAt(Math.floor(Math.random() * chars.length));
     }
 
-    db.prepare(
-      "INSERT OR REPLACE INTO system_settings (key, value) VALUES ('ADMIN_CODE', ?)",
-    ).run(newCode);
+    await db.run(
+      "INSERT INTO system_settings (key, value) VALUES ('ADMIN_CODE', $1) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value",
+      [newCode]
+    );
 
     // Notify Admin via Email
     const adminEmail = process.env.ADMIN_EMAIL || "shivamsenton@gmail.com";
@@ -183,9 +181,10 @@ router.post("/reset-access-code", async (req, res) => {
   try {
     const defaultCode = "DESIGNHUNT_ADMIN";
 
-    db.prepare(
-      "INSERT OR REPLACE INTO system_settings (key, value) VALUES ('ADMIN_CODE', ?)",
-    ).run(defaultCode);
+    await db.run(
+      "INSERT INTO system_settings (key, value) VALUES ('ADMIN_CODE', $1) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value",
+      [defaultCode]
+    );
 
     // Notify Admin via Email
     const adminEmail = process.env.ADMIN_EMAIL || "shivamsenton@gmail.com";
@@ -198,34 +197,13 @@ router.post("/reset-access-code", async (req, res) => {
   }
 });
 
-// Backup Database
+// Backup Database (Skip for Supabase as it has its own backups)
 router.post(
   "/backup",
   authenticateToken,
   requireSuperAdmin,
   async (req: any, res) => {
-    try {
-      const fs = require("fs");
-      const path = require("path");
-
-      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-      const backupDir = path.join(__dirname, "../../backups");
-      const dbPath = path.join(__dirname, "../../designhunt_v2.db");
-      const backupPath = path.join(backupDir, `designhunt_v2_${timestamp}.db`);
-
-      if (!fs.existsSync(backupDir)) {
-        fs.mkdirSync(backupDir);
-      }
-
-      fs.copyFileSync(dbPath, backupPath);
-
-      logAction(req.user.userId, "BACKUP_DATABASE", "SYSTEM", { path: backupPath });
-
-      res.json({ success: true, filename: `designhunt_v2_${timestamp}.db` });
-    } catch (err: any) {
-      console.error("Backup failed:", err);
-      res.status(500).json({ error: "Backup failed: " + err.message });
-    }
+    res.status(501).json({ error: "Backup feature is managed by Supabase Cloud" });
   },
 );
 
@@ -250,7 +228,7 @@ router.post(
       );
 
       if (result.success) {
-        logAction(req.user.userId, "SEND_IDEA_FEEDBACK", email, { ideaText });
+        await logAction(req.user.userId, "SEND_IDEA_FEEDBACK", email, { ideaText });
         res.json({ success: true });
       } else {
         res.status(500).json({ error: "Failed to send email" });
@@ -263,9 +241,9 @@ router.post(
 );
 
 // Get all Expert Reviews
-router.get("/expert-reviews", authenticateToken, (req: any, res) => {
+router.get("/expert-reviews", authenticateToken, async (req: any, res) => {
   try {
-    const reviews = db.prepare("SELECT * FROM expert_reviews ORDER BY created_at DESC").all();
+    const reviews = await db.all("SELECT * FROM expert_reviews ORDER BY created_at DESC");
     res.json(reviews);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch reviews" });
@@ -273,7 +251,7 @@ router.get("/expert-reviews", authenticateToken, (req: any, res) => {
 });
 
 // Create an Expert Review
-router.post("/expert-reviews", authenticateToken, (req: any, res) => {
+router.post("/expert-reviews", authenticateToken, async (req: any, res) => {
   try {
     const { author_name, author_title, rating, content, author_image } = req.body;
     
@@ -282,11 +260,12 @@ router.post("/expert-reviews", authenticateToken, (req: any, res) => {
     }
 
     const id = randomUUID();
-    db.prepare(
-      "INSERT INTO expert_reviews (id, author_name, author_title, rating, content, author_image) VALUES (?, ?, ?, ?, ?, ?)"
-    ).run(id, author_name, author_title || null, rating || 5.0, content, author_image || null);
+    await db.run(
+      "INSERT INTO expert_reviews (id, author_name, author_title, rating, content, author_image) VALUES ($1, $2, $3, $4, $5, $6)",
+      [id, author_name, author_title || null, rating || 5.0, content, author_image || null]
+    );
 
-    logAction(req.user.userId, "CREATE_EXPERT_REVIEW", id, { author_name });
+    await logAction(req.user.userId, "CREATE_EXPERT_REVIEW", id, { author_name });
     res.json({ success: true, id });
   } catch (err) {
     res.status(500).json({ error: "Failed to create review" });
@@ -294,12 +273,12 @@ router.post("/expert-reviews", authenticateToken, (req: any, res) => {
 });
 
 // Delete an Expert Review
-router.delete("/expert-reviews/:id", authenticateToken, (req: any, res) => {
+router.delete("/expert-reviews/:id", authenticateToken, async (req: any, res) => {
   try {
     const { id } = req.params;
-    db.prepare("DELETE FROM expert_reviews WHERE id = ?").run(id);
+    await db.run("DELETE FROM expert_reviews WHERE id = $1", [id]);
     
-    logAction(req.user.userId, "DELETE_EXPERT_REVIEW", id, {});
+    await logAction(req.user.userId, "DELETE_EXPERT_REVIEW", id, {});
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: "Failed to delete review" });
@@ -320,7 +299,7 @@ router.post(
       }
 
       // Fetch all subscribed emails
-      const subscribers = db.prepare("SELECT email FROM newsletter_subscribers WHERE status = 'SUBSCRIBED'").all() as { email: string }[];
+      const subscribers = await db.all("SELECT email FROM newsletter_subscribers WHERE status = 'SUBSCRIBED'") as { email: string }[];
 
       if (subscribers.length === 0) {
         return res.status(400).json({ error: "No active subscribers found" });
@@ -339,8 +318,8 @@ router.post(
         }
       }
 
-      if ((req as any).user) {
-        logAction((req as any).user.userId, "SEND_NEWSLETTER", "BULK", { subject, successCount, failCount });
+      if (req.user) {
+        await logAction(req.user.userId, "SEND_NEWSLETTER", "BULK", { subject, successCount, failCount });
       }
 
       res.json({ 
@@ -359,9 +338,9 @@ router.get(
   "/newsletter/subscribers",
   authenticateToken,
   requireSuperAdmin,
-  (req, res) => {
+  async (req, res) => {
     try {
-      const subscribers = db.prepare("SELECT * FROM newsletter_subscribers ORDER BY created_at DESC").all();
+      const subscribers = await db.all("SELECT * FROM newsletter_subscribers ORDER BY created_at DESC");
       res.json({ success: true, subscribers });
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch subscribers" });
@@ -374,12 +353,12 @@ router.delete(
   "/newsletter/subscribers/:id",
   authenticateToken,
   requireSuperAdmin,
-  (req, res) => {
+  async (req, res) => {
     try {
       const { id } = req.params;
-      db.prepare("DELETE FROM newsletter_subscribers WHERE id = ?").run(id);
+      await db.run("DELETE FROM newsletter_subscribers WHERE id = $1", [id]);
       if ((req as any).user) {
-        logAction((req as any).user.userId, "DELETE_SUBSCRIBER", id as string, {});
+        await logAction((req as any).user.userId, "DELETE_SUBSCRIBER", id as string, {});
       }
       res.json({ success: true });
     } catch (error) {
@@ -393,9 +372,9 @@ router.get(
   "/admins",
   authenticateToken,
   requireSuperAdmin,
-  (req, res) => {
+  async (req, res) => {
     try {
-      const admins = db.prepare("SELECT id, name, email, role, status, created_at FROM users WHERE role IN (?, ?)").all('ADMIN', 'SUPER_ADMIN');
+      const admins = await db.all("SELECT id, name, email, role, status, created_at FROM users WHERE role IN ($1, $2)", ['ADMIN', 'SUPER_ADMIN']);
       res.json({ success: true, admins });
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch admins" });
@@ -403,7 +382,7 @@ router.get(
   }
 );
 
-// Invite a new admin (creates user with generated password)
+// Invite a new admin
 router.post(
   "/invite-admin",
   authenticateToken,
@@ -415,7 +394,7 @@ router.post(
       const bcrypt = require('bcryptjs');
       const { sendAdminOnboardingEmail } = require('../lib/email');
       
-      const existing = db.prepare("SELECT id, role, name FROM users WHERE email = ?").get(email) as any;
+      const existing = await db.get("SELECT id, role, name FROM users WHERE email = $1", [email]) as any;
       
       // Generate a secure random password (12 chars)
       const generatedPassword = randomBytes(6).toString('hex');
@@ -430,17 +409,17 @@ router.post(
         }
         userId = existing.id;
         userName = existing.name || name;
-        db.prepare("UPDATE users SET role = 'ADMIN', password = ?, status = 'APPROVED' WHERE id = ?").run(hashedPassword, userId);
+        await db.run("UPDATE users SET role = 'ADMIN', password = $1, status = 'APPROVED' WHERE id = $2", [hashedPassword, userId]);
       } else {
         userId = randomUUID();
-        db.prepare("INSERT INTO users (id, name, email, password, role, status, email_verified) VALUES (?, ?, ?, ?, 'ADMIN', 'APPROVED', 1)").run(userId, name, email, hashedPassword);
+        await db.run("INSERT INTO users (id, name, email, password, role, status, email_verified) VALUES ($1, $2, $3, $4, 'ADMIN', 'APPROVED', true)", [userId, name, email, hashedPassword]);
       }
 
       // Send Email with Password
       const emailRes = await sendAdminOnboardingEmail(email, generatedPassword, userName);
       
       if (req.user) {
-        logAction(req.user.userId, "INVITE_ADMIN", userId, { email, autoEmailSent: emailRes.success });
+        await logAction(req.user.userId, "INVITE_ADMIN", userId, { email, autoEmailSent: emailRes.success });
       }
 
       if (!emailRes.success) {
@@ -466,7 +445,7 @@ router.delete(
   "/admins/:id",
   authenticateToken,
   requireSuperAdmin,
-  (req: any, res) => {
+  async (req: any, res) => {
     try {
       const { id } = req.params;
       
@@ -475,10 +454,10 @@ router.delete(
         return res.status(400).json({ error: "You cannot delete yourself" });
       }
 
-      db.prepare("DELETE FROM users WHERE id = ?").run(id);
+      await db.run("DELETE FROM users WHERE id = $1", [id]);
       
       if (req.user) {
-        logAction(req.user.userId, "DELETE_ADMIN", id as string, {});
+        await logAction(req.user.userId, "DELETE_ADMIN", id as string, {});
       }
 
       res.json({ success: true });

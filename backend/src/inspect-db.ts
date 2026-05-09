@@ -1,12 +1,16 @@
 import db from "./db";
 
-const inspect = () => {
+async function inspect() {
   try {
-    const schema = db.prepare("PRAGMA table_info(challenges)").all();
+    const schema = await db.all(`
+      SELECT column_name, data_type 
+      FROM information_schema.columns 
+      WHERE table_name = 'challenges'
+    `);
     console.log("Challenges Table Schema:", schema);
   } catch (error) {
     console.error("Error inspecting DB:", error);
   }
-};
+}
 
-inspect();
+inspect().then(() => process.exit(0));

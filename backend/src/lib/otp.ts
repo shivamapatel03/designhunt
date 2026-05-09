@@ -5,7 +5,7 @@ import { client as redis, isHealthy as isRedisHealthy } from "./redis";
 const OTP_EXPIRY_SECONDS = 600; // 10 minutes
 
 /**
- * Stores an OTP in Redis if healthy, otherwise falls back to SQLite.
+ * Stores an OTP in Redis if healthy, otherwise falls back to Database.
  */
 export async function storeOtp(email: string, otp: string, type: "signup" | "login" | "admin", hashed = false) {
   const redisKey = `otp:${type}:${email}`;
@@ -20,17 +20,18 @@ export async function storeOtp(email: string, otp: string, type: "signup" | "log
     }
   }
 
-  // Fallback to SQLite
+  // Fallback to Database
   const expiresAt = new Date(Date.now() + OTP_EXPIRY_SECONDS * 1000).toISOString();
-  db.prepare(
-    "UPDATE users SET otp_code = ?, otp_expires_at = ? WHERE email = ?"
-  ).run(valueToStore, expiresAt, email);
+  await db.run(
+    "UPDATE users SET otp_code = $1, otp_expires_at = $2 WHERE email = $3",
+    [valueToStore, expiresAt, email]
+  );
   
   return { success: true, storedIn: "db" };
 }
 
 /**
- * Retrieves an OTP from Redis or SQLite.
+ * Retrieves an OTP from Redis or Database.
  */
 export async function getStoredOtp(email: string, type: "signup" | "login" | "admin") {
   const redisKey = `otp:${type}:${email}`;
@@ -44,8 +45,8 @@ export async function getStoredOtp(email: string, type: "signup" | "login" | "ad
     }
   }
 
-  // Check SQLite
-  const user = db.prepare("SELECT otp_code, otp_expires_at FROM users WHERE email = ?").get(email) as any;
+  // Check Database
+  const user = await db.get("SELECT otp_code, otp_expires_at FROM users WHERE email = $1", [email]) as any;
   if (user && user.otp_code && new Date(user.otp_expires_at) > new Date()) {
     return user.otp_code;
   }
@@ -54,7 +55,7 @@ export async function getStoredOtp(email: string, type: "signup" | "login" | "ad
 }
 
 /**
- * Clears an OTP from both Redis and SQLite.
+ * Clears an OTP from both Redis and Database.
  */
 export async function clearOtp(email: string, type: "signup" | "login" | "admin") {
   if (isRedisHealthy()) {
@@ -64,5 +65,5 @@ export async function clearOtp(email: string, type: "signup" | "login" | "admin"
       console.error("Redis del error:", err);
     }
   }
-  db.prepare("UPDATE users SET otp_code = NULL, otp_expires_at = NULL WHERE email = ?").run(email);
+  await db.run("UPDATE users SET otp_code = NULL, otp_expires_at = NULL WHERE email = $1", [email]);
 }

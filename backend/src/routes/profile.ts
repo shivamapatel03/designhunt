@@ -21,77 +21,71 @@ const authenticate = (req: any, res: any, next: any) => {
   }
 };
 
-router.get("/", authenticate, (req: any, res: any) => {
+router.get("/", authenticate, async (req: any, res: any) => {
   try {
     const userId = req.userId;
-    const user = db
-      .prepare("SELECT * FROM users WHERE id = ?")
-      .get(userId) as any;
+    const user = await db.get("SELECT * FROM users WHERE id = $1", [userId]) as any;
 
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    const enrollments = db
-      .prepare(
-        `
+    const enrollments = await db.all(
+      `
       SELECT e.*, c.title, c.thumbnail, c.difficulty 
       FROM enrollments e 
       JOIN courses c ON e.course_id = c.id 
-      WHERE e.user_id = ?
+      WHERE e.user_id = $1
     `,
-      )
-      .all(userId);
+      [userId]
+    );
 
-    const tutorRequest = db
-      .prepare("SELECT status FROM tutor_requests WHERE user_id = ?")
-      .get(userId) as any;
+    const tutorRequest = await db.get("SELECT status FROM tutor_requests WHERE user_id = $1", [userId]) as any;
 
     // Fetch real typography progress
-    const typographyTopic = db.prepare("SELECT id FROM learning_topics WHERE slug = 'typography'").get() as any;
+    const typographyTopic = await db.get("SELECT id FROM learning_topics WHERE slug = 'typography'") as any;
     let typographyStats = { completed: 0, total: 30 }; // Fallback
     
     if (typographyTopic) {
-        const totalLevels = db.prepare("SELECT COUNT(*) as count FROM learning_levels WHERE topic_id = ?").get(typographyTopic.id) as any;
-        // A level is "completed" if at least one of its sections is completed by the user
-        const completedLevels = db.prepare(`
+        const totalLevels = await db.get("SELECT COUNT(*) as count FROM learning_levels WHERE topic_id = $1", [typographyTopic.id]) as any;
+        const completedLevels = await db.get(`
             SELECT COUNT(DISTINCT l.id) as count 
             FROM learning_levels l
             JOIN learning_sections s ON l.id = s.level_id
             JOIN learning_progress p ON s.id = p.section_id
-            WHERE l.topic_id = ? AND p.user_id = ?
-        `).get(typographyTopic.id, userId) as any;
+            WHERE l.topic_id = $1 AND p.user_id = $2
+        `, [typographyTopic.id, userId]) as any;
         
         typographyStats = {
-            completed: completedLevels?.count || 0,
-            total: totalLevels?.count || 0
+            completed: parseInt(completedLevels?.count || "0"),
+            total: parseInt(totalLevels?.count || "0")
         };
     }
 
     const topicsToLearnRaw = user.topics_to_learn ? JSON.parse(user.topics_to_learn) : [];
-    const topicsWithProgress = topicsToLearnRaw.map((topicName: string) => {
+    const topicsWithProgress = await Promise.all(topicsToLearnRaw.map(async (topicName: string) => {
         const slug = topicName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-        const topic = db.prepare("SELECT id FROM learning_topics WHERE slug = ? OR title = ?").get(slug, topicName) as any;
+        const topic = await db.get("SELECT id FROM learning_topics WHERE slug = $1 OR title = $2", [slug, topicName]) as any;
         
         let percentage = 0;
         if (topic) {
-            const totalRes = db.prepare("SELECT COUNT(*) as count FROM learning_levels WHERE topic_id = ?").get(topic.id) as any;
-            const completedRes = db.prepare(`
+            const totalRes = await db.get("SELECT COUNT(*) as count FROM learning_levels WHERE topic_id = $1", [topic.id]) as any;
+            const completedRes = await db.get(`
                 SELECT COUNT(DISTINCT l.id) as count 
                 FROM learning_levels l
                 JOIN learning_sections s ON l.id = s.level_id
                 JOIN learning_progress p ON s.id = p.section_id
-                WHERE l.topic_id = ? AND p.user_id = ?
-            `).get(topic.id, userId) as any;
+                WHERE l.topic_id = $1 AND p.user_id = $2
+            `, [topic.id, userId]) as any;
             
-            const total = totalRes?.count || 1;
-            const completed = completedRes?.count || 0;
-            percentage = Math.round((completed / total) * 100);
+            const total = parseInt(totalRes?.count || "1");
+            const completed = parseInt(completedRes?.count || "0");
+            percentage = Math.round((completed / (total || 1)) * 100);
         }
         
         return {
             title: topicName,
             percentage
         };
-    });
+    }));
 
     const userProfile = {
       user: {
@@ -113,12 +107,12 @@ router.get("/", authenticate, (req: any, res: any) => {
         xp: user.total_xp || 0,
         current_streak: user.current_streak || 0,
         total_xp: user.total_xp || 0,
-        xp_percentile: (() => {
-            const totalUsersRes = db.prepare("SELECT COUNT(*) as count FROM users").get() as any;
-            const usersAheadRes = db.prepare("SELECT COUNT(*) as count FROM users WHERE total_xp > ?").get(user.total_xp || 0) as any;
-            const totalUsers = totalUsersRes?.count || 1;
-            const usersAhead = usersAheadRes?.count || 0;
-            const topPercent = Math.max(1, Math.round((usersAhead / totalUsers) * 100));
+        xp_percentile: await (async () => {
+            const totalUsersRes = await db.get("SELECT COUNT(*) as count FROM users") as any;
+            const usersAheadRes = await db.get("SELECT COUNT(*) as count FROM users WHERE total_xp > $1", [user.total_xp || 0]) as any;
+            const totalUsers = parseInt(totalUsersRes?.count || "1");
+            const usersAhead = parseInt(usersAheadRes?.count || "0");
+            const topPercent = Math.max(1, Math.round((usersAhead / (totalUsers || 1)) * 100));
             return `Top ${topPercent}%`;
         })(),
         typography_progress: typographyStats,
@@ -145,27 +139,27 @@ router.get("/", authenticate, (req: any, res: any) => {
   }
 });
 
-router.patch("/update", authenticate, (req: any, res: any) => {
+router.patch("/update", authenticate, async (req: any, res: any) => {
   try {
     const userId = req.userId;
     const { name, username, bio, avatar } = req.body;
 
     // Check if username is already taken by another user
     if (username) {
-      const existingUser = db.prepare("SELECT id FROM users WHERE username = ? AND id != ?").get(username, userId);
+      const existingUser = await db.get("SELECT id FROM users WHERE username = $1 AND id != $2", [username, userId]);
       if (existingUser) {
         return res.status(400).json({ error: "Username already taken" });
       }
     }
 
-    db.prepare(`
+    await db.run(`
       UPDATE users 
-      SET name = COALESCE(?, name),
-          username = COALESCE(?, username),
-          bio = COALESCE(?, bio),
-          avatar = COALESCE(?, avatar)
-      WHERE id = ?
-    `).run(name, username, bio, avatar, userId);
+      SET name = COALESCE($1, name),
+          username = COALESCE($2, username),
+          bio = COALESCE($3, bio),
+          avatar = COALESCE($4, avatar)
+      WHERE id = $5
+    `, [name, username, bio, avatar, userId]);
 
     res.json({ success: true, message: "Profile updated successfully" });
   } catch (error) {
@@ -188,14 +182,14 @@ const upload = multer({
   },
 });
  
-router.post("/upload-avatar", authenticate, upload.single("avatar"), (req: any, res: any) => {
+router.post("/upload-avatar", authenticate, upload.single("avatar"), async (req: any, res: any) => {
   try {
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
  
     const fileUrl = req.file.path; // Cloudinary URL is in req.file.path
     
     // Update user avatar in database
-    db.prepare("UPDATE users SET avatar = ? WHERE id = ?").run(fileUrl, req.userId);
+    await db.run("UPDATE users SET avatar = $1 WHERE id = $2", [fileUrl, req.userId]);
 
     res.json({ success: true, url: fileUrl });
   } catch (error: any) {
@@ -204,13 +198,13 @@ router.post("/upload-avatar", authenticate, upload.single("avatar"), (req: any, 
   }
 });
 
-router.post("/decrement-scans", authenticate, (req: any, res: any) => {
+router.post("/decrement-scans", authenticate, async (req: any, res: any) => {
   try {
     const userId = req.userId;
-    const user = db.prepare("SELECT scan_balance FROM users WHERE id = ?").get(userId) as any;
+    const user = await db.get("SELECT scan_balance FROM users WHERE id = $1", [userId]) as any;
     
     if (user && user.scan_balance > 0) {
-      db.prepare("UPDATE users SET scan_balance = scan_balance - 1 WHERE id = ?").run(userId);
+      await db.run("UPDATE users SET scan_balance = scan_balance - 1 WHERE id = $1", [userId]);
       return res.json({ success: true, remaining: user.scan_balance - 1 });
     }
     
