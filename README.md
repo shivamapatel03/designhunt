@@ -1,7 +1,14 @@
+<<<<<<< HEAD
 # DesignHub 🎨
 **Master UI/UX design through an interactive, gamified, and community-driven platform.**
 
 DesignHub is a comprehensive learning ecosystem designed to take aspiring designers from fundamentals to advanced industry techniques. It combines structured learning paths with interactive playgrounds and community engagement.
+=======
+# DesignHunt 🎨
+**Master UI/UX design through an interactive, gamified, and community-driven platform.**
+
+DesignHunt is a comprehensive learning ecosystem designed to take aspiring designers from fundamentals to advanced industry techniques. It combines structured learning paths with interactive playgrounds and community engagement.
+>>>>>>> 70e55a0e4e0fd570d78aa873757b635e004a1df7
 
 ---
 
@@ -95,4 +102,8 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
 
+<<<<<<< HEAD
 Built with Passion by the DesignHub Team.
+=======
+Built with Passion by the Designhunt Team.
+>>>>>>> 70e55a0e4e0fd570d78aa873757b635e004a1df7
