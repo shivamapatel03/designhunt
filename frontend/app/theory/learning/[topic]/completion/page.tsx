@@ -2,11 +2,27 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { Trophy, ArrowLeft, Share2, Sparkles, Home, Star } from "lucide-react";
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { useAuth } from "@/components/providers/auth-provider";
+
+function AnimatedCounter({ value }: { value: number }) {
+  const [displayValue, setDisplayValue] = useState(0);
+  const count = useMotionValue(0);
+
+  useEffect(() => {
+    const controls = animate(count, value, { 
+      duration: 2, 
+      ease: [0.32, 0.72, 0, 1],
+      onUpdate: (latest) => setDisplayValue(Math.round(latest))
+    });
+    return controls.stop;
+  }, [value, count]);
+
+  return <span>{displayValue.toLocaleString()}</span>;
+}
 
 export default function CompletionPage() {
   const params = useParams();
@@ -67,14 +83,16 @@ export default function CompletionPage() {
                 <span className="text-[9px] lg:text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-2 lg:mb-3">Total XP</span>
                 <div className="flex items-center gap-2">
                   <img src="/daily/XP.png" className="w-5 h-5 lg:w-6 lg:h-6 object-contain" alt="XP" />
-                  <h4 className="text-lg lg:text-2xl font-black text-black">1,250</h4>
+                  <h4 className="text-lg lg:text-2xl font-black text-black">
+                    <AnimatedCounter value={user?.total_xp || 0} />
+                  </h4>
                 </div>
               </div>
               <div className="bg-white p-4 lg:p-5 rounded-[24px] lg:rounded-[28px] border border-black/5 flex flex-col items-center lg:items-start">
                 <span className="text-[9px] lg:text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-2 lg:mb-3">Topic Rank</span>
                 <div className="flex items-center gap-2">
                   <img src="/daily/level.png" className="w-5 h-5 lg:w-6 lg:h-6 object-contain" alt="Rank" />
-                  <h4 className="text-lg lg:text-2xl font-black text-black">Top 5%</h4>
+                  <h4 className="text-lg lg:text-2xl font-black text-black">{user?.xp_percentile || "Top 12%"}</h4>
                 </div>
               </div>
             </div>

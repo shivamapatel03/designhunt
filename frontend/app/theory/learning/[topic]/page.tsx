@@ -22,7 +22,7 @@ import {
   ArrowRight
 } from "lucide-react";
 import { ListenButton } from "@/components/ui/ListenButton";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform, animate } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
@@ -52,6 +52,22 @@ interface Topic {
   slug: string;
   description: string;
   icon: string;
+}
+
+function AnimatedCounter({ value }: { value: number }) {
+  const [displayValue, setDisplayValue] = useState(0);
+  const count = useMotionValue(0);
+
+  useEffect(() => {
+    const controls = animate(count, value, { 
+      duration: 2, 
+      ease: [0.32, 0.72, 0, 1],
+      onUpdate: (latest) => setDisplayValue(Math.round(latest))
+    });
+    return controls.stop;
+  }, [value, count]);
+
+  return <span>{displayValue.toLocaleString()}</span>;
 }
 
 export default function LearningPage() {
@@ -335,7 +351,13 @@ export default function LearningPage() {
              </div>
           </div>
           
-          <div className="flex items-center justify-end gap-2 shrink-0">
+          <div className="flex items-center justify-end gap-3 md:gap-4 shrink-0">
+              <div className="flex items-center gap-1.5 md:gap-2 px-2.5 py-1.5 md:px-3 md:py-2 bg-gray-50 border border-black/5 rounded-xl md:rounded-2xl">
+                <img src="/daily/XP.png" className="w-3.5 h-3.5 md:w-4 md:h-4 object-contain" alt="XP" />
+                <span className="text-[10px] md:text-xs font-black text-black tracking-tight tabular-nums">
+                  <AnimatedCounter value={userStats.xp} />
+                </span>
+              </div>
               <ListenButton 
                 text={
                   currentSection?.type === 'READ' 

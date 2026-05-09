@@ -86,13 +86,13 @@ export function DuelsManager() {
                         <div className="p-4 border-2 border-gray-100 rounded-xl space-y-2">
                              <div className="font-bold text-xs uppercase bg-black text-white inline-block px-2 py-1 rounded">Option A</div>
                              <input name="option_a_label" placeholder="Label (e.g. High Contrast)" required className="w-full p-2 bg-white border-b-2 border-gray-200 focus:border-black outline-none" />
-                             <input name="option_a_image" placeholder="Image URL" required className="w-full p-2 bg-white border-b-2 border-gray-200 focus:border-black outline-none text-xs font-mono" />
+                             <input name="option_a_image" placeholder="Image URL (Optional)" className="w-full p-2 bg-white border-b-2 border-gray-200 focus:border-black outline-none text-xs font-mono" />
                         </div>
 
                         <div className="p-4 border-2 border-gray-100 rounded-xl space-y-2">
                              <div className="font-bold text-xs uppercase bg-black text-white inline-block px-2 py-1 rounded">Option B</div>
                              <input name="option_b_label" placeholder="Label (e.g. Low Contrast)" required className="w-full p-2 bg-white border-b-2 border-gray-200 focus:border-black outline-none" />
-                             <input name="option_b_image" placeholder="Image URL" required className="w-full p-2 bg-white border-b-2 border-gray-200 focus:border-black outline-none text-xs font-mono" />
+                             <input name="option_b_image" placeholder="Image URL (Optional)" className="w-full p-2 bg-white border-b-2 border-gray-200 focus:border-black outline-none text-xs font-mono" />
                         </div>
                     </div>
                 </div>

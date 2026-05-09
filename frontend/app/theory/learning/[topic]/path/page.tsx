@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { motion, AnimatePresence, useMotionValue, useSpring, animate } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useSpring, animate, useTransform } from "framer-motion";
 import { 
   ChevronLeft, 
   ArrowLeft,
@@ -39,6 +39,22 @@ interface Topic {
   id: string;
   title: string;
   description: string;
+}
+
+function AnimatedCounter({ value }: { value: number }) {
+  const [displayValue, setDisplayValue] = useState(0);
+  const count = useMotionValue(0);
+
+  useEffect(() => {
+    const controls = animate(count, value, { 
+      duration: 2, 
+      ease: [0.32, 0.72, 0, 1],
+      onUpdate: (latest) => setDisplayValue(Math.round(latest))
+    });
+    return controls.stop;
+  }, [value, count]);
+
+  return <span>{displayValue.toLocaleString()}</span>;
 }
 
 export default function PathPage() {
@@ -178,7 +194,14 @@ export default function PathPage() {
                         className="h-full bg-indigo-600 rounded-full"
                     />
                 </div>
-                <span className="text-[10px] font-black text-gray-400 tracking-[0.2em] uppercase">{completedLevels}/{totalLevels} Levels completed</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-[10px] font-black text-gray-400 tracking-[0.2em] uppercase">{completedLevels}/{totalLevels} Levels completed</span>
+                  <div className="w-1 h-1 rounded-full bg-gray-200" />
+                  <div className="flex items-center gap-1">
+                    <img src="/daily/XP.png" className="w-3 h-3 object-contain" alt="XP" />
+                    <span className="text-[10px] font-black text-black tracking-[0.1em] uppercase"><AnimatedCounter value={userStats.xp} /> XP</span>
+                  </div>
+                </div>
             </div>
           </div>
 
@@ -295,8 +318,8 @@ export default function PathPage() {
                 <div className="bg-white p-5 rounded-[24px] border border-black/5 border-b-4 flex items-center gap-4">
                   <img src="/daily/XP.png" className="w-10 h-10 object-contain" alt="XP" />
                   <div className="min-w-0 flex-1">
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Potential XP</span>
-                    <h4 className="text-xl font-black text-black mt-1 leading-none">{totalLevels * 50} <span className="text-[10px] text-gray-300">XP</span></h4>
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">My XP</span>
+                    <h4 className="text-xl font-black text-black mt-1 leading-none"><AnimatedCounter value={userStats.xp} /> <span className="text-[10px] text-gray-300">Total</span></h4>
                   </div>
                 </div>
               </div>

@@ -12,9 +12,9 @@ interface Duel {
   title: string;
   description: string;
   option_a_label: string;
-  option_a_image: string;
+  option_a_image?: string;
   option_b_label: string;
-  option_b_image: string;
+  option_b_image?: string;
   category: string;
   votes: {
     a: number;
@@ -187,7 +187,7 @@ function DuelOption({
     onClick 
 }: { 
     label: string, 
-    image: string, 
+    image?: string, 
     choice: "A" | "B", 
     selected: boolean, 
     disabled: boolean, 
@@ -195,6 +195,8 @@ function DuelOption({
     showResult: boolean, 
     onClick: () => void 
 }) {
+    const hasImage = !!image && image.trim().length > 0;
+
     return (
         <motion.button 
             whileHover={!disabled ? { y: -4, boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)" } : {}}
@@ -203,40 +205,58 @@ function DuelOption({
             disabled={disabled}
             className={cn(
                 "group relative rounded-2xl border border-gray-200 overflow-hidden transition-all h-full flex flex-col text-left",
-                selected && "ring-4 ring-yellow-400 ring-offset-2"
+                selected && "ring-4 ring-yellow-400 ring-offset-2",
+                !hasImage && "bg-gray-50 min-h-[140px] items-center justify-center p-6"
             )}
         >
             {/* Image Area */}
-            <div className="relative h-32 w-full bg-gray-100 border-b border-gray-200">
-                <img src={image} alt={label} className="w-full h-full object-cover" />
-                
-                {/* Overlay Result */}
-                <AnimatePresence>
-                    {showResult && (
-                        <motion.div 
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="absolute inset-0 bg-black/60 flex items-center justify-center flex-col text-white"
-                        >
-                            <span className="text-3xl font-black">{percent}%</span>
-                            {selected && <CheckCircle2 className="w-6 h-6 mt-1 text-green-400" />}
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
+            {hasImage && (
+                <div className="relative h-32 w-full bg-gray-100 border-b border-gray-200">
+                    <img src={image} alt={label} className="w-full h-full object-cover" />
+                    
+                    {/* Overlay Result */}
+                    <AnimatePresence>
+                        {showResult && (
+                            <motion.div 
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="absolute inset-0 bg-black/60 flex items-center justify-center flex-col text-white"
+                            >
+                                <span className="text-3xl font-black">{percent}%</span>
+                                {selected && <CheckCircle2 className="w-6 h-6 mt-1 text-green-400" />}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+            )}
 
             {/* Label Area */}
-            <div className="p-3 bg-white flex-1 w-full flex items-center justify-between">
-                <span className="font-bold text-sm text-left">{label}</span>
+            <div className={cn(
+                "p-3 bg-white flex-1 w-full flex items-center justify-between",
+                !hasImage && "p-0 bg-transparent flex-col justify-center text-center gap-4"
+            )}>
+                <span className={cn(
+                    "font-bold text-sm text-left",
+                    !hasImage && "text-lg text-center"
+                )}>
+                    {label}
+                </span>
+
+                {!hasImage && showResult && (
+                    <div className="flex flex-col items-center">
+                        <span className="text-3xl font-black text-black">{percent}%</span>
+                        {selected && <CheckCircle2 className="w-5 h-5 text-green-500 mt-1" />}
+                    </div>
+                )}
+
                 <span className={cn(
                     "w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center text-xs font-black",
-                    selected ? "bg-black text-white" : "bg-gray-100 text-gray-500"
+                    selected ? "bg-black text-white" : "bg-gray-100 text-gray-500",
+                    !hasImage && "w-8 h-8 text-sm"
                 )}>
                     {choice}
                 </span>
             </div>
-            
-            {/* Progress Bar Background (Optional advanced visual, keeping simple for now) */}
         </motion.button>
     )
 }
