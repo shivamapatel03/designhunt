@@ -16,7 +16,7 @@ async function ensureSuperAdmin() {
             `User exists but has role ${user.role}. Promoting to SUPER_ADMIN...`,
           );
           await db.run(
-            "UPDATE users SET role = $1, status = $2, email_verified = 1 WHERE email = $3",
+            "UPDATE users SET role = $1, status = $2, email_verified = true WHERE email = $3",
             ["SUPER_ADMIN", "APPROVED", email]
           );
           console.log("User promoted successfully.");
@@ -29,7 +29,7 @@ async function ensureSuperAdmin() {
         await db.run(
           `
           INSERT INTO users (id, email, name, role, status, email_verified, onboarding_completed)
-          VALUES ($1, $2, 'Super Admin', 'SUPER_ADMIN', 'APPROVED', 1, 1)
+          VALUES ($1, $2, 'Super Admin', 'SUPER_ADMIN', 'APPROVED', true, true)
         `,
           [id, email]
         );

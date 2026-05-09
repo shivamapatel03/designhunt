@@ -1,10 +1,10 @@
-const Database = require("better-sqlite3");
-const path = require("path");
+import db from "./db";
 
-const dbPath = path.join(process.cwd(), "designhunt_v2.db");
-const db = new Database(dbPath);
+async function listAdmins() {
+  const admins = await db.all(
+    "SELECT email, name, role, status FROM users WHERE role = 'ADMIN'"
+  );
+  console.log("Existing Admins:", JSON.stringify(admins, null, 2));
+}
 
-const admins = db
-  .prepare("SELECT email, name, role, status FROM users WHERE role = 'ADMIN'")
-  .all();
-console.log("Existing Admins:", JSON.stringify(admins, null, 2));
+listAdmins().then(() => process.exit(0));
