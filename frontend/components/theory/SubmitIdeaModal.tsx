@@ -54,7 +54,7 @@ export function SubmitIdeaModal({ isOpen, onClose }: SubmitIdeaModalProps) {
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="fixed inset-0 m-auto w-full max-w-lg h-fit bg-white rounded-3xl p-8 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] border-4 border-black z-50 overflow-hidden"
+            className="fixed inset-0 m-auto w-full max-w-lg h-fit bg-white p-8 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] border-4 border-black z-50 overflow-hidden"
           >
             {status === "success" ? (
               <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
@@ -74,7 +74,7 @@ export function SubmitIdeaModal({ isOpen, onClose }: SubmitIdeaModalProps) {
                         </h2>
                         <p className="text-sm font-bold text-gray-500 mt-1">Pitch a new interaction or theory module.</p>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                    <button onClick={onClose} className="p-2 hover:bg-gray-100 transition-colors">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -85,7 +85,7 @@ export function SubmitIdeaModal({ isOpen, onClose }: SubmitIdeaModalProps) {
                         <input 
                             required
                             type="text" 
-                            className="w-full px-4 py-3 bg-gray-50 border-2 border-black rounded-xl font-medium focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
+                            className="w-full px-4 py-3 bg-gray-50 border-2 border-black font-medium focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
                             placeholder="Design Wizard"
                             value={formData.name}
                             onChange={e => setFormData({...formData, name: e.target.value})}
@@ -96,7 +96,7 @@ export function SubmitIdeaModal({ isOpen, onClose }: SubmitIdeaModalProps) {
                         <input 
                             required
                             type="email" 
-                            className="w-full px-4 py-3 bg-gray-50 border-2 border-black rounded-xl font-medium focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
+                            className="w-full px-4 py-3 bg-gray-50 border-2 border-black font-medium focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
                             placeholder="wizard@design.com"
                             value={formData.email}
                             onChange={e => setFormData({...formData, email: e.target.value})}
@@ -107,7 +107,7 @@ export function SubmitIdeaModal({ isOpen, onClose }: SubmitIdeaModalProps) {
                         <textarea 
                             required
                             rows={4}
-                            className="w-full px-4 py-3 bg-gray-50 border-2 border-black rounded-xl font-medium focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all resize-none"
+                            className="w-full px-4 py-3 bg-gray-50 border-2 border-black font-medium focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all resize-none"
                             placeholder="Describe the interaction or law you want to see visualized..."
                             value={formData.idea}
                             onChange={e => setFormData({...formData, idea: e.target.value})}
@@ -117,7 +117,7 @@ export function SubmitIdeaModal({ isOpen, onClose }: SubmitIdeaModalProps) {
                     <button 
                         disabled={status === "submitting"}
                         type="submit" 
-                        className="w-full py-4 bg-black text-white font-black uppercase tracking-widest rounded-xl hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none shadow-[4px_4px_0px_0px_rgba(0,0,0,0.3)] transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                        className="w-full py-4 bg-black text-white font-black uppercase tracking-widest hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none shadow-[4px_4px_0px_0px_rgba(0,0,0,0.3)] transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                     >
                         {status === "submitting" ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-4 h-4" />}
                         {status === "submitting" ? "Sending..." : "Submit Idea"}

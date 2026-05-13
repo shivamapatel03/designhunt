@@ -63,8 +63,8 @@ export function LearningProgressTracker({ currentTopic, topicSlug, totalLessons,
 
       {/* Circle Sequence */}
       <div className="flex items-center gap-3 mb-6 overflow-x-auto no-scrollbar pb-2">
-        {visibleLessons.map((lesson, idx) => (
-          <div key={idx} className="flex-shrink-0">
+        {visibleLessons.map((lesson) => (
+          <div key={`${lesson.id}-${lesson.status}`} className="flex-shrink-0">
             {lesson.status === "completed" && (
               <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center text-xs font-bold">
                 {lesson.id}

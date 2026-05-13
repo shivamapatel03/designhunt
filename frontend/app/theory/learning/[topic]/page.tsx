@@ -490,7 +490,7 @@ function InteractiveLego({ type, label }: { type: string; label: string }) {
 
   if (type === 'font-weight-slider') {
     return (
-      <div className="bg-white border-2 border-black rounded-2xl p-8 my-8 shadow-sm">
+      <div className="bg-white border-2 border-black p-8 my-8 shadow-sm">
         <label className="block text-[10px] font-semibold text-black mb-4 tracking-widest">{label}</label>
         <div className="text-6xl mb-8 text-center font-clash" style={{ fontWeight: weight }}>Aa</div>
         <input type="range" min="100" max="900" step="100" value={weight} onChange={(e) => setWeight(Number(e.target.value))} className="w-full cursor-pointer accent-black" />
@@ -501,7 +501,7 @@ function InteractiveLego({ type, label }: { type: string; label: string }) {
 
   if (type === 'line-height-slider') {
     return (
-      <div className="bg-white border-2 border-black rounded-2xl p-6 my-8 shadow-sm">
+      <div className="bg-white border-2 border-black p-6 my-8 shadow-sm">
         <label className="block text-[10px] font-semibold text-black mb-4 tracking-widest">{label}</label>
         <div className="mb-6 p-4 bg-gray-50 rounded-xl overflow-hidden">
             <p className="text-sm leading-relaxed" style={{ lineHeight: leading }}>
@@ -516,7 +516,7 @@ function InteractiveLego({ type, label }: { type: string; label: string }) {
 
   if (type === 'tracking-visualizer') {
     return (
-      <div className="bg-white border-2 border-black rounded-2xl p-6 my-8 shadow-sm">
+      <div className="bg-white border-2 border-black p-6 my-8 shadow-sm">
         <label className="block text-[10px] font-semibold text-black mb-4 tracking-widest">{label}</label>
         <div className="text-4xl py-10 text-center font-clash bg-gray-50 rounded-xl mb-6 flex items-center justify-center italic" style={{ letterSpacing: `${tracking}px` }}>
             SPACE
@@ -529,7 +529,7 @@ function InteractiveLego({ type, label }: { type: string; label: string }) {
 
   if (type === 'hierarchy-toggle') {
     return (
-      <div className="bg-white border-2 border-black rounded-2xl p-6 my-8 shadow-sm">
+      <div className="bg-white border-2 border-black p-6 my-8 shadow-sm">
         <div className="flex items-center justify-between mb-6">
             <label className="text-[10px] font-semibold text-black tracking-widest">{label}</label>
             <button 
@@ -574,7 +574,7 @@ function InteractiveLego({ type, label }: { type: string; label: string }) {
 
   if (type === 'fluid-scale-interactive') {
     return (
-      <div className="bg-white border-2 border-black rounded-2xl p-6 my-8 shadow-sm">
+      <div className="bg-white border-2 border-black p-6 my-8 shadow-sm">
         <label className="block text-[10px] font-semibold text-black mb-4 uppercase tracking-widest">{label}</label>
         <div className="mb-6 p-6 bg-gray-50 rounded-xl overflow-hidden flex flex-col items-center min-h-[160px] justify-center">
             <div 
@@ -602,7 +602,7 @@ function InteractiveLego({ type, label }: { type: string; label: string }) {
 
   if (type === 'baseline-grid-visualizer') {
     return (
-      <div className="bg-white border-2 border-black rounded-2xl p-6 my-8 shadow-sm">
+      <div className="bg-white border-2 border-black p-6 my-8 shadow-sm">
         <div className="flex items-center justify-between mb-4">
             <label className="text-[10px] font-semibold text-black uppercase tracking-widest">{label}</label>
             <button 
@@ -639,7 +639,7 @@ function InteractiveLego({ type, label }: { type: string; label: string }) {
 
   if (type === 'opentype-feature-toggle') {
      return (
-        <div className="bg-white border-2 border-black rounded-2xl p-6 my-8 shadow-sm">
+        <div className="bg-white border-2 border-black p-6 my-8 shadow-sm">
             <div className="flex items-center justify-between mb-6">
                 <label className="text-[10px] font-semibold text-black uppercase tracking-widest">{label}</label>
                 <button 
@@ -672,7 +672,7 @@ function InteractiveLego({ type, label }: { type: string; label: string }) {
   }
 
   return (
-    <div className="bg-white border-2 border-black rounded-2xl p-8 flex flex-col items-center justify-center gap-3">
+    <div className="bg-white border-2 border-black p-8 flex flex-col items-center justify-center gap-3">
       <Play className="w-10 h-10 text-black" />
       <span className="font-semibold text-sm text-black">{label}</span>
     </div>

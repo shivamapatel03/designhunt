@@ -14,6 +14,8 @@ interface SkillActivityCardProps {
 
 export function SkillActivityCard({ title, percentage, status, themeColor = "#FFF8D6", onDelete }: SkillActivityCardProps) {
   const router = useRouter();
+  if (!title) return null;
+
   const slug = title.toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '');

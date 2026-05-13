@@ -35,6 +35,10 @@ app.use(
 );
 app.use(express.json({ limit: "50mb" }));
 app.use(cookieParser());
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url}`);
+  next();
+});
 app.use("/uploads", express.static(path.join(__dirname, "../public/uploads")));
 
 app.use("/api/auth", authRoutes);

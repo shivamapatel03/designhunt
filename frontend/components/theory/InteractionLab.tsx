@@ -29,7 +29,7 @@ export function InteractionLab() {
   };
 
   return (
-    <div className="bg-white border-2 border-black rounded-xl p-6 shadow-[4px_4px_0px_0px_#000]">
+    <div className="bg-white border-2 border-black p-6 shadow-[4px_4px_0px_0px_#000]">
       <h3 className="text-2xl font-bold mb-6">Interaction Lab</h3>
       
       <div className="grid md:grid-cols-2 gap-8">
@@ -43,13 +43,13 @@ export function InteractionLab() {
          </div>
 
          {/* Playground */}
-         <div className="bg-gray-50 rounded-xl flex items-center justify-center p-8 border border-gray-200 min-h-[300px]">
+         <div className="bg-gray-50 flex items-center justify-center p-8 border border-gray-200 min-h-[300px]">
              <motion.button
                 onClick={handleClick}
                 whileHover={config.hoverScale ? { scale: 1.05 } : {}}
                 whileTap={config.activePress ? { scale: 0.95 } : {}}
                 className={`
-                    relative overflow-hidden px-8 py-4 rounded-xl font-bold text-lg shadow-lg flex items-center justify-center gap-2 min-w-[200px]
+                    relative overflow-hidden px-8 py-4 font-bold text-lg shadow-lg flex items-center justify-center gap-2 min-w-[200px]
                     ${status === 'success' && config.successState ? 'bg-green-500 text-white' : 'bg-black text-white'}
                 `}
              >
@@ -98,7 +98,7 @@ export function InteractionLab() {
 
 function Toggle({ label, checked, onChange }: { label: string, checked: boolean, onChange: () => void }) {
     return (
-        <label className="flex items-center justify-between p-3 border border-gray-200 rounded-lg cursor-pointer bg-white hover:border-black transition-colors">
+        <label className="flex items-center justify-between p-3 border border-gray-200 cursor-pointer bg-white hover:border-black transition-colors">
             <span className="font-bold text-sm">{label}</span>
             <div className={`w-10 h-6 rounded-full p-1 transition-colors ${checked ? 'bg-green-500' : 'bg-gray-300'}`} onClick={(e) => { e.preventDefault(); onChange(); }}>
                 <div className={`w-4 h-4 bg-white rounded-full transition-transform ${checked ? 'translate-x-4' : 'translate-x-0'}`}></div>

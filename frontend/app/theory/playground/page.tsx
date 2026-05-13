@@ -19,7 +19,7 @@ export default function InteractionLabPage() {
         
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
           <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-pink/10 border border-accent-pink/20 text-accent-pink text-xs font-black uppercase tracking-widest">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-accent-pink/10 border border-accent-pink/20 text-accent-pink text-xs font-black uppercase tracking-widest">
                 <Beaker className="w-3 h-3" />
                 Experimental Beta
             </div>
@@ -31,7 +31,7 @@ export default function InteractionLabPage() {
           
           <button 
             onClick={() => window.location.reload()}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-black font-bold hover:bg-black hover:text-white transition-all active:scale-95"
+            className="inline-flex items-center gap-2 px-5 py-2.5 border-2 border-black font-bold hover:bg-black hover:text-white transition-all active:scale-95"
           >
             <RotateCcw className="w-4 h-4" />
             Reset Lab
@@ -41,15 +41,15 @@ export default function InteractionLabPage() {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Gestalt Principles Visualizer */}
           <div className="lg:col-span-2 space-y-8">
-            <div className="bg-white border-2 border-black rounded-3xl p-8 md:p-12 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden">
+            <div className="bg-white border-2 border-black p-8 md:p-12 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden">
                 <div className="flex items-center justify-between mb-8">
                     <h3 className="text-2xl font-black">Gestalt Principles</h3>
-                    <div className="flex gap-2 p-1 bg-gray-100 rounded-xl">
+                    <div className="flex gap-2 p-1 bg-gray-100">
                         {(["proximity", "similarity", "closure", "fate"] as const).map((mode) => (
                             <button
                                 key={mode}
                                 onClick={() => setGestaltMode(mode)}
-                                className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${
+                                className={`px-4 py-2 text-xs font-black uppercase tracking-wider transition-all ${
                                     gestaltMode === mode ? 'bg-black text-white shadow-lg' : 'text-gray-400 hover:text-black'
                                 }`}
                             >
@@ -59,7 +59,7 @@ export default function InteractionLabPage() {
                     </div>
                 </div>
 
-                <div className="relative h-[400px] border-2 border-dashed border-gray-100 rounded-2xl flex items-center justify-center bg-gray-50/50">
+                <div className="relative h-[400px] border-2 border-dashed border-gray-100 flex items-center justify-center bg-gray-50/50">
                     <div className="grid grid-cols-4 gap-6 p-8">
                         {Array.from({ length: 16 }).map((_, i) => (
                             <motion.div
@@ -89,12 +89,12 @@ export default function InteractionLabPage() {
                         <motion.div 
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className="absolute pointer-events-none border-4 border-dashed border-accent-blue/30 w-48 h-48 rounded-2xl"
+                            className="absolute pointer-events-none border-4 border-dashed border-accent-blue/30 w-48 h-48"
                         />
                     )}
                 </div>
 
-                <div className="mt-8 flex items-start gap-4 p-4 bg-accent-blue/5 rounded-2xl border border-accent-blue/10">
+                <div className="mt-8 flex items-start gap-4 p-4 bg-accent-blue/5 border border-accent-blue/10">
                     <Info className="w-5 h-5 text-accent-blue mt-1 shrink-0" />
                     <p className="text-sm text-gray-600 font-medium leading-relaxed">
                         {gestaltMode === "proximity" && "Proximity: Elements that are close together are perceived as group."}
@@ -105,14 +105,14 @@ export default function InteractionLabPage() {
                 </div>
             </div>
             
-                <div className="bg-white border-2 border-black rounded-3xl p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                <div className="bg-white border-2 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
                     <KerningGame />
                 </div>
           </div>
 
           {/* Sidebar / Tools */}
           <aside className="space-y-8">
-             <div className="bg-black text-white rounded-3xl p-8 shadow-xl">
+             <div className="bg-black text-white p-8 shadow-xl">
                  <h3 className="text-xl font-black mb-4">Lab Notes</h3>
                  <ul className="space-y-4 text-sm font-medium text-gray-400">
                      <li className="flex gap-3">
@@ -126,7 +126,7 @@ export default function InteractionLabPage() {
                  </ul>
              </div>
              
-             <div className="bg-accent-yellow rounded-3xl p-8 border-2 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+             <div className="bg-accent-yellow p-8 border-2 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
                  <h4 className="text-lg font-black mb-2">Request an Experiment</h4>
                  <p className="text-sm font-bold text-black/60 mb-6">Want to see a specific UX law in the lab? Let us know.</p>
                  <button onClick={() => setShowIdeaModal(true)} className="w-full py-3 bg-black text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-gray-900 transition-colors">Submit Idea</button>
@@ -172,9 +172,7 @@ function KerningGame() {
                 <Type className="w-5 h-5" /> The Kerning Game
             </h3>
             <div className="flex gap-2">
-                <button onClick={reset} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                    <RotateCcw className="w-4 h-4" />
-                </button>
+                <button onClick={reset} className="p-2 hover:bg-gray-100 transition-colors">
             </div>
         </div>
         
@@ -182,7 +180,7 @@ function KerningGame() {
             Fix the spacing. Drag the letters until the visual rhythm feels perfect.
         </p>
 
-        <div className="h-48 bg-gray-50 rounded-2xl border-2 border-black flex items-center justify-center overflow-hidden relative">
+        <div className="h-48 bg-gray-50 border-2 border-black flex items-center justify-center overflow-hidden relative">
             <div className="flex relative h-20 items-center">
                 {KERNING_LETTERS.map((letter, i) => (
                     <motion.div
@@ -210,7 +208,7 @@ function KerningGame() {
         <div className="flex items-center gap-4">
             <button 
                 onClick={checkKerning}
-                className="flex-1 py-4 bg-black text-white font-black uppercase tracking-widest text-xs rounded-xl hover:opacity-90 transition-opacity"
+                className="flex-1 py-4 bg-black text-white font-black uppercase tracking-widest text-xs hover:opacity-90 transition-opacity"
             >
                 CHECK KERNING
             </button>
@@ -218,7 +216,7 @@ function KerningGame() {
                 <motion.div 
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className="px-6 py-4 bg-accent-yellow border-2 border-black rounded-xl flex items-center gap-2"
+                    className="px-6 py-4 bg-accent-yellow border-2 border-black flex items-center gap-2"
                 >
                     <Star className="w-4 h-4 fill-black" />
                     <span className="font-black italic text-xl">{score}%</span>

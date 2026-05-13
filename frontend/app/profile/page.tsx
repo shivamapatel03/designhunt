@@ -63,15 +63,20 @@ function ProfileContent() {
       // Initialize skills from profile topics
       const topics = profile.user.topics_to_learn || [];
       const initialSkills = topics.length > 0 
-        ? topics.map((t: { title: string, percentage: number }) => {
-            const staticInfo = AVAILABLE_SKILLS.find(s => s.title === t.title) || { themeColor: "#F3F4F6" };
+        ? topics.map((t: any) => {
+            const title = typeof t === 'string' ? t : t.title;
+            const percentage = typeof t === 'string' ? 0 : (t.percentage || 0);
+            
+            if (!title) return null;
+
+            const staticInfo = AVAILABLE_SKILLS.find(s => s.title === title) || { themeColor: "#F3F4F6" };
             return {
-              title: t.title,
-              percentage: t.percentage || 0,
-              status: t.percentage === 100 ? "completed" : t.percentage > 70 ? "best" : "pending",
+              title,
+              percentage,
+              status: percentage === 100 ? "completed" : percentage > 70 ? "best" : "pending",
               themeColor: staticInfo.themeColor
             };
-          })
+          }).filter(Boolean)
         : [];
       setUserSkills(initialSkills);
     } catch (err) {
@@ -160,7 +165,7 @@ function ProfileContent() {
              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {userSkills.map((skill: any, idx: number) => (
                   <SkillActivityCard 
-                    key={skill.title}
+                    key={`${skill.title}-${idx}`}
                     title={skill.title}
                     percentage={skill.percentage}
                     status={skill.status}
@@ -218,52 +223,52 @@ function ProfileContent() {
  
         {/* Add Skill Modal Overlay */}
         <AnimatePresence>
-          {isAddingSkill && (
-            <>
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setIsAddingSkill(false)}
-                className="fixed inset-0 z-[60]"
-              />
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-[32px] p-8 z-[70] shadow-2xl border border-black/5"
-              >
-                <div className="flex items-center justify-between mb-8">
-                  <div>
-                    <h3 className="text-xl font-bold text-black tracking-tight">Add New Module</h3>
-                    <p className="text-xs font-medium text-gray-400 mt-1">Select a topic from the theory library</p>
-                  </div>
-                  <button onClick={() => setIsAddingSkill(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                    <X className="w-5 h-5 text-gray-400" />
+          {isAddingSkill && [
+            <motion.div 
+              key="modal-overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsAddingSkill(false)}
+              className="fixed inset-0 z-[60] bg-black/5 backdrop-blur-[2px]"
+            />,
+            <motion.div 
+              key="modal-content"
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-[32px] p-8 z-[70] shadow-2xl border border-black/5"
+            >
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h3 className="text-xl font-bold text-black tracking-tight">Add New Module</h3>
+                  <p className="text-xs font-medium text-gray-400 mt-1">Select a topic from the theory library</p>
+                </div>
+                <button onClick={() => setIsAddingSkill(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                  <X className="w-5 h-5 text-gray-400" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-2 no-scrollbar">
+                {AVAILABLE_SKILLS.filter(s => !userSkills.find(us => us.title === s.title)).map(skill => (
+                  <button
+                    key={skill.title}
+                    onClick={() => addSkill(skill)}
+                    style={{ backgroundColor: skill.themeColor }}
+                    className="p-4 border border-black/5 border-b-4 border-b-black/10 rounded-2xl transition-all flex items-center justify-center text-center group active:border-b-0 active:translate-y-[2px]"
+                  >
+                    <span className="text-xs font-bold text-black/60 group-hover:text-black transition-colors">{skill.title}</span>
                   </button>
-                </div>
+                ))}
+              </div>
 
-                <div className="grid grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-2 no-scrollbar">
-                  {AVAILABLE_SKILLS.filter(s => !userSkills.find(us => us.title === s.title)).map(skill => (
-                    <button
-                      key={skill.title}
-                      onClick={() => addSkill(skill)}
-                      style={{ backgroundColor: skill.themeColor }}
-                      className="p-4 border border-black/5 border-b-4 border-b-black/10 rounded-2xl transition-all flex items-center justify-center text-center group active:border-b-0 active:translate-y-[2px]"
-                    >
-                      <span className="text-xs font-bold text-black/60 group-hover:text-black transition-colors">{skill.title}</span>
-                    </button>
-                  ))}
+              {AVAILABLE_SKILLS.filter(s => !userSkills.find(us => us.title === s.title)).length === 0 && (
+                <div className="py-10 text-center">
+                  <p className="text-sm font-bold text-gray-300">You've added all available skills!</p>
                 </div>
-
-                {AVAILABLE_SKILLS.filter(s => !userSkills.find(us => us.title === s.title)).length === 0 && (
-                  <div className="py-10 text-center">
-                    <p className="text-sm font-bold text-gray-300">You've added all available skills!</p>
-                  </div>
-                )}
-              </motion.div>
-            </>
-          )}
+              )}
+            </motion.div>
+          ]}
         </AnimatePresence>
 
       </div>

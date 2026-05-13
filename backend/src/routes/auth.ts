@@ -266,7 +266,7 @@ router.post("/login", async (req, res) => {
       { expiresIn: "24h" },
     );
 
-    await db.run("UPDATE users SET last_login = $1 WHERE id = $2", [new Date().toISOString(), user.id]);
+    await db.run("UPDATE users SET last_login = $1 WHERE id = $2", [new Date(), user.id]);
 
     res.cookie("token", token, {
       httpOnly: true,
@@ -372,91 +372,88 @@ router.post("/logout", (req, res) => {
   res.json({ success: true });
 });
 
-// Admin Login Step 1: Validate Password & Send OTP
-router.post("/admin-login-step1", async (req, res) => {
+// ─── Super Admin Login ───────────────────────────────────────────────────────
+// Rate limiter: tracks failed attempts per email in-memory
+const loginAttempts = new Map<string, { count: number; lockedUntil: number }>();
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_MS = 15 * 60 * 1000; // 15 minutes
+
+router.post("/admin-login", async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, masterKey } = req.body;
 
-    const user = await db.get("SELECT * FROM users WHERE email = $1", [email]) as any;
-
-    if (!user) {
-      return res.status(400).json({ message: "Invalid credentials" });
+    if (!email || !password || !masterKey) {
+      return res.status(400).json({ message: "All fields are required" });
     }
 
-    if (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN") {
+    // Check rate limit
+    const attempts = loginAttempts.get(email);
+    if (attempts && attempts.lockedUntil > Date.now()) {
+      const minutesLeft = Math.ceil((attempts.lockedUntil - Date.now()) / 60000);
+      return res.status(429).json({ message: `Too many failed attempts. Try again in ${minutesLeft} minute(s).` });
+    }
+
+    const recordFailure = () => {
+      const current = loginAttempts.get(email) || { count: 0, lockedUntil: 0 };
+      current.count += 1;
+      if (current.count >= MAX_ATTEMPTS) {
+        current.lockedUntil = Date.now() + LOCKOUT_MS;
+      }
+      loginAttempts.set(email, current);
+    };
+
+    // 1. Verify master key matches ENV (timing-safe string comparison)
+    const envKey = process.env.SUPER_ADMIN_MASTER_KEY || "";
+    if (!envKey || masterKey !== envKey) {
+      recordFailure();
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    // 2. Find user
+    const user = await db.get("SELECT * FROM users WHERE email = $1", [email]) as any;
+    if (!user) {
+      recordFailure();
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    // 3. Only allow SUPER_ADMIN
+    if (user.role !== "SUPER_ADMIN") {
       return res.status(403).json({ message: "Unauthorized access" });
     }
 
-    if (user.role === "ADMIN") {
-      if (!password) {
-        return res.status(400).json({ message: "Password required" });
-      }
-      const isValid = await bcrypt.compare(password, user.password);
-      if (!isValid) {
-        return res.status(400).json({ message: "Invalid credentials" });
-      }
+    // 4. Verify password
+    const isValid = user.password ? await bcrypt.compare(password, user.password) : false;
+    if (!isValid) {
+      recordFailure();
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    if (user.status === "PENDING") {
-      return res.status(403).json({ message: "Account pending activation" });
-    }
+    // ✅ All 3 factors verified — clear failed attempts
+    loginAttempts.delete(email);
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    await storeOtp(email, otp, "admin");
-    const emailResult = await sendAdminLoginEmail(email, otp, user.role);
-
-    if (!emailResult.success) {
-      console.error("Failed to send OTP email:", emailResult.error);
-    }
-
-    res.json({ success: true, message: "OTP sent" });
-  } catch (error: any) {
-    console.error("Login Step 1 Error:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-// Admin Login Step 2: Verify OTP & Login
-router.post("/admin-login-step2", async (req, res) => {
-  try {
-    const { email, otp } = req.body;
-
-    const user = await db.get("SELECT * FROM users WHERE email = $1", [email]) as any;
-
-    if (!user) {
-      return res.status(400).json({ message: "User not found" });
-    }
-
-    const cleanOtp = String(otp).trim();
-    const storedOtp = await getStoredOtp(email, "admin");
-
-    if (!storedOtp || String(storedOtp).trim() !== cleanOtp) {
-      return res.status(400).json({ message: "Invalid or expired OTP" });
-    }
-
-    await clearOtp(email, "admin");
-
+    // Issue JWT session
     const token = jwt.sign(
       { userId: user.id, email: user.email, role: user.role },
       JWT_SECRET,
-      { expiresIn: "24h" },
+      { expiresIn: "8h" },
     );
 
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 24 * 60 * 60 * 1000,
+      maxAge: 8 * 60 * 60 * 1000,
       path: "/",
     });
 
     const { password: _, ...userWithoutPassword } = user;
     res.json({ user: userWithoutPassword, message: "Login successful" });
   } catch (error) {
-    console.error(error);
+    console.error("Admin Login Error:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
+
 
 // FORGOT PASSWORD
 router.post("/forgot-password", async (req, res) => {
@@ -472,7 +469,7 @@ router.post("/forgot-password", async (req, res) => {
     }
 
     const token = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
 
     await db.run(
       "UPDATE users SET reset_token = $1, reset_token_expires_at = $2 WHERE id = $3",

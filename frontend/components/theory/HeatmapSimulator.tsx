@@ -47,7 +47,7 @@ export function HeatmapSimulator() {
   };
 
   return (
-    <div className="bg-white border-2 border-black rounded-xl p-6 shadow-[4px_4px_0px_0px_#000]">
+    <div className="bg-white border-2 border-black p-6 shadow-[4px_4px_0px_0px_#000]">
       <h3 className="text-2xl font-bold mb-6">Heatmap Simulator</h3>
       
       {/* Controls */}
@@ -56,7 +56,7 @@ export function HeatmapSimulator() {
             <button
                 key={p}
                 onClick={() => setActivePattern(p)}
-                className={`flex-1 min-w-[100px] py-3 px-4 rounded-lg border-2 font-bold transition-all text-sm ${
+                className={`flex-1 min-w-[100px] py-3 px-4 border-2 font-bold transition-all text-sm ${
                     activePattern === p 
                     ? "bg-black text-white border-black" 
                     : "bg-gray-50 text-gray-600 border-gray-200 hover:border-black"
@@ -67,13 +67,13 @@ export function HeatmapSimulator() {
         ))}
       </div>
 
-       <div className="mb-4 bg-blue-50 text-blue-800 p-4 rounded-lg text-sm flex items-start gap-3">
+       <div className="mb-4 bg-blue-50 text-blue-800 p-4 text-sm flex items-start gap-3">
         <Eye className="w-5 h-5 flex-shrink-0 mt-0.5" />
         <p>{patterns[activePattern].desc}</p>
       </div>
 
       {/* Simulation */}
-      <div className="relative border-2 border-gray-200 rounded-xl overflow-hidden h-96 bg-white">
+      <div className="relative border-2 border-gray-200 overflow-hidden h-96 bg-white">
          
          {/* Mock Content Layouts */}
          {activePattern === 'F' && (
@@ -97,15 +97,15 @@ export function HeatmapSimulator() {
              <div className="p-8 flex flex-col justify-between h-full opacity-40">
                 <div className="flex justify-between items-center">
                     <div className="w-12 h-12 bg-black rounded-full"></div>
-                    <div className="w-32 h-10 bg-gray-400 rounded"></div>
+                    <div className="w-32 h-10 bg-gray-400"></div>
                 </div>
                 <div className="self-center text-center w-full px-4">
                     <div className="h-10 bg-gray-800 w-full max-w-[384px] mx-auto mb-4"></div>
                     <div className="h-4 bg-gray-300 w-48 mx-auto"></div>
                 </div>
                  <div className="flex justify-between items-center">
-                    <div className="w-full h-12 bg-gray-200 rounded"></div>
-                    <div className="w-32 h-12 bg-blue-600 rounded ml-4"></div>
+                    <div className="w-full h-12 bg-gray-200"></div>
+                    <div className="w-32 h-12 bg-blue-600 ml-4"></div>
                 </div>
              </div>
          )}

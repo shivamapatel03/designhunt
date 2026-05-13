@@ -27,8 +27,8 @@ export function AtomicAssembler() {
     <div className="space-y-12">
       
       {/* LEVEL 1: ATOMS (The Controls) */}
-      <div className="bg-white border-2 border-black rounded-xl p-6 md:p-8 shadow-[4px_4px_0px_0px_#000] relative overflow-hidden">
-        <span className="absolute top-0 right-0 bg-accent-blue text-white text-xs font-bold px-3 py-1 rounded-bl-lg">LEVEL 1: ATOMS</span>
+      <div className="bg-white border-2 border-black p-6 md:p-8 shadow-[4px_4px_0px_0px_#000] relative overflow-hidden">
+        <span className="absolute top-0 right-0 bg-accent-blue text-white text-xs font-bold px-3 py-1">LEVEL 1: ATOMS</span>
         <h3 className="text-2xl font-bold mb-6">Define Your Atoms</h3>
         <p className="mb-6 text-gray-600">Change the core properties. These are your building blocks.</p>
 
@@ -74,19 +74,19 @@ export function AtomicAssembler() {
         </div>
 
         {/* Atom Preview */}
-        <div className="mt-8 p-6 bg-gray-50 border border-dashed border-gray-300 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-4 text-center sm:text-left">
+        <div className="mt-8 p-6 bg-gray-50 border border-dashed border-gray-300 flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-4 text-center sm:text-left">
             <button style={buttonStyle} className="w-full sm:w-auto px-6 py-2 font-bold transition-all">Button Atom</button>
             <input style={inputStyle} type="text" placeholder="Input Atom" className="w-full sm:w-48 px-4 py-2 border-2 outline-none" />
         </div>
       </div>
 
       {/* LEVEL 2: MOLECULES (Combinations) */}
-      <div className="bg-white border-2 border-black rounded-xl p-6 md:p-8 shadow-[4px_4px_0px_0px_#000] relative overflow-hidden">
-        <span className="absolute top-0 right-0 bg-accent-yellow text-black text-xs font-bold px-3 py-1 rounded-bl-lg">LEVEL 2: MOLECULES</span>
+      <div className="bg-white border-2 border-black p-6 md:p-8 shadow-[4px_4px_0px_0px_#000] relative overflow-hidden">
+        <span className="absolute top-0 right-0 bg-accent-yellow text-black text-xs font-bold px-3 py-1">LEVEL 2: MOLECULES</span>
         <h3 className="text-2xl font-bold mb-2">Build Molecules</h3>
         <p className="mb-6 text-gray-600">Atoms combined together. Notice how your Atom changes above affect this Search Bar.</p>
 
-        <div className="p-2 sm:p-8 bg-gray-100 rounded-xl flex justify-center">
+        <div className="p-2 sm:p-8 bg-gray-100 flex justify-center">
             <div className="flex w-full max-w-md">
                  <input 
                     style={inputStyle} 
@@ -109,12 +109,12 @@ export function AtomicAssembler() {
       </div>
 
       {/* LEVEL 3: ORGANISMS (Complex UI) */}
-      <div className="bg-white border-2 border-black rounded-xl p-6 md:p-8 shadow-[4px_4px_0px_0px_#000] relative overflow-hidden">
-        <span className="absolute top-0 right-0 bg-accent-pink text-white text-xs font-bold px-3 py-1 rounded-bl-lg">LEVEL 3: ORGANISMS</span>
+      <div className="bg-white border-2 border-black p-6 md:p-8 shadow-[4px_4px_0px_0px_#000] relative overflow-hidden">
+        <span className="absolute top-0 right-0 bg-accent-pink text-white text-xs font-bold px-3 py-1">LEVEL 3: ORGANISMS</span>
         <h3 className="text-2xl font-bold mb-2">Compose Organisms</h3>
         <p className="mb-6 text-gray-600">Molecules combined into a layout. This Header component inherits all your system rules.</p>
 
-        <div className="border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+        <div className="border border-gray-200 overflow-hidden shadow-sm">
             {/* The Header Organism */}
             <header className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200">
                 <div className="flex items-center gap-2">

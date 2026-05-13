@@ -6,14 +6,14 @@ import { sendCodeRotationEmail, sendIdeaFeedbackEmail, sendNewsletterEmail } fro
 import { logAction, getAuditLogs } from "../lib/audit";
 import { getAllSettings, updateSetting } from "../lib/settings";
 import { getFinancialStats } from "../lib/finance";
-import { authenticateToken, requireSuperAdmin } from "../middleware/auth";
+import { authenticate, requireSuperAdmin } from "../middleware/auth";
 
 const router = express.Router();
 
 // Create Admin (Super Admin only)
 router.post(
   "/create-admin",
-  authenticateToken,
+  authenticate,
   requireSuperAdmin,
   async (req: any, res) => {
     try {
@@ -50,7 +50,7 @@ router.post(
 );
 
 // Get Global Settings
-router.get("/settings", authenticateToken, requireSuperAdmin, async (req, res) => {
+router.get("/settings", authenticate, requireSuperAdmin, async (req, res) => {
   try {
     const settings = await getAllSettings();
     res.json(settings);
@@ -62,7 +62,7 @@ router.get("/settings", authenticateToken, requireSuperAdmin, async (req, res) =
 // Update Global Settings
 router.post(
   "/settings",
-  authenticateToken,
+  authenticate,
   requireSuperAdmin,
   async (req: any, res) => {
     try {
@@ -83,7 +83,7 @@ router.post(
 );
 
 // Get Audit Logs
-router.get("/audit-logs", authenticateToken, requireSuperAdmin, async (req, res) => {
+router.get("/audit-logs", authenticate, requireSuperAdmin, async (req, res) => {
   try {
     const logs = await getAuditLogs();
     res.json(logs);
@@ -93,7 +93,7 @@ router.get("/audit-logs", authenticateToken, requireSuperAdmin, async (req, res)
 });
 
 // Get Financial Stats
-router.get("/financials", authenticateToken, requireSuperAdmin, async (req, res) => {
+router.get("/financials", authenticate, requireSuperAdmin, async (req, res) => {
   try {
     const stats = await getFinancialStats();
     res.json(stats);
@@ -116,7 +116,7 @@ router.get("/code", async (req, res) => {
 // Delete User (Generic)
 router.post(
   "/delete-user",
-  authenticateToken,
+  authenticate,
   requireSuperAdmin,
   async (req: any, res) => {
     try {
@@ -136,7 +136,7 @@ router.post(
 // Delete All Users (Except Super Admin)
 router.post(
   "/delete-all-users",
-  authenticateToken,
+  authenticate,
   requireSuperAdmin,
   async (req: any, res) => {
     try {
@@ -200,7 +200,7 @@ router.post("/reset-access-code", async (req, res) => {
 // Backup Database (Skip for Supabase as it has its own backups)
 router.post(
   "/backup",
-  authenticateToken,
+  authenticate,
   requireSuperAdmin,
   async (req: any, res) => {
     res.status(501).json({ error: "Backup feature is managed by Supabase Cloud" });
@@ -210,7 +210,7 @@ router.post(
 // Send Idea Feedback Email
 router.post(
   "/send-idea-feedback",
-  authenticateToken,
+  authenticate,
   requireSuperAdmin,
   async (req: any, res) => {
     try {
@@ -241,7 +241,7 @@ router.post(
 );
 
 // Get all Expert Reviews
-router.get("/expert-reviews", authenticateToken, async (req: any, res) => {
+router.get("/expert-reviews", authenticate, async (req: any, res) => {
   try {
     const reviews = await db.all("SELECT * FROM expert_reviews ORDER BY created_at DESC");
     res.json(reviews);
@@ -251,7 +251,7 @@ router.get("/expert-reviews", authenticateToken, async (req: any, res) => {
 });
 
 // Create an Expert Review
-router.post("/expert-reviews", authenticateToken, async (req: any, res) => {
+router.post("/expert-reviews", authenticate, async (req: any, res) => {
   try {
     const { author_name, author_title, rating, content, author_image } = req.body;
     
@@ -273,7 +273,7 @@ router.post("/expert-reviews", authenticateToken, async (req: any, res) => {
 });
 
 // Delete an Expert Review
-router.delete("/expert-reviews/:id", authenticateToken, async (req: any, res) => {
+router.delete("/expert-reviews/:id", authenticate, async (req: any, res) => {
   try {
     const { id } = req.params;
     await db.run("DELETE FROM expert_reviews WHERE id = $1", [id]);
@@ -288,7 +288,7 @@ router.delete("/expert-reviews/:id", authenticateToken, async (req: any, res) =>
 // Send Newsletter to all active subscribers
 router.post(
   "/newsletter/send",
-  authenticateToken,
+  authenticate,
   requireSuperAdmin,
   async (req: any, res) => {
     try {
@@ -336,7 +336,7 @@ router.post(
 // Get subscriber list and count
 router.get(
   "/newsletter/subscribers",
-  authenticateToken,
+  authenticate,
   requireSuperAdmin,
   async (req, res) => {
     try {
@@ -351,7 +351,7 @@ router.get(
 // Delete a subscriber
 router.delete(
   "/newsletter/subscribers/:id",
-  authenticateToken,
+  authenticate,
   requireSuperAdmin,
   async (req, res) => {
     try {
@@ -370,7 +370,7 @@ router.delete(
 // List all admins for Super Admin
 router.get(
   "/admins",
-  authenticateToken,
+  authenticate,
   requireSuperAdmin,
   async (req, res) => {
     try {
@@ -385,7 +385,7 @@ router.get(
 // Invite a new admin
 router.post(
   "/invite-admin",
-  authenticateToken,
+  authenticate,
   requireSuperAdmin,
   async (req: any, res) => {
     try {
@@ -443,7 +443,7 @@ router.post(
 // Delete an admin
 router.delete(
   "/admins/:id",
-  authenticateToken,
+  authenticate,
   requireSuperAdmin,
   async (req: any, res) => {
     try {

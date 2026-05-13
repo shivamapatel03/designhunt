@@ -43,7 +43,7 @@ export default function ToolPage({ params }: { params: { slug: string } }) {
             </section>
 
             {/* Shortcuts */}
-            <section className="bg-black text-white p-8 rounded-2xl shadow-[8px_8px_0px_0px_#007BFF]">
+            <section className="bg-black text-white p-8 border-2 border-black shadow-[8px_8px_0px_0px_#007BFF]">
                  <div className="flex items-center gap-3 mb-6">
                     <Keyboard className="w-6 h-6 text-accent-yellow" />
                     <h2 className="text-2xl font-bold">Essential Shortcuts</h2>
@@ -61,7 +61,7 @@ export default function ToolPage({ params }: { params: { slug: string } }) {
 
           {/* Sidebar */}
           <aside className="space-y-8">
-             <div className="p-6 border-2 border-black rounded-xl bg-white shadow-[4px_4px_0px_0px_#000]">
+             <div className="p-6 border-2 border-black bg-white shadow-[4px_4px_0px_0px_#000]">
                 <h3 className="font-bold mb-4">When to use {toolName}?</h3>
                 <ul className="space-y-3">
                    <li className="flex items-start gap-2 text-sm">
@@ -93,7 +93,7 @@ export default function ToolPage({ params }: { params: { slug: string } }) {
                 </ul>
              </div>
 
-             <div className="p-6 bg-accent-pink text-white rounded-xl border-2 border-black shadow-[4px_4px_0px_0px_#000]">
+             <div className="p-6 bg-accent-pink text-white border-2 border-black shadow-[4px_4px_0px_0px_#000]">
                 <Zap className="w-8 h-8 mb-4 text-black" />
                 <h3 className="font-bold text-lg mb-2">Pro Tip</h3>
                 <p className="text-sm">Mastering Auto Layout is the single biggest productivity booster in Figma. Don't skip it!</p>
@@ -106,7 +106,7 @@ export default function ToolPage({ params }: { params: { slug: string } }) {
 
 function ModuleItem({ title, progress, isCurrent = false }: { title: string, progress: number, isCurrent?: boolean }) {
     return (
-        <div className={`p-4 border-2 rounded-lg flex items-center justify-between transition-all ${isCurrent ? 'border-accent-blue bg-blue-50' : 'border-gray-200 hover:border-black'}`}>
+        <div className={`p-4 border-2 flex items-center justify-between transition-all ${isCurrent ? 'border-accent-blue bg-blue-50' : 'border-gray-200 hover:border-black'}`}>
             <div className="flex items-center gap-3">
                 <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${progress === 100 ? 'bg-green-500 text-white' : 'bg-gray-200'}`}>
                     {progress === 100 && <CheckCircle2 className="w-4 h-4" />}
@@ -114,7 +114,7 @@ function ModuleItem({ title, progress, isCurrent = false }: { title: string, pro
                 <span className={`font-medium ${isCurrent ? 'text-accent-blue font-bold' : ''}`}>{title}</span>
             </div>
             <div className="flex items-center gap-3 w-1/3">
-                <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                <div className="h-2 w-full bg-gray-200 overflow-hidden border border-black/10">
                     <div className="h-full bg-black transition-all duration-500" style={{ width: `${progress}%` }}></div>
                 </div>
                 <span className="text-xs font-bold w-8 text-right">{progress}%</span>
@@ -128,7 +128,7 @@ function ShortcutKey({ keys, description }: { keys: string[], description: strin
         <div>
             <div className="flex items-center gap-1 mb-2">
                 {keys.map(k => (
-                    <span key={k} className="px-2 py-1 bg-white/20 border border-white/30 rounded text-xs font-mono font-bold">{k}</span>
+                    <span key={k} className="px-2 py-1 bg-white/20 border border-white/30 text-xs font-mono font-bold">{k}</span>
                 ))}
             </div>
             <p className="text-xs text-gray-300">{description}</p>

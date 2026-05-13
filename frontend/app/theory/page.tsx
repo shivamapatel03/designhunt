@@ -107,15 +107,15 @@ function LinkCard({
     const iconTextColor = color.includes('bg-black') || color.includes('bg-accent-pink') ? 'text-white' : 'text-black';
 
     return (
-        <Link href={href} className="group block p-8 rounded-3xl bg-white border-2 border-black hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-1 h-full flex flex-col relative overflow-hidden">
+        <Link href={href} className="group block p-8 bg-white border-2 border-black hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-1 h-full flex flex-col relative overflow-hidden">
             {isNew && (
-                <div className="absolute top-4 right-4 px-2 py-1 bg-accent-yellow text-[10px] font-black uppercase tracking-tighter border border-black rounded-md rotate-3 shadow-sm">
+                <div className="absolute top-4 right-4 px-2 py-1 bg-accent-yellow text-[10px] font-black uppercase tracking-tighter border border-black rotate-3 shadow-sm">
                     New Feature
                 </div>
             )}
             
             <div className={cn(
-                "mb-6 p-2.5 rounded-2xl w-fit border-2 border-black/5 flex items-center justify-center transition-all duration-200 shadow-[0_2.5px_0_0_rgba(0,0,0,0.08)] -translate-y-[1px]",
+                "mb-6 p-2.5 w-fit border-2 border-black/5 flex items-center justify-center transition-all duration-200 shadow-[0_2.5px_0_0_rgba(0,0,0,0.08)] -translate-y-[1px]",
                 color,
                 iconTextColor
             )}>

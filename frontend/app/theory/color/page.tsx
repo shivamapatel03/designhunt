@@ -50,22 +50,22 @@ export default function ColorTheoryPage() {
                 <section>
                     <h2 className="text-2xl font-bold mb-6">3. Color Psychology</h2>
                     <div className="grid sm:grid-cols-2 gap-4">
-                        <div className="p-6 bg-red-50 border border-red-200 rounded-xl">
+                        <div className="p-6 bg-red-50 border border-red-200">
                             <div className="w-8 h-8 bg-red-500 rounded-full mb-3"></div>
                             <h3 className="font-bold mb-2">Red</h3>
                             <p className="text-sm text-gray-600">Passion, Danger, Urgency. Good for errors or CTA buttons.</p>
                         </div>
-                        <div className="p-6 bg-blue-50 border border-blue-200 rounded-xl">
+                        <div className="p-6 bg-blue-50 border border-blue-200">
                             <div className="w-8 h-8 bg-blue-500 rounded-full mb-3"></div>
                             <h3 className="font-bold mb-2">Blue</h3>
                             <p className="text-sm text-gray-600">Trust, Calm, Stability. Standard for tech and finance.</p>
                         </div>
-                         <div className="p-6 bg-yellow-50 border border-yellow-200 rounded-xl">
+                         <div className="p-6 bg-yellow-50 border border-yellow-200">
                             <div className="w-8 h-8 bg-yellow-400 rounded-full mb-3"></div>
                             <h3 className="font-bold mb-2">Yellow</h3>
                             <p className="text-sm text-gray-600">Happiness, Warning, Attention. Use for highlights.</p>
                         </div>
-                         <div className="p-6 bg-green-50 border border-green-200 rounded-xl">
+                         <div className="p-6 bg-green-50 border border-green-200">
                             <div className="w-8 h-8 bg-green-500 rounded-full mb-3"></div>
                             <h3 className="font-bold mb-2">Green</h3>
                             <p className="text-sm text-gray-600">Success, Nature, Growth. Perfect for confirmation messages.</p>
@@ -78,9 +78,9 @@ export default function ColorTheoryPage() {
                 <Link 
                     href={user ? `/theory/learning/color-theory/path` : "/login"} 
                     className={cn(
-                        "group w-full relative inline-flex items-center justify-between gap-3 px-5 py-4 md:px-6 md:py-5 rounded-2xl font-bold transition-all hover:translate-y-[-2px] active:scale-95 border border-black text-xs md:text-sm shadow-[4px_4px_0_0_#000]",
+                        "group w-full relative inline-flex items-center justify-between gap-3 px-5 py-4 md:px-6 md:py-5 font-bold transition-all hover:translate-y-[-2px] active:scale-95 border border-black text-xs md:text-sm rounded-full",
                         user 
-                            ? "bg-black text-white hover:shadow-[6px_6px_0_0_#000]" 
+                            ? "bg-[#2B7FFF] text-white shadow-[4px_4px_0_0_#1556B8] hover:shadow-[6px_6px_0_0_#1556B8]" 
                             : "bg-gray-100 text-gray-400 border-gray-200 shadow-none hover:border-black hover:text-black"
                     )}
                 >
@@ -95,7 +95,7 @@ export default function ColorTheoryPage() {
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
 
-                <div className="p-6 border-2 border-black rounded-xl bg-white shadow-[4px_4px_0px_0px_#000]">
+                <div className="p-6 border-2 border-black bg-white shadow-[4px_4px_0px_0px_#000]">
                     <h3 className="font-black text-xs uppercase tracking-widest text-gray-400 mb-4 border-b border-gray-100 pb-2">Key Terms</h3>
                     <ul className="space-y-3">
                         <li className="text-[13px] leading-tight">
@@ -117,11 +117,11 @@ export default function ColorTheoryPage() {
                     </ul>
                 </div>
 
-                <div className="p-6 border-2 border-black rounded-xl bg-white shadow-[4px_4px_0px_0px_#000]">
+                <div className="p-6 border-2 border-black bg-white shadow-[4px_4px_0px_0px_#000]">
                     <h3 className="font-bold mb-4">60-30-10 Rule</h3>
                     <p className="text-sm text-gray-600 mb-4">A timeless decoration rule to balance your color palette.</p>
                     
-                    <div className="flex h-8 rounded-full overflow-hidden border border-black">
+                    <div className="flex h-8 overflow-hidden border border-black">
                         <div className="w-[60%] bg-gray-200 flex items-center justify-center text-[10px] font-bold">60% Primary</div>
                         <div className="w-[30%] bg-black text-white flex items-center justify-center text-[10px] font-bold">30% Sec.</div>
                         <div className="w-[10%] bg-[#6366f1] flex items-center justify-center text-[10px] font-bold text-white">10%</div>

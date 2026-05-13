@@ -21,10 +21,10 @@ export async function storeOtp(email: string, otp: string, type: "signup" | "log
   }
 
   // Fallback to Database
-  const expiresAt = new Date(Date.now() + OTP_EXPIRY_SECONDS * 1000).toISOString();
+  // Using SQL to set expiration to ensure consistency with DB time
   await db.run(
-    "UPDATE users SET otp_code = $1, otp_expires_at = $2 WHERE email = $3",
-    [valueToStore, expiresAt, email]
+    "UPDATE users SET otp_code = $1, otp_expires_at = CURRENT_TIMESTAMP + interval '10 minutes' WHERE email = $2",
+    [valueToStore, email]
   );
   
   return { success: true, storedIn: "db" };
@@ -45,11 +45,30 @@ export async function getStoredOtp(email: string, type: "signup" | "login" | "ad
     }
   }
 
-  // Check Database
-  const user = await db.get("SELECT otp_code, otp_expires_at FROM users WHERE email = $1", [email]) as any;
-  if (user && user.otp_code && new Date(user.otp_expires_at) > new Date()) {
-    return user.otp_code;
+  // Check Database — let SQL evaluate expiry so there's NO timezone mismatch in Node.js
+  // Try Postgres first (NOW() is Postgres syntax)
+  try {
+    const user = await (db as any).query(
+      "SELECT otp_code FROM users WHERE email = $1 AND otp_code IS NOT NULL AND otp_expires_at > NOW()",
+      [email]
+    );
+    if (user?.rows?.[0]?.otp_code) {
+      return user.rows[0].otp_code;
+    }
+  } catch (err) {
+    console.error("Postgres OTP check error:", err);
   }
+  
+  // SQLite fallback — datetime('now') is SQLite's equivalent of NOW()
+  const { pool } = await import("../db");
+  try {
+    // Try direct Postgres pool once more as safety
+    const res = await pool.query(
+      "SELECT otp_code FROM users WHERE email = $1 AND otp_code IS NOT NULL AND otp_expires_at > NOW()",
+      [email]
+    );
+    if (res?.rows?.[0]?.otp_code) return res.rows[0].otp_code;
+  } catch (_) {}
 
   return null;
 }

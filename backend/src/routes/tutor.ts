@@ -1,12 +1,12 @@
 import express from "express";
-import { authenticateToken } from "../middleware/auth";
+import { authenticate } from "../middleware/auth";
 import db from "../db";
 import { v4 as uuidv4 } from "uuid";
 
 const router = express.Router();
 
 // Apply to be a Tutor
-router.post("/apply", authenticateToken, async (req: any, res) => {
+router.post("/apply", authenticate, async (req: any, res) => {
   const { bio, experience, portfolio, expertise } = req.body;
   const userId = req.user.userId;
 
@@ -49,7 +49,7 @@ router.post("/apply", authenticateToken, async (req: any, res) => {
 });
 
 // Get My Application Status
-router.get("/status", authenticateToken, async (req: any, res) => {
+router.get("/status", authenticate, async (req: any, res) => {
   const userId = req.user.userId;
   try {
     const request = await db.get(

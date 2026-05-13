@@ -55,7 +55,7 @@ ${steps.map(s => `  --text-${s.label}: ${s.rem}rem; /* ${s.size}px */`).join('\n
   };
 
   return (
-    <div className={`bg-white border-2 border-black rounded-3xl p-6 md:p-8 shadow-[8px_8px_0px_0px_#000] ${font}`}>
+    <div className={`bg-white border-2 border-black p-6 md:p-8 shadow-[8px_8px_0px_0px_#000] ${font}`}>
       
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6">
            <div>
@@ -68,13 +68,13 @@ ${steps.map(s => `  --text-${s.label}: ${s.rem}rem; /* ${s.size}px */`).join('\n
            <div className="flex gap-2">
                <button 
                   onClick={() => setMode("visual")}
-                  className={`px-4 py-2 font-bold rounded-lg border-2 transition-all ${mode === 'visual' ? 'bg-black text-white border-black' : 'bg-white text-gray-400 border-gray-200'}`}
+                  className={`px-4 py-2 font-bold  border-2 transition-all ${mode === 'visual' ? 'bg-black text-white border-black' : 'bg-white text-gray-400 border-gray-200'}`}
                >
                  Visual
                </button>
                <button 
                   onClick={() => setMode("list")}
-                  className={`px-4 py-2 font-bold rounded-lg border-2 transition-all ${mode === 'list' ? 'bg-black text-white border-black' : 'bg-white text-gray-400 border-gray-200'}`}
+                  className={`px-4 py-2 font-bold  border-2 transition-all ${mode === 'list' ? 'bg-black text-white border-black' : 'bg-white text-gray-400 border-gray-200'}`}
                >
                  Measurements
                </button>
@@ -82,14 +82,14 @@ ${steps.map(s => `  --text-${s.label}: ${s.rem}rem; /* ${s.size}px */`).join('\n
       </div>
 
       {/* Controls */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 bg-gray-50 p-6 rounded-2xl border-2 border-gray-100">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 bg-gray-50 p-6 border-2 border-gray-100">
         <div>
            <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Base Size</label>
            <div className="flex items-center gap-4">
               <input 
                 type="range" min="12" max="24" 
                 value={baseSize} onChange={(e) => setBaseSize(Number(e.target.value))}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
+                className="w-full h-2 bg-gray-200  appearance-none cursor-pointer accent-black"
               />
               <span className="font-mono font-bold w-12 text-right">{baseSize}px</span>
            </div>
@@ -99,7 +99,7 @@ ${steps.map(s => `  --text-${s.label}: ${s.rem}rem; /* ${s.size}px */`).join('\n
            <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Scale Ratio</label>
            <select 
              value={ratio} onChange={(e) => setRatio(Number(e.target.value))}
-             className="w-full p-2 bg-white border-2 border-gray-200 rounded-xl font-bold focus:border-black outline-none"
+             className="w-full p-2 bg-white border-2 border-gray-200  font-bold focus:border-black outline-none"
            >
              {RATIOS.map(r => (
                <option key={r.name} value={r.value}>{r.name} ({r.value})</option>
@@ -111,7 +111,7 @@ ${steps.map(s => `  --text-${s.label}: ${s.rem}rem; /* ${s.size}px */`).join('\n
            <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Font Family</label>
            <select 
              value={font} onChange={(e) => setFont(e.target.value)}
-             className="w-full p-2 bg-white border-2 border-gray-200 rounded-xl font-bold focus:border-black outline-none"
+             className="w-full p-2 bg-white border-2 border-gray-200  font-bold focus:border-black outline-none"
            >
              {FONTS.map(f => (
                <option key={f.name} value={f.value}>{f.name}</option>
@@ -121,7 +121,7 @@ ${steps.map(s => `  --text-${s.label}: ${s.rem}rem; /* ${s.size}px */`).join('\n
       </div>
 
       {/* Preview Area */}
-      <div className="border-2 border-black rounded-2xl overflow-hidden mb-8">
+      <div className="border-2 border-black overflow-hidden mb-8">
         <div className="bg-white p-5 md:p-12 min-h-[300px] md:min-h-[400px]">
           {mode === 'visual' ? (
              <article className="max-w-2xl mx-auto space-y-6 break-words">
@@ -170,11 +170,11 @@ ${steps.map(s => `  --text-${s.label}: ${s.rem}rem; /* ${s.size}px */`).join('\n
       </div>
 
       {/* Code Export */}
-      <div className="bg-[#1e1e1e] text-gray-300 p-4 rounded-xl font-mono text-sm relative group">
-          <button 
-                onClick={copyToClipboard}
-                className="absolute top-4 right-4 flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg font-bold text-xs hover:bg-gray-100 transition-colors opacity-0 group-hover:opacity-100"
-            >
+      <div className="bg-[#1e1e1e] text-gray-300 p-4 font-mono text-sm relative group">
+            <button 
+                 onClick={copyToClipboard}
+                 className="absolute top-4 right-4 flex items-center gap-2 bg-white text-black px-4 py-2 font-bold text-xs hover:bg-gray-100 transition-colors opacity-0 group-hover:opacity-100"
+             >
                 {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                 {copied ? "Copied!" : "Copy CSS"}
           </button>

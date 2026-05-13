@@ -54,7 +54,7 @@ export default function TheoryTopicPage() {
                       <div className="max-w-md">
                         <h3 className="text-3xl font-bold text-[#a0a0a0] mb-4">Hello World</h3>
                         <p className="text-[#909090]">This text is hard to read because the contrast ratio is too low (approx 1.5:1). It strains the eyes and fails accessibility standards.</p>
-                        <button className="mt-6 px-6 py-2 bg-[#d0d0d0] text-[#a0a0a0] rounded">Click Me</button>
+                        <button className="mt-6 px-6 py-2 bg-[#d0d0d0] text-[#a0a0a0]">Click Me</button>
                       </div>
                   </div>
                 }
@@ -63,7 +63,7 @@ export default function TheoryTopicPage() {
                       <div className="max-w-md">
                         <h3 className="text-3xl font-bold text-black mb-4">Hello World</h3>
                         <p className="text-gray-800">High contrast text (approx 18:1) is legible, professional, and accessible to everyone. Always aim for WCAG AA or AAA compliance.</p>
-                        <button className="mt-6 px-6 py-2 bg-black text-white font-bold rounded hover:bg-gray-800">Click Me</button>
+                        <button className="mt-6 px-6 py-2 bg-black text-white font-bold hover:bg-gray-800">Click Me</button>
                       </div>
                   </div>
                 }

@@ -37,7 +37,7 @@ export default function MicroInteractionsPage() {
             </div>
 
              <aside className="space-y-6 lg:sticky lg:top-24">
-                <div className="p-6 border-2 border-black rounded-xl bg-white shadow-[4px_4px_0px_0px_#000]">
+                <div className="p-6 border-2 border-black bg-white shadow-[4px_4px_0px_0px_#000]">
                     <h3 className="font-black text-xs uppercase tracking-widest text-gray-400 mb-4 border-b border-gray-100 pb-2">Key Terms</h3>
                     <ul className="space-y-3">
                         <li className="text-[13px] leading-tight">
@@ -59,7 +59,7 @@ export default function MicroInteractionsPage() {
                     </ul>
                 </div>
 
-                <div className="p-6 border-2 border-black rounded-xl bg-white shadow-[4px_4px_0px_0px_#000]">
+                <div className="p-6 border-2 border-black bg-white shadow-[4px_4px_0px_0px_#000]">
                     <h3 className="font-bold mb-4">Examples</h3>
                     <ul className="space-y-3 text-sm text-gray-600">
                         <li className="flex items-center gap-2"><span>•</span> "Like" button animation</li>
@@ -76,7 +76,7 @@ export default function MicroInteractionsPage() {
 
 function Card({title, icon, body}: {title: string, icon: any, body: string}) {
     return (
-        <div className="p-6 bg-white border border-gray-200 rounded-xl">
+        <div className="p-6 bg-white border border-gray-200">
             <div className="flex items-center gap-2 mb-2 font-bold">
                 {icon} {title}
             </div>

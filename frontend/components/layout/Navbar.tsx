@@ -31,7 +31,9 @@ import {
   Book01Icon,
   Idea01Icon,
   GlobeIcon,
-  UserGroupIcon
+  UserGroupIcon,
+  DashboardCircleIcon,
+  Settings02Icon
 } from "@hugeicons/core-free-icons";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -372,14 +374,19 @@ export function Navbar() {
                     onClick={() => setIsProfileOpen(!isProfileOpen)}
                     className="flex items-center gap-2 group transition-all"
                   >
-                    <div className="w-10 h-10 border border-black/10 rounded-full flex items-center justify-center text-black hover:border-black hover:bg-black/5 transition-all active:scale-95 shrink-0 overflow-hidden">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-black shrink-0 overflow-hidden shadow-sm">
                       {user.avatar ? (
                         <img src={user.avatar} className="w-full h-full object-cover" alt="" />
                       ) : (
-                        <HugeiconsIcon icon={UserIcon} className="w-5 h-5" />
+                        <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                          <HugeiconsIcon icon={UserIcon} className="w-4 h-4 text-gray-400" />
+                        </div>
                       )}
                     </div>
-                    <HugeiconsIcon icon={ArrowDown01Icon} className={cn("w-3.5 h-3.5 opacity-40 transition-transform duration-300 group-hover:opacity-100", isProfileOpen ? "rotate-180" : "")} />
+                    <div className="hidden lg:flex flex-col items-start leading-none ml-0.5">
+                      <span className="text-[11px] font-bold text-black uppercase tracking-wider">{user.name?.split(' ')[0] || "Account"}</span>
+                    </div>
+                    <HugeiconsIcon icon={ArrowDown01Icon} className={cn("w-3 h-3 opacity-30 transition-transform duration-300 group-hover:opacity-100", isProfileOpen ? "rotate-180" : "")} />
                   </button>
 
                   <AnimatePresence>
@@ -396,52 +403,51 @@ export function Navbar() {
                           initial={{ opacity: 0, y: 10, scale: 0.95 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                          className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl border border-gray-200 z-50 overflow-hidden font-plus-jakarta"
+                          className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl border border-gray-200 z-50 overflow-hidden font-plus-jakarta"
                         >
                           {/* User Header */}
-                          <div className="p-4 border-b border-gray-100 flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 border border-black/5">
+                          <div className="p-4 border-b border-gray-100 flex items-center gap-3 bg-gray-50/50">
+                            <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-black/5">
                               {user.avatar ? (
                                 <img src={user.avatar} className="w-full h-full object-cover" alt="" />
                               ) : (
                                 <div className="w-full h-full bg-black/5 flex items-center justify-center text-black/40">
-                                  <HugeiconsIcon icon={UserIcon} className="w-6 h-6" />
+                                  <HugeiconsIcon icon={UserIcon} className="w-5 h-5" />
                                 </div>
                               )}
                             </div>
                             <div className="min-w-0">
-                              <div className="flex items-center gap-1.5">
-                                <p className="text-sm font-bold truncate text-black leading-none">{user.name || user.email?.split('@')[0]}</p>
-                                {user.is_pro && (
-                                  <span className="px-1.5 py-0.5 bg-black text-white text-[8px] font-black rounded-[4px] uppercase tracking-tighter shrink-0 leading-none">PRO</span>
-                                )}
-                              </div>
-                              <p className="text-xs text-gray-500 truncate mt-1">{user.role?.toLowerCase().replace('_', ' ') || 'Product Designer'}</p>
+                              <p className="text-[13px] font-bold truncate text-black leading-none">{user.name || user.email?.split('@')[0]}</p>
+                              <p className="text-[10px] text-gray-500 truncate mt-1.5 uppercase tracking-wider font-semibold">{user.role?.toLowerCase().replace('_', ' ') || 'Member'}</p>
                             </div>
                           </div>
 
                           {/* Action Items */}
-                          <div className="py-2 border-b border-gray-100">
+                          <div className="py-1.5 px-2">
                             <Link
                               href="/profile"
                               onClick={() => setIsProfileOpen(false)}
-                              className="w-full px-4 py-2 flex items-center gap-3 text-sm font-semibold text-gray-700 hover:bg-black/5 transition-colors"
+                              className="w-full px-3 py-2.5 flex items-center gap-3 text-[13px] font-bold text-gray-600 hover:text-black hover:bg-black/5 rounded-lg transition-all group/item"
                             >
-                              <HugeiconsIcon icon={UserIcon} className="w-4 h-4 opacity-70" />
+                              <div className="w-7 h-7 rounded-md bg-gray-50 flex items-center justify-center transition-colors group-hover/item:bg-white shadow-sm border border-black/5">
+                                <HugeiconsIcon icon={UserIcon} className="w-3.5 h-3.5" />
+                              </div>
                               View Profile
                             </Link>
                           </div>
 
                           {/* Logout */}
-                          <div className="py-1">
+                          <div className="p-2 pt-0">
                             <button
                               onClick={() => {
                                 setIsProfileOpen(false);
                                 logout();
                               }}
-                              className="w-full px-4 py-3 flex items-center gap-3 text-sm font-bold text-black hover:bg-red-50 hover:text-red-600 transition-colors"
+                              className="w-full px-3 py-2.5 flex items-center gap-3 text-[13px] font-bold text-red-600 hover:bg-red-50 rounded-lg transition-all group/item"
                             >
-                              <HugeiconsIcon icon={Logout01Icon} className="w-4 h-4" />
+                              <div className="w-7 h-7 rounded-md bg-red-100/50 flex items-center justify-center transition-colors group-hover/item:bg-white border border-red-200/20">
+                                <HugeiconsIcon icon={Logout01Icon} className="w-3.5 h-3.5" />
+                              </div>
                               Log Out
                             </button>
                           </div>

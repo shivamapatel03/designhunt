@@ -35,11 +35,11 @@ export default function MotionPage() {
                 <section>
                      <h2 className="text-2xl font-bold mb-6">2. Core Principles</h2>
                      <div className="grid sm:grid-cols-2 gap-6">
-                        <div className="p-6 bg-white border-2 border-black rounded-xl">
+                        <div className="p-6 bg-white border-2 border-black">
                             <h3 className="font-bold mb-2">Squash & Stretch</h3>
                             <p className="text-sm text-gray-600">Gives sense of weight and flexibility. Button presses often scale down slightly (95%).</p>
                         </div>
-                        <div className="p-6 bg-white border-2 border-black rounded-xl">
+                        <div className="p-6 bg-white border-2 border-black">
                             <h3 className="font-bold mb-2">Anticipation</h3>
                             <p className="text-sm text-gray-600">Prepares the user for an action. A hover effect anticipates a click.</p>
                         </div>
@@ -51,9 +51,9 @@ export default function MotionPage() {
                 <Link 
                     href={user ? `/theory/learning/motion-animation/path` : "/login"} 
                     className={cn(
-                        "group w-full relative inline-flex items-center justify-between gap-3 px-5 py-4 md:px-6 md:py-5 rounded-2xl font-bold transition-all hover:translate-y-[-2px] active:scale-95 border border-black text-xs md:text-sm shadow-[4px_4px_0_0_#000]",
+                        "group w-full relative inline-flex items-center justify-between gap-3 px-5 py-4 md:px-6 md:py-5 font-bold transition-all hover:translate-y-[-2px] active:scale-95 border border-black text-xs md:text-sm rounded-full",
                         user 
-                            ? "bg-black text-white hover:shadow-[6px_6px_0_0_#000]" 
+                            ? "bg-[#2B7FFF] text-white shadow-[4px_4px_0_0_#1556B8] hover:shadow-[6px_6px_0_0_#1556B8]" 
                             : "bg-gray-100 text-gray-400 border-gray-200 shadow-none hover:border-black hover:text-black"
                     )}
                 >
@@ -68,7 +68,7 @@ export default function MotionPage() {
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
 
-                <div className="p-6 border-2 border-black rounded-xl bg-white shadow-[4px_4px_0px_0px_#000]">
+                <div className="p-6 border-2 border-black bg-white shadow-[4px_4px_0px_0px_#000]">
                     <h3 className="font-black text-xs uppercase tracking-widest text-gray-400 mb-4 border-b border-gray-100 pb-2">Key Terms</h3>
                     <ul className="space-y-3">
                         <li className="text-[13px] leading-tight">
@@ -90,7 +90,7 @@ export default function MotionPage() {
                     </ul>
                 </div>
 
-                 <div className="p-6 border-2 border-black rounded-xl bg-accent-pink shadow-[4px_4px_0px_0px_#000]">
+                 <div className="p-6 border-2 border-black bg-accent-pink shadow-[4px_4px_0px_0px_#000]">
                     <h3 className="font-bold mb-4">Duration Guidelines</h3>
                     <ul className="space-y-3 text-sm">
                         <li className="flex justify-between border-b border-black/10 pb-2 font-medium">

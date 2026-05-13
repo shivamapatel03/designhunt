@@ -37,7 +37,7 @@ export function ContrastChecker() {
   }, [fg, bg]);
 
   return (
-    <div className="bg-white border-2 border-black rounded-xl p-6 shadow-[4px_4px_0px_0px_#000]">
+    <div className="bg-white border-2 border-black p-6 shadow-[4px_4px_0px_0px_#000]">
       <h3 className="text-2xl font-bold mb-6">Interactive Contrast Checker</h3>
 
       <div className="grid md:grid-cols-2 gap-8 mb-8">
@@ -55,7 +55,7 @@ export function ContrastChecker() {
                         type="text" 
                         value={fg} 
                         onChange={(e) => setFg(e.target.value)}
-                        className="border-2 border-gray-200 rounded p-2 font-mono uppercase w-32 focus:border-black outline-none"
+                        className="border-2 border-gray-200 p-2 font-mono uppercase w-32 focus:border-black outline-none"
                     />
                 </div>
             </div>
@@ -72,7 +72,7 @@ export function ContrastChecker() {
                         type="text" 
                         value={bg} 
                         onChange={(e) => setBg(e.target.value)}
-                        className="border-2 border-gray-200 rounded p-2 font-mono uppercase w-32 focus:border-black outline-none"
+                        className="border-2 border-gray-200 p-2 font-mono uppercase w-32 focus:border-black outline-none"
                     />
                 </div>
             </div>
@@ -89,7 +89,7 @@ export function ContrastChecker() {
       </div>
 
       {/* Results */}
-      <div className="bg-gray-100 rounded-xl p-4 sm:p-6 flex flex-col lg:flex-row items-center justify-between gap-6">
+      <div className="bg-gray-100 p-4 sm:p-6 flex flex-col lg:flex-row items-center justify-between gap-6">
          <div className="text-center lg:text-left shrink-0">
             <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Contrast Ratio</span>
             <div className="text-4xl sm:text-5xl font-black leading-none mt-1">{ratio}:1</div>

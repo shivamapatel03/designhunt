@@ -26,7 +26,7 @@ export function BezierPlayground() {
   };
 
   return (
-    <div className="bg-white border-2 border-black rounded-xl p-6 shadow-[4px_4px_0px_0px_#000]">
+    <div className="bg-white border-2 border-black p-6 shadow-[4px_4px_0px_0px_#000]">
       <h3 className="text-2xl font-bold mb-6">Bezier Playground</h3>
       
       <div className="grid md:grid-cols-2 gap-8">
@@ -37,7 +37,7 @@ export function BezierPlayground() {
                     <button 
                         key={p.name}
                         onClick={() => applyPreset(p.vals)}
-                        className="px-3 py-1 bg-gray-100 hover:bg-black hover:text-white rounded text-sm font-bold transition-colors"
+                        className="px-3 py-1 bg-gray-100 hover:bg-black hover:text-white text-sm font-bold transition-colors"
                     >
                         {p.name}
                     </button>
@@ -63,14 +63,14 @@ export function BezierPlayground() {
                  </div>
             </div>
 
-            <div className="p-3 bg-black text-white font-mono text-xs rounded flex justify-between items-center">
+            <div className="p-3 bg-black text-white font-mono text-xs flex justify-between items-center">
                 <code>{bezierString}</code>
                 <Copy className="w-4 h-4 cursor-pointer hover:text-gray-400" onClick={() => navigator.clipboard.writeText(bezierString)} />
             </div>
          </div>
 
          {/* Preview */}
-         <div className="bg-gray-50 border border-gray-200 rounded-xl relative overflow-hidden flex flex-col justify-center px-4">
+         <div className="bg-gray-50 border border-gray-200 relative overflow-hidden flex flex-col justify-center px-4">
              <div className="w-full h-1 bg-gray-300 rounded mb-4 relative">
                  <motion.div 
                     key={key}
@@ -87,7 +87,7 @@ export function BezierPlayground() {
                  </motion.div>
              </div>
              <p className="text-center text-xs text-gray-500 mt-8">The ball moves according to your ease curve.</p>
-             <button onClick={() => setKey(k => k + 1)} className="absolute bottom-4 right-4 p-2 bg-white border border-black rounded hover:bg-gray-100">
+             <button onClick={() => setKey(k => k + 1)} className="absolute bottom-4 right-4 p-2 bg-white border border-black hover:bg-gray-100">
                 <RefreshCw className="w-4 h-4" />
              </button>
          </div>

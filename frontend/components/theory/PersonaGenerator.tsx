@@ -16,7 +16,7 @@ export function PersonaGenerator() {
   };
 
   return (
-    <div className="bg-white border-2 border-black rounded-xl p-6 shadow-[4px_4px_0px_0px_#000]">
+    <div className="bg-white border-2 border-black p-6 shadow-[4px_4px_0px_0px_#000]">
       <h3 className="text-2xl font-bold mb-6">Persona Generator</h3>
       
       <div className="grid md:grid-cols-2 gap-8">
@@ -28,7 +28,7 @@ export function PersonaGenerator() {
                     type="text" 
                     value={data.name} 
                     onChange={e => handleChange('name', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:border-black outline-none"
+                    className="w-full p-2 border border-gray-300 focus:border-black outline-none"
                 />
              </div>
              <div>
@@ -37,7 +37,7 @@ export function PersonaGenerator() {
                     type="text" 
                     value={data.role} 
                     onChange={e => handleChange('role', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:border-black outline-none"
+                    className="w-full p-2 border border-gray-300 focus:border-black outline-none"
                 />
              </div>
              <div>
@@ -67,7 +67,7 @@ export function PersonaGenerator() {
                 <h2 className="text-2xl font-bold">{data.name}</h2>
                 <p className="text-gray-500 font-medium mb-8">{data.role}</p>
                 
-                <div className="text-left space-y-4 bg-white p-4 rounded-lg shadow-sm">
+                <div className="text-left space-y-4 bg-white p-4 shadow-sm">
                     <div className="flex gap-3">
                         <Target className="w-5 h-5 text-green-600 flex-shrink-0" />
                         <div>

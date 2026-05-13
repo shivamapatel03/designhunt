@@ -25,29 +25,29 @@ export default function ProductStrategyPage() {
                  <section>
                     <h2 className="text-2xl font-bold mb-6">Strategic Frameworks</h2>
                     <div className="grid md:grid-cols-2 gap-6">
-                        <div className="p-8 bg-white border border-gray-200 rounded-3xl shadow-sm">
-                            <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-6">
+                        <div className="p-8 bg-white border border-gray-200 shadow-sm">
+                            <div className="w-12 h-12 bg-indigo-50 text-indigo-600 flex items-center justify-center mb-6">
                                 <Target className="w-6 h-6" />
                             </div>
                             <h3 className="font-bold mb-3 text-xl">The Product Vision</h3>
                             <p className="text-sm text-gray-600 leading-relaxed">The "True North." A long-term, inspirational goal that describes the impact your product will have on the world.</p>
                         </div>
-                        <div className="p-8 bg-white border border-gray-200 rounded-3xl shadow-sm">
-                            <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-6">
+                        <div className="p-8 bg-white border border-gray-200 shadow-sm">
+                            <div className="w-12 h-12 bg-emerald-50 text-emerald-600 flex items-center justify-center mb-6">
                                 <TrendingUp className="w-6 h-6" />
                             </div>
                             <h3 className="font-bold mb-3 text-xl">Value Proposition</h3>
                             <p className="text-sm text-gray-600 leading-relaxed">The core benefit of your product. Why should a user choose you over every other option in the market?</p>
                         </div>
-                        <div className="p-8 bg-white border border-gray-200 rounded-3xl shadow-sm">
-                            <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mb-6">
+                        <div className="p-8 bg-white border border-gray-200 shadow-sm">
+                            <div className="w-12 h-12 bg-amber-50 text-amber-600 flex items-center justify-center mb-6">
                                 <BarChart3 className="w-6 h-6" />
                             </div>
                             <h3 className="font-bold mb-3 text-xl">OKRs & KPIs</h3>
                             <p className="text-sm text-gray-600 leading-relaxed">Objectives and Key Results. How you measure success and ensure the team is moving in the right direction.</p>
                         </div>
-                         <div className="p-8 bg-white border border-gray-200 rounded-3xl shadow-sm">
-                            <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mb-6">
+                         <div className="p-8 bg-white border border-gray-200 shadow-sm">
+                            <div className="w-12 h-12 bg-rose-50 text-rose-600 flex items-center justify-center mb-6">
                                 <Rocket className="w-6 h-6" />
                             </div>
                             <h3 className="font-bold mb-3 text-xl">The MVP</h3>
@@ -77,9 +77,9 @@ export default function ProductStrategyPage() {
                 <Link 
                     href={user ? `/theory/learning/strategy/path` : "/login"} 
                     className={cn(
-                        "group w-full relative inline-flex items-center justify-between gap-3 px-5 py-4 md:px-6 md:py-5 rounded-2xl font-bold transition-all hover:translate-y-[-2px] active:scale-95 border border-black text-xs md:text-sm shadow-[4px_4px_0_0_#000]",
+                        "group w-full relative inline-flex items-center justify-between gap-3 px-5 py-4 md:px-6 md:py-5 font-bold transition-all hover:translate-y-[-2px] active:scale-95 border border-black text-xs md:text-sm rounded-full",
                         user 
-                            ? "bg-black text-white hover:shadow-[6px_6px_0_0_#000]" 
+                            ? "bg-[#2B7FFF] text-white shadow-[4px_4px_0_0_#1556B8] hover:shadow-[6px_6px_0_0_#1556B8]" 
                             : "bg-gray-100 text-gray-400 border-gray-200 shadow-none hover:border-black hover:text-black"
                     )}
                 >
@@ -94,7 +94,7 @@ export default function ProductStrategyPage() {
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
 
-                <div className="p-6 border-2 border-black rounded-xl bg-white shadow-[4px_4px_0px_0px_#000]">
+                <div className="p-6 border-2 border-black bg-white shadow-[4px_4px_0px_0px_#000]">
                     <h3 className="font-black text-xs uppercase tracking-widest text-gray-400 mb-4 border-b border-gray-100 pb-2">Business Terms</h3>
                     <ul className="space-y-3">
                         <li className="text-[13px] leading-tight">
@@ -116,7 +116,7 @@ export default function ProductStrategyPage() {
                     </ul>
                 </div>
 
-                <div className="p-6 border-2 border-black rounded-xl bg-[#808000] text-white shadow-[4px_4px_0px_0px_#000]">
+                <div className="p-6 border-2 border-black bg-[#808000] text-white shadow-[4px_4px_0px_0px_#000]">
                     <h3 className="font-bold mb-2 flex items-center gap-2 text-sm uppercase tracking-wider">Strategy Quote</h3>
                     <p className="text-lg font-black leading-tight italic">
                         "Strategy is about making choices, trade-offs; it's about deliberately choosing to be different."

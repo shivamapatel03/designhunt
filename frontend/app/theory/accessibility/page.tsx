@@ -46,9 +46,9 @@ export default function AccessibilityPage() {
                 <Link 
                     href={user ? `/theory/learning/accessibility/path` : "/login"} 
                     className={cn(
-                        "group w-full relative inline-flex items-center justify-between gap-3 px-5 py-4 md:px-6 md:py-5 rounded-2xl font-bold transition-all hover:translate-y-[-2px] active:scale-95 border border-black text-xs md:text-sm shadow-[4px_4px_0_0_#000]",
+                        "group w-full relative inline-flex items-center justify-between gap-3 px-5 py-4 md:px-6 md:py-5 font-bold transition-all hover:translate-y-[-2px] active:scale-95 border border-black text-xs md:text-sm rounded-full",
                         user 
-                            ? "bg-black text-white hover:shadow-[6px_6px_0_0_#000]" 
+                            ? "bg-[#2B7FFF] text-white shadow-[4px_4px_0_0_#1556B8] hover:shadow-[6px_6px_0_0_#1556B8]" 
                             : "bg-gray-100 text-gray-400 border-gray-200 shadow-none hover:border-black hover:text-black"
                     )}
                 >
@@ -63,7 +63,7 @@ export default function AccessibilityPage() {
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
 
-                <div className="p-6 border-2 border-black rounded-xl bg-white shadow-[4px_4px_0px_0px_#000]">
+                <div className="p-6 border-2 border-black bg-white shadow-[4px_4px_0px_0px_#000]">
                     <h3 className="font-black text-xs uppercase tracking-widest text-gray-400 mb-4 border-b border-gray-100 pb-2">Key Terms</h3>
                     <ul className="space-y-3">
                         <li className="text-[13px] leading-tight">
@@ -85,7 +85,7 @@ export default function AccessibilityPage() {
                     </ul>
                 </div>
 
-                <div className="p-6 border-2 border-black rounded-xl bg-white shadow-[4px_4px_0px_0px_#000]">
+                <div className="p-6 border-2 border-black bg-white shadow-[4px_4px_0px_0px_#000]">
                     <h3 className="font-bold mb-4">Quick A11y Checklist</h3>
                     <ul className="space-y-3">
                         {["Alt text on images", "Headings in order (h1-h6)", "Contrast ratio > 4.5:1", "Large touch targets (44px+)", "Keyboard navigability"].map((item, i) => (
@@ -104,7 +104,7 @@ export default function AccessibilityPage() {
 
 function Card({title, body}: {title: string, body: string}) {
     return (
-        <div className="p-6 bg-gray-50 border border-gray-200 rounded-xl">
+        <div className="p-6 bg-gray-50 border border-gray-200">
              <h3 className="font-bold mb-2">{title}</h3>
              <p className="text-sm text-gray-600">{body}</p>
         </div>

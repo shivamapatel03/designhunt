@@ -25,29 +25,29 @@ export default function UXDesignPage() {
                  <section>
                     <h2 className="text-2xl font-bold mb-6">The UX Pillars</h2>
                     <div className="grid md:grid-cols-2 gap-6">
-                        <div className="p-6 bg-white border border-gray-200 rounded-2xl shadow-sm hover:border-black transition-colors group">
-                            <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                        <div className="p-6 bg-white border border-gray-200 shadow-sm hover:border-black transition-colors group">
+                            <div className="w-12 h-12 bg-blue-50 text-blue-600 flex items-center justify-center mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
                                 <MousePointer2 className="w-6 h-6" />
                             </div>
                             <h3 className="font-bold mb-2 text-lg">Usability</h3>
                             <p className="text-sm text-gray-600">Can the user achieve their goal easily? Focus on efficiency, learnability, and error prevention.</p>
                         </div>
-                        <div className="p-6 bg-white border border-gray-200 rounded-2xl shadow-sm hover:border-black transition-colors group">
-                            <div className="w-12 h-12 bg-pink-50 text-pink-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-pink-600 group-hover:text-white transition-colors">
+                        <div className="p-6 bg-white border border-gray-200 shadow-sm hover:border-black transition-colors group">
+                            <div className="w-12 h-12 bg-pink-50 text-pink-600 flex items-center justify-center mb-4 group-hover:bg-pink-600 group-hover:text-white transition-colors">
                                 <Heart className="w-6 h-6" />
                             </div>
                             <h3 className="font-bold mb-2 text-lg">Desirability</h3>
                             <p className="text-sm text-gray-600">Does the product evoke positive emotions? Aesthetics, branding, and micro-interactions.</p>
                         </div>
-                        <div className="p-6 bg-white border border-gray-200 rounded-2xl shadow-sm hover:border-black transition-colors group">
-                            <div className="w-12 h-12 bg-green-50 text-green-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-green-600 group-hover:text-white transition-colors">
+                        <div className="p-6 bg-white border border-gray-200 shadow-sm hover:border-black transition-colors group">
+                            <div className="w-12 h-12 bg-green-50 text-green-600 flex items-center justify-center mb-4 group-hover:bg-green-600 group-hover:text-white transition-colors">
                                 <CheckCircle className="w-6 h-6" />
                             </div>
                             <h3 className="font-bold mb-2 text-lg">Usefulness</h3>
                             <p className="text-sm text-gray-600">Does the product solve a real problem for the user? Value proposition and relevance.</p>
                         </div>
-                        <div className="p-6 bg-white border border-gray-200 rounded-2xl shadow-sm hover:border-black transition-colors group">
-                            <div className="w-12 h-12 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-orange-600 group-hover:text-white transition-colors">
+                        <div className="p-6 bg-white border border-gray-200 shadow-sm hover:border-black transition-colors group">
+                            <div className="w-12 h-12 bg-orange-50 text-orange-600 flex items-center justify-center mb-4 group-hover:bg-orange-600 group-hover:text-white transition-colors">
                                 <Smartphone className="w-6 h-6" />
                             </div>
                             <h3 className="font-bold mb-2 text-lg">Adoptability</h3>
@@ -78,9 +78,9 @@ export default function UXDesignPage() {
                 <Link 
                     href={user ? `/theory/learning/ui-ux-design/path` : "/login"} 
                     className={cn(
-                        "group w-full relative inline-flex items-center justify-between gap-3 px-5 py-4 md:px-6 md:py-5 rounded-2xl font-bold transition-all hover:translate-y-[-2px] active:scale-95 border border-black text-xs md:text-sm shadow-[4px_4px_0_0_#000]",
+                        "group w-full relative inline-flex items-center justify-between gap-3 px-5 py-4 md:px-6 md:py-5 font-bold transition-all hover:translate-y-[-2px] active:scale-95 border border-black text-xs md:text-sm rounded-full",
                         user 
-                            ? "bg-black text-white hover:shadow-[6px_6px_0_0_#000]" 
+                            ? "bg-[#2B7FFF] text-white shadow-[4px_4px_0_0_#1556B8] hover:shadow-[6px_6px_0_0_#1556B8]" 
                             : "bg-gray-100 text-gray-400 border-gray-200 shadow-none hover:border-black hover:text-black"
                     )}
                 >
@@ -95,7 +95,7 @@ export default function UXDesignPage() {
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
 
-                <div className="p-6 border-2 border-black rounded-xl bg-white shadow-[4px_4px_0px_0px_#000]">
+                <div className="p-6 border-2 border-black bg-white shadow-[4px_4px_0px_0px_#000]">
                     <h3 className="font-black text-xs uppercase tracking-widest text-gray-400 mb-4 border-b border-gray-100 pb-2">Key Heuristics</h3>
                     <ul className="space-y-3">
                         <li className="text-[13px] leading-tight">
@@ -117,7 +117,7 @@ export default function UXDesignPage() {
                     </ul>
                 </div>
 
-                <div className="p-6 border-2 border-black rounded-xl bg-[#FF6B4A] text-white shadow-[4px_4px_0px_0px_#000]">
+                <div className="p-6 border-2 border-black bg-[#FF6B4A] text-white shadow-[4px_4px_0px_0px_#000]">
                     <h3 className="font-bold mb-3 flex items-center gap-2 text-sm uppercase tracking-wider">The Golden Rule</h3>
                     <p className="text-lg font-black leading-tight">
                         "If the user can't find it, it doesn't exist."

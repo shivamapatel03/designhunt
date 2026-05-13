@@ -136,7 +136,7 @@ router.post("/complete", authenticate, async (req: any, res: any) => {
     const user = await db.get("SELECT total_xp, current_streak, last_active_date FROM users WHERE id = $1", [userId]) as any;
     
     let newStreak = user.current_streak || 0;
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
     const lastActive = user.last_active_date;
 
     if (!lastActive) {
@@ -191,7 +191,7 @@ router.post("/complete", authenticate, async (req: any, res: any) => {
             if (!alreadyEarned) {
                 badge_earned = {
                     ...milestone,
-                    earned_at: new Date().toISOString(),
+                    earned_at: new Date(),
                     topic: levelInfo.topic_title,
                     topic_slug: levelInfo.topic_slug
                 };

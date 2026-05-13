@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import db from "../db";
 
-const JWT_SECRET = process.env.JWT_SECRET || "default-secret-key-change-me";
+const JWT_SECRET = process.env.JWT_SECRET || "designhunt_secret_key_123";
 
 // Extend Express Request type to include user
 declare global {
@@ -17,24 +17,23 @@ declare global {
   }
 }
 
-export const authenticateToken = (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  const token = req.cookies?.token;
+export const authenticate = (req: any, res: any, next: any) => {
+  const token = req.cookies.token;
+  console.log("Auth Middleware: token present =", !!token);
 
   if (!token) {
-    res.status(401).json({ error: "Access denied. No token provided." });
-    return;
+    console.log("Auth Middleware: No token, returning 401");
+    return res.status(401).json({ error: "Unauthorized" });
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
-    req.user = decoded;
+    const payload = jwt.verify(token, JWT_SECRET) as any;
+    req.userId = payload.userId || payload.id;
+    console.log("Auth Middleware: token verified, userId =", req.userId);
     next();
   } catch (error) {
-    res.status(403).json({ error: "Invalid token." });
+    console.log("Auth Middleware: Token verification failed");
+    res.status(401).json({ error: "Invalid token" });
   }
 };
 

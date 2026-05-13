@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import db from "../db";
-import { authenticateToken } from "../middleware/auth";
+import { authenticate } from "../middleware/auth";
 import { z } from "zod";
 import crypto from "crypto";
 
@@ -54,7 +54,7 @@ router.get("/:id", async (req: Request, res: Response) => {
 });
 
 // POST /:id/submit - Submit a solution
-router.post("/:id/submit", authenticateToken, async (req: Request, res: Response) => {
+router.post("/:id/submit", authenticate, async (req: Request, res: Response) => {
   try {
     const { content } = submissionSchema.parse(req.body);
 
@@ -91,7 +91,7 @@ router.post("/:id/submit", authenticateToken, async (req: Request, res: Response
 // GET /:id/submissions - Get submissions for a challenge (with vote counts)
 router.get(
   "/:id/submissions",
-  authenticateToken,
+  authenticate,
   async (req: Request, res: Response) => {
     try {
       const userId = req.user?.userId;
@@ -123,7 +123,7 @@ router.get(
 // POST /submissions/:id/vote - Vote for a submission
 router.post(
   "/submissions/:id/vote",
-  authenticateToken,
+  authenticate,
   async (req: Request, res: Response) => {
     try {
       const submissionId = req.params.id;

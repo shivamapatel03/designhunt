@@ -34,7 +34,7 @@ export function ColorWheel() {
   };
 
   return (
-    <div className="bg-white border-2 border-black rounded-xl p-6 shadow-[4px_4px_0px_0px_#000]">
+    <div className="bg-white border-2 border-black p-6 shadow-[4px_4px_0px_0px_#000]">
       <div className="flex flex-col md:flex-row gap-8 items-start">
         
         {/* Controls */}
@@ -57,7 +57,7 @@ export function ColorWheel() {
                         <button
                             key={h}
                             onClick={() => setHarmony(h as any)}
-                            className={`flex-1 min-w-[100px] sm:flex-none px-3 py-1.5 text-[13px] sm:text-sm font-bold rounded border-2 capitalize transition-all ${harmony === h ? 'bg-black text-white border-black' : 'bg-white text-black border-gray-200 hover:border-black'}`}
+                            className={`flex-1 min-w-[100px] sm:flex-none px-3 py-1.5 text-[13px] sm:text-sm font-bold border-2 capitalize transition-all ${harmony === h ? 'bg-black text-white border-black' : 'bg-white text-black border-gray-200 hover:border-black'}`}
                         >
                             {h}
                         </button>
@@ -73,7 +73,7 @@ export function ColorWheel() {
                 return (
                     <div key={i} className="flex flex-col items-center group">
                         <div 
-                            className="w-full h-24 rounded-xl border-2 border-gray-200 shadow-sm transition-transform group-hover:-translate-y-1 mb-2 relative overflow-hidden"
+                            className="w-full h-24 border-2 border-gray-200 shadow-sm transition-transform group-hover:-translate-y-1 mb-2 relative overflow-hidden"
                             style={{ backgroundColor: `hsl(${h}, ${saturation}%, ${lightness}%)` }}
                         >
                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/10 transition-opacity">
