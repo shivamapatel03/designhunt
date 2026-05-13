@@ -173,6 +173,8 @@ function KerningGame() {
             </h3>
             <div className="flex gap-2">
                 <button onClick={reset} className="p-2 hover:bg-gray-100 transition-colors">
+                    <RotateCcw className="w-4 h-4 text-gray-400" />
+                </button>
             </div>
         </div>
         
